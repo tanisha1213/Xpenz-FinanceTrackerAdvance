@@ -23,6 +23,26 @@
       "dest": "client/assets/$1"
     },
     {
+      "src": "/pwa-(.*)",
+      "dest": "client/pwa-$1"
+    },
+    {
+      "src": "/manifest.webmanifest",
+      "dest": "client/manifest.webmanifest"
+    },
+    {
+      "src": "/sw.js",
+      "dest": "client/sw.js"
+    },
+    {
+      "src": "/registerSW.js",
+      "dest": "client/registerSW.js"
+    },
+    {
+      "src": "/workbox-(.*)",
+      "dest": "client/workbox-$1"
+    },
+    {
       "src": "/(.*)",
       "dest": "client/index.html"
     }
