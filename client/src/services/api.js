@@ -1,7 +1,22 @@
 import axios from 'axios'
 
+const getBaseURL = () => {
+  if (import.meta.env.VITE_API_URL) {
+    return import.meta.env.VITE_API_URL;
+  }
+  // If running in browser locally (Vite port 5173) or on Vercel, use relative proxy paths
+  if (window.location.hostname === 'localhost' && window.location.port === '5173') {
+    return '/api';
+  }
+  if (window.location.hostname.endsWith('.vercel.app') || window.location.hostname === 'vercel.app') {
+    return '/api';
+  }
+  // Default to live Vercel backend URL for native iOS/Android environments
+  return 'https://ai-finance-tracker-amber.vercel.app/api';
+};
+
 const API = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || '/api'
+  baseURL: getBaseURL()
 })
 
 API.interceptors.request.use((config) => {
