@@ -5,8 +5,8 @@ import {
   BarChart,
   CartesianGrid,
   Cell,
-  Line,
-  LineChart,
+  Area,
+  AreaChart,
   Pie,
   PieChart,
   ResponsiveContainer,
@@ -21,6 +21,7 @@ import { saveTransaction } from '../redux/slices/transactionSlice'
 import { formatCurrency, formatDate, categories, paymentMethods } from '../utils/format'
 import { FiArrowUpRight, FiArrowDownRight, FiDollarSign, FiActivity, FiTrendingUp, FiPlus, FiCheck } from 'react-icons/fi'
 import { useTheme } from '../context/ThemeContext'
+import { motion } from 'framer-motion'
 
 const COLORS = ['#4f46e5', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#06b6d4']
 
@@ -118,24 +119,96 @@ function Dashboard() {
 
   return (
     <div className="space-y-8 text-slate-800 dark:text-slate-100">
-      {/* Welcome Banner */}
-      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-primary to-indigo-950 dark:from-purple-900/30 dark:to-indigo-950/30 border dark:border-purple-500/10 p-6 md:p-8 text-white shadow-xl backdrop-blur-sm">
-        <div className="relative z-10 flex flex-col md:flex-row md:items-center md:justify-between gap-6">
-          <div className="max-w-xl space-y-2">
-            <h2 className="text-2xl md:text-3xl font-extrabold tracking-tight">Welcome Back to Xpenz</h2>
-            <p className="text-slate-300 dark:text-slate-400 text-sm md:text-base font-normal">
-              Analyze spending patterns, manage active budgets, and discover smart financial recommendations.
+      {/* Premium Hero Balance & Virtual Card Section */}
+      <div className="grid gap-6 lg:grid-cols-3">
+        {/* Left Side: Balance Information */}
+        <div className="lg:col-span-2 rounded-3xl border border-slate-100 dark:border-slate-800/80 bg-white dark:bg-gradient-to-b dark:from-[#131522] dark:to-[#0d0f17] p-6 md:p-8 shadow-premium relative overflow-hidden flex flex-col justify-between min-h-[260px]">
+          {/* Subtle glow accent */}
+          <div className="absolute -left-12 -top-12 w-32 h-32 rounded-full bg-purple-500/10 blur-3xl pointer-events-none" />
+
+          <div>
+            <p className="text-xs font-bold text-slate-400 dark:text-dark-text-muted uppercase tracking-wider">Total Balance</p>
+            <div className="flex items-baseline gap-1 mt-2">
+              <h2 className="text-4xl md:text-5xl font-black text-slate-800 dark:text-white tracking-tight">
+                {summary ? formatCurrency(summary.savings).split('.')[0] : '₹0'}
+              </h2>
+              <span className="text-lg md:text-xl font-bold text-slate-450 dark:text-dark-text-muted">
+                .{summary ? formatCurrency(summary.savings).split('.')[1] || '00' : '00'}
+              </span>
+              <span className="ml-2.5 inline-flex items-center gap-1 rounded-lg bg-slate-100 dark:bg-slate-900 border border-slate-200/40 dark:border-slate-800 px-2 py-0.5 text-xs font-bold text-slate-500 dark:text-slate-400">
+                🇮🇳 INR
+              </span>
+            </div>
+            
+            {/* Money hold pill */}
+            <div className="mt-4 flex flex-wrap items-center gap-2 text-xs font-semibold text-slate-550 dark:text-dark-text-muted">
+              <span className="px-3 py-1 rounded-full bg-slate-50 dark:bg-slate-900/60 border border-slate-100 dark:border-slate-800">
+                Money hold: {summary ? formatCurrency(summary.totalIncome * 0.12) : '₹0'}
+              </span>
+              <span className="px-3 py-1 rounded-full bg-slate-50 dark:bg-slate-900/60 border border-slate-100 dark:border-slate-800">
+                Daily Limit: {formatCurrency(25000)}
+              </span>
+            </div>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-3 mt-6 z-10">
+            <button
+              onClick={() => { setMessage(''); setForm({ ...form, type: 'income' }); setShowForm(true) }}
+              className="flex items-center justify-center gap-2 rounded-full bg-secondary dark:bg-purple-600 px-5 py-2.5 font-extrabold text-white text-xs hover:bg-indigo-700 dark:hover:bg-purple-700 shadow-md transition-all cursor-pointer"
+            >
+              <FiPlus className="w-4 h-4" />
+              Add Income
+            </button>
+            <button
+              onClick={() => { setMessage(''); setForm({ ...form, type: 'expense' }); setShowForm(true) }}
+              className="flex items-center justify-center gap-2 rounded-full bg-slate-900 dark:bg-slate-850 px-5 py-2.5 font-extrabold text-white text-xs hover:bg-slate-800 dark:hover:bg-slate-805 border border-transparent dark:border-slate-800 transition-all cursor-pointer"
+            >
+              <FiArrowUpRight className="w-4 h-4" />
+              Send Expense
+            </button>
+          </div>
+        </div>
+
+        {/* Right Side: Virtual Debit Card display */}
+        <div className="rounded-3xl border border-slate-150 dark:border-purple-500/20 bg-gradient-to-tr from-[#2d1554] via-[#10132b] to-[#0e111d] p-6 shadow-premium relative overflow-hidden flex flex-col justify-between text-white min-h-[260px]">
+          {/* Futuristic mesh pattern */}
+          <div className="absolute inset-0 opacity-10 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-purple-400 via-pink-500 to-indigo-500 pointer-events-none" />
+          
+          <div className="flex justify-between items-start z-10">
+            <div>
+              <p className="text-[10px] uppercase font-bold tracking-widest text-purple-300">Premium Virtual Card</p>
+              <h4 className="text-lg font-black tracking-wider mt-1 text-white">Xpenz Premium</h4>
+            </div>
+            {/* Rupee custom logo badge */}
+            <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-purple-500 to-indigo-500 flex items-center justify-center text-white font-extrabold text-lg shadow-lg">
+              ₹
+            </div>
+          </div>
+
+          <div className="my-6 z-10">
+            <p className="text-xl md:text-2xl font-black tracking-widest text-slate-100 font-mono">
+              ••••  ••••  ••••  9154
             </p>
           </div>
-          <button
-            onClick={() => { setMessage(''); setShowForm(true) }}
-            className="flex items-center justify-center gap-2 rounded-xl bg-white text-primary px-5 py-3 font-extrabold text-sm hover:bg-slate-100 shadow-lg transition-all w-fit flex-shrink-0"
-          >
-            <FiPlus className="w-4 h-4" />
-            Add Transaction
-          </button>
+
+          <div className="flex justify-between items-end z-10">
+            <div>
+              <p className="text-[9px] uppercase tracking-wider text-slate-400 font-bold">Card Holder</p>
+              <p className="text-sm font-bold tracking-wide mt-0.5 text-white">TANISHA</p>
+            </div>
+            <div className="flex items-center gap-4 text-right">
+              <div>
+                <p className="text-[9px] uppercase tracking-wider text-slate-400 font-bold">Expires</p>
+                <p className="text-sm font-bold tracking-wide mt-0.5 text-white">12/29</p>
+              </div>
+              {/* Overlapping Mastercard circle aesthetic */}
+              <div className="flex -space-x-3">
+                <div className="w-8 h-8 rounded-full bg-purple-500/80 mix-blend-screen" />
+                <div className="w-8 h-8 rounded-full bg-indigo-500/80 mix-blend-screen" />
+              </div>
+            </div>
+          </div>
         </div>
-        <div className="absolute right-0 bottom-0 top-0 w-1/3 bg-gradient-to-l from-white/10 to-transparent pointer-events-none transform skew-x-12 hidden md:block" />
       </div>
 
       {/* Summary Stats Grid */}
@@ -171,14 +244,20 @@ function Dashboard() {
       {/* Analytics Charts Grid */}
       <div className="grid gap-6 lg:grid-cols-3">
         {/* Monthly Trend Chart */}
-        <section className="rounded-2xl border border-slate-100 dark:border-dark-border bg-white dark:bg-dark-card p-6 shadow-premium lg:col-span-2">
+        <section className="rounded-3xl border border-slate-100 dark:border-slate-800/80 bg-white dark:bg-gradient-to-b dark:from-[#131522] dark:to-[#0d0f17] p-6 shadow-premium lg:col-span-2">
           <div className="flex items-center gap-2 mb-4">
             <FiTrendingUp className="w-5 h-5 text-secondary dark:text-purple-400" />
             <h3 className="font-bold text-slate-800 dark:text-white text-lg">Monthly Spending Trend</h3>
           </div>
           <div className="h-72">
             <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={trend} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+              <AreaChart data={trend} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                <defs>
+                  <linearGradient id="colorExpense" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#a855f7" stopOpacity={0.4}/>
+                    <stop offset="95%" stopColor="#a855f7" stopOpacity={0.0}/>
+                  </linearGradient>
+                </defs>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={gridStroke} />
                 <XAxis dataKey="month" tickLine={false} stroke={textStroke} fontSize={12} />
                 <YAxis tickLine={false} stroke={textStroke} fontSize={12} />
@@ -186,14 +265,14 @@ function Dashboard() {
                   contentStyle={tooltipStyle}
                   formatter={(value) => [formatCurrency(value), 'Spent']}
                 />
-                <Line type="monotone" dataKey="expense" stroke="#a855f7" strokeWidth={3} activeDot={{ r: 8 }} />
-              </LineChart>
+                <Area type="monotone" dataKey="expense" stroke="#a855f7" strokeWidth={3.5} fillOpacity={1} fill="url(#colorExpense)" activeDot={{ r: 7, strokeWidth: 2, stroke: '#fff' }} />
+              </AreaChart>
             </ResponsiveContainer>
           </div>
         </section>
 
         {/* Category Share Donut Chart */}
-        <section className="rounded-2xl border border-slate-100 dark:border-dark-border bg-white dark:bg-dark-card p-6 shadow-premium">
+        <section className="rounded-3xl border border-slate-100 dark:border-slate-800/80 bg-white dark:bg-gradient-to-b dark:from-[#131522] dark:to-[#0d0f17] p-6 shadow-premium">
           <h3 className="font-bold text-slate-800 dark:text-white text-lg mb-4">Category Distribution</h3>
           <div className="h-72 flex items-center justify-center relative">
             <ResponsiveContainer width="100%" height="100%">
@@ -221,7 +300,7 @@ function Dashboard() {
       {/* Comparisons & Recent Listings Grid */}
       <div className="grid gap-6 lg:grid-cols-3">
         {/* Income vs Expenses Bar Chart */}
-        <section className="rounded-2xl border border-slate-100 dark:border-dark-border bg-white dark:bg-dark-card p-6 shadow-premium lg:col-span-2">
+        <section className="rounded-3xl border border-slate-100 dark:border-slate-800/80 bg-white dark:bg-gradient-to-b dark:from-[#131522] dark:to-[#0d0f17] p-6 shadow-premium lg:col-span-2">
           <h3 className="font-bold text-slate-800 dark:text-white text-lg mb-4">Income vs Expense Comparison</h3>
           <div className="h-72">
             <ResponsiveContainer width="100%" height="100%">
@@ -234,24 +313,24 @@ function Dashboard() {
                   formatter={(value) => formatCurrency(value)}
                 />
                 <Legend iconType="circle" />
-                <Bar dataKey="Income" fill="#10b981" radius={[4, 4, 0, 0]} />
-                <Bar dataKey="Expense" fill="#ef4444" radius={[4, 4, 0, 0]} />
+                <Bar dataKey="Income" fill="#10b981" radius={[8, 8, 0, 0]} />
+                <Bar dataKey="Expense" fill="#ef4444" radius={[8, 8, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </div>
         </section>
 
         {/* Recent Transactions List */}
-        <section className="rounded-2xl border border-slate-100 dark:border-dark-border bg-white dark:bg-dark-card p-6 shadow-premium flex flex-col justify-between">
+        <section className="rounded-3xl border border-slate-100 dark:border-slate-800/80 bg-white dark:bg-gradient-to-b dark:from-[#131522] dark:to-[#0d0f17] p-6 shadow-premium flex flex-col justify-between">
           <div>
             <h3 className="font-bold text-slate-800 dark:text-white text-lg mb-4">Recent Activity</h3>
             <div className="space-y-4">
               {summary?.recentTransactions?.length ? (
                 summary.recentTransactions.map((item) => (
-                  <div key={item._id} className="flex items-center justify-between p-3 rounded-xl border border-slate-50 dark:border-dark-border hover:bg-slate-50 dark:hover:bg-slate-850/40 transition-colors">
+                  <div key={item._id} className="flex items-center justify-between p-3 rounded-2xl border border-slate-50 dark:border-slate-800/50 hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors">
                     <div className="flex items-center gap-3">
                       <div className={`p-2 rounded-xl text-xs font-semibold ${
-                        item.type === 'income' ? 'bg-emerald-50 dark:bg-emerald-950/20 text-emerald-600 dark:text-emerald-400' : 'bg-rose-50 dark:bg-rose-950/20 text-rose-600 dark:text-rose-400'
+                        item.type === 'income' ? 'bg-emerald-50 dark:bg-emerald-950/20 text-emerald-600 dark:text-emerald-400' : 'bg-rose-50 dark:bg-rose-950/20 text-rose-600 dark:text-rose-450'
                       }`}>
                         {item.type === 'income' ? 'IN' : 'EX'}
                       </div>
@@ -263,7 +342,7 @@ function Dashboard() {
                       </div>
                     </div>
                     <p className={`font-bold text-sm ${
-                      item.type === 'income' ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'
+                      item.type === 'income' ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-450'
                     }`}>
                       {item.type === 'income' ? '+' : '-'}{formatCurrency(item.amount)}
                     </p>
