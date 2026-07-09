@@ -58,6 +58,21 @@ connectDB().catch((err) => {
   console.error('Failed to initialize database connection:', err.message);
 });
 
+// Middleware to ensure DB connection is established before routing requests
+app.use(async (req, res, next) => {
+  if (mongoose.connection.readyState !== 1) {
+    try {
+      await connectDB();
+    } catch (err) {
+      return res.status(500).json({
+        success: false,
+        message: `Database connection failed: ${err.message}`
+      });
+    }
+  }
+  next();
+});
+
 // Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/transactions', transactionRoutes);
