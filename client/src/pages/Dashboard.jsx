@@ -116,6 +116,8 @@ function Dashboard() {
   const tooltipStyle = isDark
     ? { backgroundColor: '#13141f', borderRadius: '12px', border: '1px solid #222533', color: '#fff' }
     : { backgroundColor: '#ffffff', borderRadius: '12px', border: '1px solid #f1f5f9', boxShadow: '0 4px 12px rgba(0, 0, 0, 0.05)' }
+  const tooltipItemStyle = { color: isDark ? '#f8fafc' : '#0f172a' }
+  const tooltipLabelStyle = { color: isDark ? '#94a3b8' : '#64748b' }
 
   return (
     <div className="space-y-8 text-slate-800 dark:text-slate-100">
@@ -216,6 +218,8 @@ function Dashboard() {
                 <YAxis tickLine={false} stroke={textStroke} fontSize={12} />
                 <Tooltip
                   contentStyle={tooltipStyle}
+                  itemStyle={tooltipItemStyle}
+                  labelStyle={tooltipLabelStyle}
                   formatter={(value) => [formatCurrency(value), 'Spent']}
                 />
                 <Area type="monotone" dataKey="expense" stroke="#a855f7" strokeWidth={3.5} fillOpacity={1} fill="url(#colorExpense)" activeDot={{ r: 7, strokeWidth: 2, stroke: '#fff' }} />
@@ -237,6 +241,8 @@ function Dashboard() {
                 </Pie>
                 <Tooltip
                   contentStyle={tooltipStyle}
+                  itemStyle={tooltipItemStyle}
+                  labelStyle={tooltipLabelStyle}
                   formatter={(value) => formatCurrency(value)}
                 />
               </PieChart>
@@ -263,6 +269,8 @@ function Dashboard() {
                 <YAxis tickLine={false} stroke={textStroke} fontSize={12} />
                 <Tooltip
                   contentStyle={tooltipStyle}
+                  itemStyle={tooltipItemStyle}
+                  labelStyle={tooltipLabelStyle}
                   formatter={(value) => formatCurrency(value)}
                 />
                 <Legend iconType="circle" />

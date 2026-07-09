@@ -14,9 +14,12 @@ import {
   FiCalendar, 
   FiLayers 
 } from 'react-icons/fi'
+import { useTheme } from '../context/ThemeContext'
 
 function InsightsReports() {
   const dispatch = useDispatch()
+  const { theme } = useTheme()
+  const isDark = theme === 'dark'
   const [activeTab, setActiveTab] = useState('insights') // 'insights' or 'reports'
 
   // Insights (AI) Redux Selector
@@ -269,7 +272,12 @@ function InsightsReports() {
                         <XAxis dataKey="category" tickLine={false} stroke="#94a3b8" fontSize={11} />
                         <YAxis tickLine={false} stroke="#94a3b8" fontSize={11} />
                         <Tooltip
-                          contentStyle={{ backgroundColor: '#13141f', borderRadius: '12px', border: '1px solid #222533', color: '#fff' }}
+                          contentStyle={isDark
+                            ? { backgroundColor: '#13141f', borderRadius: '12px', border: '1px solid #222533', color: '#fff' }
+                            : { backgroundColor: '#ffffff', borderRadius: '12px', border: '1px solid #f1f5f9', boxShadow: '0 4px 12px rgba(0, 0, 0, 0.05)' }
+                          }
+                          itemStyle={{ color: isDark ? '#f8fafc' : '#0f172a' }}
+                          labelStyle={{ color: isDark ? '#94a3b8' : '#64748b' }}
                           formatter={(value) => formatCurrency(value)}
                         />
                         <Bar dataKey="amount" fill="#6366f1" radius={[4, 4, 0, 0]} />
