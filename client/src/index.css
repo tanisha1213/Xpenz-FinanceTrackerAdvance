@@ -104,11 +104,11 @@ code {
 .light .bg-indigo-600,
 .light button.bg-indigo-600,
 .light .text-white.bg-secondary {
-  background: linear-gradient(135deg, #6D5DF6 0%, #5B4EF2 45%, #4F46E5 100%) !important;
+  background: #743BF7 !important;
   color: #ffffff !important;
   box-shadow: 
-    0 12px 30px rgba(79, 70, 229, 0.28), 
-    0 4px 12px rgba(109, 93, 246, 0.18) !important;
+    0 12px 30px rgba(116, 59, 247, 0.28), 
+    0 4px 12px rgba(116, 59, 247, 0.18) !important;
   border-radius: 9999px !important;
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
   border: none !important;
@@ -118,10 +118,10 @@ code {
 .light button.bg-secondary:hover,
 .light .bg-indigo-600:hover,
 .light button.bg-indigo-600:hover {
-  background: linear-gradient(135deg, #7C6BFF 0%, #6357F6 45%, #4338CA 100%) !important;
+  background: #602ee3 !important;
   box-shadow: 
-    0 14px 35px rgba(79, 70, 229, 0.35), 
-    0 6px 16px rgba(109, 93, 246, 0.24) !important;
+    0 14px 35px rgba(116, 59, 247, 0.35), 
+    0 6px 16px rgba(116, 59, 247, 0.24) !important;
   transform: translateY(-1px) !important;
 }
 
@@ -137,13 +137,13 @@ code {
 .light .text-secondary,
 .light .text-indigo-600,
 .light .text-purple-600 {
-  color: #4F46E5 !important;
+  color: #743BF7 !important;
 }
 
 .light .border-secondary,
 .light .border-indigo-600,
 .light .border-purple-600 {
-  border-color: #4F46E5 !important;
+  border-color: #743BF7 !important;
 }
 
 /* Selected filters or active tab indicator states */
@@ -151,21 +151,21 @@ code {
 .light .bg-indigo-600\/10,
 .light .bg-purple-600\/10,
 .light .bg-primary\/10 {
-  background: rgba(109, 93, 246, 0.08) !important;
-  color: #4F46E5 !important;
+  background: rgba(116, 59, 247, 0.08) !important;
+  color: #743BF7 !important;
 }
 
 .light .bg-secondary\/20,
 .light .bg-indigo-600\/20,
 .light .bg-purple-600\/20,
 .light .bg-primary\/20 {
-  background: rgba(109, 93, 246, 0.12) !important;
-  color: #4F46E5 !important;
+  background: rgba(116, 59, 247, 0.12) !important;
+  color: #743BF7 !important;
 }
 
 /* Focus outline rings mapping to primary purple */
 .light *:focus {
-  outline-color: rgba(109, 93, 246, 0.4) !important;
+  outline-color: rgba(116, 59, 247, 0.4) !important;
 }
 
 /* Premium Sidebar Navy-Purple vertical gradient flow */
@@ -175,10 +175,16 @@ aside {
 }
 
 /* Sidebar navigation item active status glow */
-.bg-slate-800, .dark\:bg-slate-800, .bg-primary\/10, .bg-secondary\/10, .bg-purple-600\/10 {
+.dark .bg-slate-800, .dark .dark\:bg-slate-800, .dark .bg-primary\/10, .dark .bg-secondary\/10, .dark .bg-purple-600\/10 {
   background: linear-gradient(90deg, rgba(139, 92, 246, 0.18) 0%, rgba(99, 102, 241, 0.06) 100%) !important;
   border-left: 3px solid #8b5cf6 !important;
   box-shadow: 0 4px 15px -3px rgba(139, 92, 246, 0.2) !important;
+}
+
+.light .bg-slate-800, .light .bg-primary\/10, .light .bg-secondary\/10, .light .bg-purple-600\/10 {
+  background: linear-gradient(90deg, rgba(116, 59, 247, 0.18) 0%, rgba(116, 59, 247, 0.06) 100%) !important;
+  border-left: 3px solid #743BF7 !important;
+  box-shadow: 0 4px 15px -3px rgba(116, 59, 247, 0.2) !important;
 }
 
 /* Light Theme Sidebar and Top Navbar subtle style adjustments */

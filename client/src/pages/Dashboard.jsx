@@ -157,7 +157,7 @@ function Dashboard() {
           <div className="flex items-center flex-shrink-0">
             <button
               onClick={() => { setMessage(''); setForm({ ...form, type: 'expense' }); setShowForm(true) }}
-              className="flex items-center justify-center gap-2 rounded-full bg-[#8B5CF6] px-8 py-4 font-black text-white text-sm hover:bg-[#784ce3] shadow-xl shadow-purple-500/25 dark:shadow-purple-600/30 transition-all hover:scale-[1.03] active:scale-[0.98] cursor-pointer"
+              className="flex items-center justify-center gap-2 rounded-full bg-[#743BF7] hover:bg-[#602ee3] dark:bg-[#8B5CF6] dark:hover:bg-[#784ce3] px-8 py-4 font-black text-white text-sm shadow-xl shadow-purple-500/25 dark:shadow-purple-600/30 transition-all hover:scale-[1.03] active:scale-[0.98] cursor-pointer"
             >
               <FiPlus className="w-4 h-4 stroke-[3px]" />
               Add Transaction
