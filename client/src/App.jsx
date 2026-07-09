@@ -8,8 +8,7 @@ import Signup from './pages/Signup'
 import Dashboard from './pages/Dashboard'
 import Transactions from './pages/Transactions'
 import Budget from './pages/Budget'
-import Insights from './pages/Insights'
-import Reports from './pages/Reports'
+import InsightsReports from './pages/InsightsReports'
 import Profile from './pages/Profile'
 
 // Layout
@@ -47,8 +46,8 @@ function App() {
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/transactions" element={<Transactions />} />
             <Route path="/budget" element={<Budget />} />
-            <Route path="/insights" element={<Insights />} />
-            <Route path="/reports" element={<Reports />} />
+            <Route path="/insights" element={<InsightsReports />} />
+            <Route path="/reports" element={<Navigate to="/insights" replace />} />
             <Route path="/profile" element={<Profile />} />
             <Route path="/" element={<Navigate to="/dashboard" />} />
           </Route>

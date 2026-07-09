@@ -9,8 +9,8 @@ export default defineConfig({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'mask-icon.svg'],
       manifest: {
-        name: 'FinTrack - AI Personal Finance Tracker',
-        short_name: 'FinTrack',
+        name: 'Xpenz - AI Personal Finance Tracker',
+        short_name: 'Xpenz',
         description: 'Track daily personal expenses and get AI-powered budget recommendations.',
         theme_color: '#0f172a',
         background_color: '#f8fafc',

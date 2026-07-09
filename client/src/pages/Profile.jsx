@@ -1,12 +1,14 @@
 import { useEffect, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
-import { updateProfileThunk } from '../redux/slices/authSlice'
+import { useNavigate } from 'react-router-dom'
+import { logout } from '../redux/slices/authSlice'
 import { changePassword, getAccountStats } from '../services/authService'
 import { formatCurrency } from '../utils/format'
-import { FiUser, FiKey, FiCheck, FiPieChart } from 'react-icons/fi'
+import { FiUser, FiKey, FiCheck, FiPieChart, FiLogOut } from 'react-icons/fi'
 
 function Profile() {
   const dispatch = useDispatch()
+  const navigate = useNavigate()
   const { user } = useSelector(state => state.auth)
   const [profile, setProfile] = useState({ name: '', email: '' })
   const [passwords, setPasswords] = useState({ currentPassword: '', newPassword: '' })
@@ -44,45 +46,50 @@ function Profile() {
     }
   }
 
+  const handleLogout = () => {
+    dispatch(logout())
+    navigate('/login')
+  }
+
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 text-slate-800 dark:text-slate-100">
       <div>
-        <h2 className="text-2xl font-extrabold text-slate-800 tracking-tight">Account Settings</h2>
-        <p className="text-slate-400 text-sm mt-0.5">Manage user credentials and view system activity logs.</p>
+        <h2 className="text-2xl font-extrabold tracking-tight text-slate-800 dark:text-white">Account Settings</h2>
+        <p className="text-slate-400 dark:text-dark-text-muted text-sm mt-0.5">Manage user credentials and view system activity logs.</p>
       </div>
 
-      {message && <div className="rounded-xl border border-emerald-100 bg-emerald-50/50 p-3 text-sm text-emerald-700">{message}</div>}
-      {error && <div className="rounded-xl border border-rose-100 bg-rose-50/50 p-3 text-sm text-rose-700">{error}</div>}
+      {message && <div className="rounded-xl border border-emerald-100 dark:border-emerald-950/20 bg-emerald-50/50 dark:bg-emerald-950/5 p-3 text-sm text-emerald-700 dark:text-emerald-400">{message}</div>}
+      {error && <div className="rounded-xl border border-rose-100 dark:border-rose-950/20 bg-rose-50/50 dark:bg-rose-950/5 p-3 text-sm text-rose-700 dark:text-rose-400">{error}</div>}
 
       <div className="grid gap-6 lg:grid-cols-3">
-        <section className="rounded-2xl border border-slate-100 bg-white p-6 shadow-premium lg:col-span-2 space-y-8">
+        <section className="rounded-2xl border border-slate-100 dark:border-dark-border bg-white dark:bg-dark-card p-6 shadow-premium lg:col-span-2 space-y-8">
           {/* User Profile Form */}
           <div>
-            <div className="flex items-center gap-2 border-b border-slate-100 pb-4 mb-4">
-              <FiUser className="w-5 h-5 text-secondary" />
-              <h3 className="font-bold text-slate-800 text-base">User Profile</h3>
+            <div className="flex items-center gap-2 border-b border-slate-100 dark:border-dark-border pb-4 mb-4">
+              <FiUser className="w-5 h-5 text-secondary dark:text-purple-400" />
+              <h3 className="font-bold text-slate-800 dark:text-white text-base">User Profile</h3>
             </div>
             <form onSubmit={saveProfile} className="grid gap-4 sm:grid-cols-2">
               <div className="flex flex-col gap-1">
-                <label className="text-xs font-bold text-slate-500 uppercase">Name</label>
+                <label className="text-xs font-bold text-slate-500 dark:text-dark-text-muted uppercase">Name</label>
                 <input
                   value={profile.name}
                   onChange={(e) => setProfile({ ...profile, name: e.target.value })}
-                  className="rounded-xl border border-slate-200 px-3 py-2.5 text-sm focus:outline-none focus:border-secondary"
+                  className="rounded-xl border border-slate-200 dark:border-dark-border px-3 py-2.5 text-sm bg-white dark:bg-dark-card text-slate-800 dark:text-slate-200 focus:outline-none"
                   required
                 />
               </div>
               <div className="flex flex-col gap-1">
-                <label className="text-xs font-bold text-slate-500 uppercase">Email Address</label>
+                <label className="text-xs font-bold text-slate-500 dark:text-dark-text-muted uppercase">Email Address</label>
                 <input
                   type="email"
                   value={profile.email}
                   onChange={(e) => setProfile({ ...profile, email: e.target.value })}
-                  className="rounded-xl border border-slate-200 px-3 py-2.5 text-sm focus:outline-none focus:border-secondary"
+                  className="rounded-xl border border-slate-200 dark:border-dark-border px-3 py-2.5 text-sm bg-white dark:bg-dark-card text-slate-800 dark:text-slate-200 focus:outline-none"
                   required
                 />
               </div>
-              <button className="flex items-center justify-center gap-1.5 rounded-xl bg-primary px-4 py-2.5 font-bold text-white text-sm hover:bg-slate-800 transition-colors sm:w-fit mt-2">
+              <button className="flex items-center justify-center gap-1.5 rounded-xl bg-primary dark:bg-slate-800 px-4 py-2.5 font-bold text-white text-sm hover:bg-slate-800 dark:hover:bg-slate-700 transition-colors sm:w-fit mt-2">
                 <FiCheck className="w-4 h-4" />
                 Save Profile
               </button>
@@ -91,33 +98,33 @@ function Profile() {
 
           {/* Change Password Form */}
           <div>
-            <div className="flex items-center gap-2 border-b border-slate-100 pb-4 mb-4">
-              <FiKey className="w-5 h-5 text-secondary" />
-              <h3 className="font-bold text-slate-800 text-base">Security</h3>
+            <div className="flex items-center gap-2 border-b border-slate-100 dark:border-dark-border pb-4 mb-4">
+              <FiKey className="w-5 h-5 text-secondary dark:text-purple-400" />
+              <h3 className="font-bold text-slate-800 dark:text-white text-base">Security</h3>
             </div>
             <form onSubmit={savePassword} className="grid gap-4 sm:grid-cols-2">
               <div className="flex flex-col gap-1">
-                <label className="text-xs font-bold text-slate-500 uppercase">Current Password</label>
+                <label className="text-xs font-bold text-slate-500 dark:text-dark-text-muted uppercase">Current Password</label>
                 <input
                   type="password"
                   value={passwords.currentPassword}
                   onChange={(e) => setPasswords({ ...passwords, currentPassword: e.target.value })}
-                  className="rounded-xl border border-slate-200 px-3 py-2.5 text-sm focus:outline-none focus:border-secondary"
+                  className="rounded-xl border border-slate-200 dark:border-dark-border px-3 py-2.5 text-sm bg-white dark:bg-dark-card text-slate-800 dark:text-slate-200 focus:outline-none"
                   required
                 />
               </div>
               <div className="flex flex-col gap-1">
-                <label className="text-xs font-bold text-slate-500 uppercase">New Password</label>
+                <label className="text-xs font-bold text-slate-500 dark:text-dark-text-muted uppercase">New Password</label>
                 <input
                   type="password"
                   minLength="6"
                   value={passwords.newPassword}
                   onChange={(e) => setPasswords({ ...passwords, newPassword: e.target.value })}
-                  className="rounded-xl border border-slate-200 px-3 py-2.5 text-sm focus:outline-none focus:border-secondary"
+                  className="rounded-xl border border-slate-200 dark:border-dark-border px-3 py-2.5 text-sm bg-white dark:bg-dark-card text-slate-800 dark:text-slate-200 focus:outline-none"
                   required
                 />
               </div>
-              <button className="flex items-center justify-center gap-1.5 rounded-xl bg-secondary px-4 py-2.5 font-bold text-white text-sm hover:bg-indigo-700 transition-colors sm:w-fit mt-2 shadow-md shadow-secondary/15">
+              <button className="flex items-center justify-center gap-1.5 rounded-xl bg-secondary dark:bg-purple-600 px-4 py-2.5 font-bold text-white text-sm hover:bg-indigo-700 dark:hover:bg-purple-700 transition-colors sm:w-fit mt-2 shadow-md shadow-secondary/15">
                 <FiKey className="w-4 h-4" />
                 Change Password
               </button>
@@ -125,31 +132,49 @@ function Profile() {
           </div>
         </section>
 
-        {/* Account statistics */}
-        <section className="rounded-2xl border border-slate-100 bg-white p-6 shadow-premium h-fit space-y-6">
-          <div className="flex items-center gap-2 pb-4 border-b border-slate-100">
-            <FiPieChart className="w-5 h-5 text-secondary" />
-            <h3 className="font-bold text-slate-800 text-lg">Account Stats</h3>
-          </div>
-          <div className="space-y-4">
-            <div className="p-3 rounded-xl border border-slate-50 flex items-center justify-between">
-              <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Total Actions Logged</span>
-              <span className="text-xl font-extrabold text-slate-800">{stats?.transactionCount || 0}</span>
+        <div className="flex flex-col gap-6">
+          {/* Account statistics */}
+          <section className="rounded-2xl border border-slate-100 dark:border-dark-border bg-white dark:bg-dark-card p-6 shadow-premium h-fit space-y-6">
+            <div className="flex items-center gap-2 pb-4 border-b border-slate-100 dark:border-dark-border">
+              <FiPieChart className="w-5 h-5 text-secondary dark:text-purple-400" />
+              <h3 className="font-bold text-slate-800 dark:text-white text-lg">Account Stats</h3>
             </div>
-            <div className="p-3 rounded-xl border border-slate-50 flex items-center justify-between">
-              <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Gross Income Total</span>
-              <span className="text-xl font-extrabold text-emerald-600">{formatCurrency(stats?.totalIncome)}</span>
+            <div className="space-y-4">
+              <div className="p-3 rounded-xl border border-slate-50 dark:border-dark-border flex items-center justify-between">
+                <span className="text-xs font-bold text-slate-400 dark:text-dark-text-muted uppercase tracking-wider">Total Actions Logged</span>
+                <span className="text-xl font-extrabold text-slate-800 dark:text-white">{stats?.transactionCount || 0}</span>
+              </div>
+              <div className="p-3 rounded-xl border border-slate-50 dark:border-dark-border flex items-center justify-between">
+                <span className="text-xs font-bold text-slate-400 dark:text-dark-text-muted uppercase tracking-wider">Gross Income Total</span>
+                <span className="text-xl font-extrabold text-emerald-600 dark:text-emerald-400">{formatCurrency(stats?.totalIncome)}</span>
+              </div>
+              <div className="p-3 rounded-xl border border-slate-50 dark:border-dark-border flex items-center justify-between">
+                <span className="text-xs font-bold text-slate-400 dark:text-dark-text-muted uppercase tracking-wider">Gross Expense Total</span>
+                <span className="text-xl font-extrabold text-rose-600 dark:text-rose-400">{formatCurrency(stats?.totalExpense)}</span>
+              </div>
+              <div className="p-3 rounded-xl border border-slate-50 dark:border-dark-border flex items-center justify-between">
+                <span className="text-xs font-bold text-slate-400 dark:text-dark-text-muted uppercase tracking-wider">Total Savings Accumulation</span>
+                <span className="text-xl font-extrabold text-indigo-600 dark:text-indigo-400">{formatCurrency(stats?.savings)}</span>
+              </div>
             </div>
-            <div className="p-3 rounded-xl border border-slate-50 flex items-center justify-between">
-              <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Gross Expense Total</span>
-              <span className="text-xl font-extrabold text-rose-600">{formatCurrency(stats?.totalExpense)}</span>
+          </section>
+
+          {/* Exit Session / Logout Option */}
+          <section className="rounded-2xl border border-rose-100 dark:border-rose-950/20 bg-rose-50/20 dark:bg-rose-950/5 p-6 shadow-premium h-fit space-y-4">
+            <div className="flex items-center gap-2 pb-4 border-b border-rose-100 dark:border-rose-950/20">
+              <FiLogOut className="w-5 h-5 text-rose-500" />
+              <h3 className="font-bold text-rose-800 dark:text-rose-400 text-lg">Exit Account</h3>
             </div>
-            <div className="p-3 rounded-xl border border-slate-50 flex items-center justify-between">
-              <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Total Savings Accumulation</span>
-              <span className="text-xl font-extrabold text-indigo-600">{formatCurrency(stats?.savings)}</span>
-            </div>
-          </div>
-        </section>
+            <p className="text-xs text-rose-600/70 dark:text-rose-400/60 font-medium">Log out of your current session on this device. You will need to input your credentials again to log back in.</p>
+            <button
+              onClick={handleLogout}
+              className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-rose-600 hover:bg-rose-700 text-white rounded-xl font-semibold text-sm transition-all duration-200 shadow-md shadow-rose-600/15"
+            >
+              <FiLogOut className="w-5 h-5" />
+              Logout from Xpenz
+            </button>
+          </section>
+        </div>
       </div>
     </div>
   )

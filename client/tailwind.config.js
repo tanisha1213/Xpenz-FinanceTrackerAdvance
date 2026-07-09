@@ -1,5 +1,6 @@
 /** @type {import('tailwindcss').Config} */
 export default {
+  darkMode: 'class',
   content: [
     "./index.html",
     "./src/**/*.{js,ts,jsx,tsx}",
@@ -13,7 +14,11 @@ export default {
         danger: '#ef4444',       // Red 500
         warning: '#f59e0b',      // Amber 500
         'slate-dark': '#1e293b', // Slate 800
-        'slate-light': '#f8fafc' // Slate 50
+        'slate-light': '#f8fafc', // Slate 50
+        'dark-bg': '#090a0f',
+        'dark-card': '#13141f',
+        'dark-border': '#222533',
+        'dark-text-muted': '#94a3b8'
       },
       boxShadow: {
         'glass': '0 8px 32px 0 rgba(31, 38, 135, 0.07)',
