@@ -5,13 +5,16 @@ import BottomNavigation from './BottomNavigation'
 
 function Layout() {
   return (
-    <div className="flex h-screen bg-slate-light dark:bg-dark-bg overflow-hidden text-slate-800 dark:text-slate-100 transition-colors duration-200">
+    <div className="flex h-screen bg-slate-light dark:bg-dark-bg overflow-hidden text-slate-800 dark:text-slate-100 transition-colors duration-200 relative">
+      {/* Background radial line pattern for fintech dark-theme aesthetics */}
+      <div className="fintech-overlay" />
+
       {/* Sidebar Component (Visible only on desktop screens md+) */}
-      <div className="hidden md:block">
+      <div className="hidden md:block z-10">
         <Sidebar isOpen={false} setIsOpen={() => {}} />
       </div>
 
-      <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
+      <div className="flex-1 flex flex-col min-w-0 overflow-hidden z-10">
         {/* Navbar Component */}
         <Navbar />
         
