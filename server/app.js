@@ -51,6 +51,11 @@ export const connectDB = async () => {
   }
 };
 
+// Auto-connect database for serverless and local runs
+connectDB().catch((err) => {
+  console.error('Failed to initialize database connection:', err.message);
+});
+
 // Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/transactions', transactionRoutes);
