@@ -66,3 +66,67 @@ code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
 }
+
+/* Premium Card and Shadows overriding utility rules */
+.dark .bg-white, .dark .dark\:bg-dark-card {
+  background: linear-gradient(180deg, #131522 0%, #0d0f17 100%) !important;
+  border-color: rgba(168, 85, 247, 0.08) !important;
+  box-shadow: 0 12px 30px -10px rgba(0, 0, 0, 0.4) !important;
+}
+
+.light .bg-white {
+  background: linear-gradient(180deg, #ffffff 0%, #fcfcff 100%) !important;
+  border-color: rgba(99, 102, 241, 0.08) !important;
+  box-shadow: 0 12px 30px -10px rgba(99, 102, 241, 0.06) !important;
+}
+
+/* Rounded corners overrides to match 24px layout reference */
+.rounded-2xl {
+  border-radius: 1.5rem !important; /* 24px */
+}
+.rounded-3xl {
+  border-radius: 1.75rem !important; /* 28px */
+}
+
+/* Accent Button Glowing Shadows */
+.bg-secondary, .dark\:bg-purple-600 {
+  box-shadow: 0 8px 20px -3px rgba(139, 92, 246, 0.35) !important;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+.bg-secondary:hover, .dark\:bg-purple-600:hover {
+  box-shadow: 0 12px 25px -4px rgba(139, 92, 246, 0.5) !important;
+  transform: translateY(-1px) !important;
+}
+
+/* Premium Sidebar Navy-Purple vertical gradient flow */
+aside {
+  background: linear-gradient(180deg, #0e101f 0%, #150f28 100%) !important;
+  border-right: 1px solid rgba(139, 92, 246, 0.1) !important;
+}
+
+/* Sidebar navigation item active status glow */
+.bg-slate-800, .dark\:bg-slate-800, .bg-primary\/10, .bg-secondary\/10, .bg-purple-600\/10 {
+  background: linear-gradient(90deg, rgba(139, 92, 246, 0.18) 0%, rgba(99, 102, 241, 0.06) 100%) !important;
+  border-left: 3px solid #8b5cf6 !important;
+  box-shadow: 0 4px 15px -3px rgba(139, 92, 246, 0.2) !important;
+}
+
+/* Light Theme Sidebar and Top Navbar subtle style adjustments */
+.light aside {
+  background: linear-gradient(180deg, #101224 0%, #1c1533 100%) !important;
+}
+
+/* Soft purple radial glow behind main content blocks */
+.light .fintech-overlay {
+  background-image: 
+    linear-gradient(rgba(99, 102, 241, 0.015) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(99, 102, 241, 0.015) 1px, transparent 1px),
+    radial-gradient(circle at 50% 120px, rgba(168, 85, 247, 0.05), transparent 300px);
+}
+
+.dark .fintech-overlay {
+  background-image: 
+    linear-gradient(rgba(99, 102, 241, 0.012) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(99, 102, 241, 0.012) 1px, transparent 1px),
+    radial-gradient(circle at 50% 120px, rgba(168, 85, 247, 0.12), transparent 350px);
+}
