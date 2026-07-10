@@ -104,13 +104,13 @@ code {
 .light .bg-indigo-600,
 .light button.bg-indigo-600,
 .light .text-white.bg-secondary {
-  background: linear-gradient(135deg, #8b5cf6 0%, #743BF7 50%, #5b21b6 100%) !important;
+  background: #743BF7 !important;
   color: #ffffff !important;
   box-shadow: 
     0 12px 30px rgba(116, 59, 247, 0.28), 
     0 4px 12px rgba(116, 59, 247, 0.18) !important;
   border-radius: 9999px !important;
-  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
   border: none !important;
 }
 
@@ -118,12 +118,11 @@ code {
 .light button.bg-secondary:hover,
 .light .bg-indigo-600:hover,
 .light button.bg-indigo-600:hover {
-  background: linear-gradient(135deg, #a78bfa 0%, #8b5cf6 45%, #743BF7 100%) !important;
+  background: #602ee3 !important;
   box-shadow: 
     0 14px 35px rgba(116, 59, 247, 0.35), 
     0 6px 16px rgba(116, 59, 247, 0.24) !important;
   transform: translateY(-1px) !important;
-  filter: brightness(1.05) !important;
 }
 
 .light .bg-secondary:active,
