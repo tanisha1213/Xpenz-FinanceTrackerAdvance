@@ -212,3 +212,16 @@ aside {
     linear-gradient(90deg, rgba(99, 102, 241, 0.012) 1px, transparent 1px),
     radial-gradient(circle at 50% 120px, rgba(168, 85, 247, 0.12), transparent 350px);
 }
+
+/* Ensure select option dropdowns inherit dark mode styling on all platforms */
+.dark select option,
+.dark select {
+  background-color: #131522 !important;
+  color: #f8fafc !important;
+}
+
+.light select option,
+.light select {
+  background-color: #ffffff !important;
+  color: #0f172a !important;
+}
