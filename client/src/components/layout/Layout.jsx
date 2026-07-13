@@ -2,12 +2,16 @@ import { Outlet } from 'react-router-dom'
 import Navbar from './Navbar'
 import Sidebar from './Sidebar'
 import BottomNavigation from './BottomNavigation'
+import OnboardingTour from './OnboardingTour'
 
 function Layout() {
   return (
     <div className="flex h-screen bg-transparent overflow-hidden text-slate-800 dark:text-slate-100 transition-colors duration-200 relative">
       {/* Background radial line pattern for fintech dark-theme aesthetics */}
       <div className="fintech-overlay" />
+
+      {/* Onboarding Tour On Launch */}
+      <OnboardingTour />
 
       {/* Sidebar Component (Visible only on desktop screens md+) */}
       <div className="hidden md:block z-10">

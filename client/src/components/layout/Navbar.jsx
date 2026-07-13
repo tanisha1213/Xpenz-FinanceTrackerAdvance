@@ -87,7 +87,7 @@ function Navbar() {
           </button>
 
           {/* Language Switcher */}
-          <div className="relative flex items-center">
+          <div id="language-switcher-tour" className="relative flex items-center">
             <select
               value={language}
               onChange={(e) => setLanguage(e.target.value)}

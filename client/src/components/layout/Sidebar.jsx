@@ -44,7 +44,7 @@ function Sidebar() {
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 p-4 space-y-1 bg-slate-900 dark:bg-dark-card overflow-y-auto">
+      <nav id="sidebar-navigation-tour" className="flex-1 p-4 space-y-1 bg-slate-900 dark:bg-dark-card overflow-y-auto">
         {navItems.map((item) => {
           const Icon = item.icon
           const active = isActive(item.path)

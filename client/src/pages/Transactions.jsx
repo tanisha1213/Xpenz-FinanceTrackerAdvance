@@ -335,6 +335,7 @@ function Transactions() {
           <p className="text-slate-400 dark:text-dark-text-muted text-sm mt-0.5">Manage details of your cash flows, repayments, and liabilities.</p>
         </div>
         <button
+          id="add-transaction-btn-tour"
           onClick={openCreate}
           className="flex items-center justify-center gap-2 rounded-xl bg-secondary dark:bg-purple-650 px-4 py-2.5 font-bold text-white text-sm hover:bg-indigo-700 dark:hover:bg-purple-750 shadow-md transition-all w-fit cursor-pointer"
         >
@@ -562,7 +563,7 @@ function Transactions() {
 
         {/* Right Side: Active Loans Side Panel */}
         <div className="lg:col-span-1 space-y-6">
-          <section className="rounded-2xl border border-slate-100 dark:border-dark-border bg-white dark:bg-dark-card p-6 shadow-premium space-y-6 h-fit">
+          <section id="active-loans-sidebar-tour" className="rounded-2xl border border-slate-100 dark:border-dark-border bg-white dark:bg-dark-card p-6 shadow-premium space-y-6 h-fit">
             <div className="border-b border-slate-100 dark:border-dark-border pb-3 flex items-center justify-between">
               <h3 className="font-extrabold text-slate-800 dark:text-white text-base">{t('activeLoans')}</h3>
               <FiPercent className="w-4.5 h-4.5 text-indigo-500 dark:text-purple-400" />
