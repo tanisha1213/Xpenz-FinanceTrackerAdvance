@@ -114,7 +114,7 @@ function InsightsReports() {
 
           <div className="grid gap-6 lg:grid-cols-3">
             {/* Suggestions Card */}
-            <section className="rounded-2xl border border-slate-100 dark:border-dark-border bg-white dark:bg-dark-card p-6 shadow-premium lg:col-span-2 space-y-4">
+            <section id="analytics-ai-advice-tour" className="rounded-2xl border border-slate-100 dark:border-dark-border bg-white dark:bg-dark-card p-6 shadow-premium lg:col-span-2 space-y-4">
               <div className="flex items-center justify-between border-b border-slate-100 dark:border-dark-border pb-4">
                 <div className="flex items-center gap-2">
                   <FiCpu className="w-5 h-5 text-secondary dark:text-purple-400" />
@@ -151,7 +151,7 @@ function InsightsReports() {
             </section>
 
             {/* Forecast Panel */}
-            <section className="rounded-2xl border border-slate-100 dark:border-dark-border bg-white dark:bg-dark-card p-6 shadow-premium h-fit space-y-6">
+            <section id="analytics-ai-forecast-tour" className="rounded-2xl border border-slate-100 dark:border-dark-border bg-white dark:bg-dark-card p-6 shadow-premium h-fit space-y-6">
               <div className="flex items-center gap-2 pb-4 border-b border-slate-100 dark:border-dark-border">
                 <FiTrendingUp className="w-5 h-5 text-secondary dark:text-purple-400" />
                 <h3 className="font-bold text-slate-800 dark:text-white text-lg">{t('aiForecast')}</h3>

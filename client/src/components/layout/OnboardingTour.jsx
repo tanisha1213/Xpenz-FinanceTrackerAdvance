@@ -1,136 +1,418 @@
 import { useState, useEffect } from 'react'
+import { useLocation } from 'react-router-dom'
 import { useLanguage } from '../../context/LanguageContext'
 import { FiChevronRight, FiChevronLeft, FiX, FiHelpCircle } from 'react-icons/fi'
 
-const tourTranslations = {
-  en: {
-    welcomeTitle: 'Welcome to Xpenz!',
-    welcomeDesc: 'Let\'s take a quick 1-minute tour of your new AI-powered Personal Finance Dashboard.',
-    langTitle: 'Native Languages',
-    langDesc: 'Switch to your local language here at any time. We support English, Hindi, Marathi, and Tamil.',
-    navTitle: 'Simple Navigation',
-    navDesc: 'Easily switch pages to view accounts, log transactions, configure budgets, or inspect AI reports.',
-    addTxTitle: 'Quick Add Transaction',
-    addTxDesc: 'Click here to add your daily expenses, monthly salary, or bank loan disbursements.',
-    loansTitle: 'Liabilities & Receivables',
-    loansDesc: 'Monitor active borrowed bank loans or lent personal debts with real-time due dates.',
-    next: 'Next',
-    back: 'Back',
-    skip: 'Skip Tour',
-    finish: 'Finish',
-    restartTour: 'Restart Tour'
-  },
-  hi: {
-    welcomeTitle: 'एक्सपेंज (Xpenz) में आपका स्वागत है!',
-    welcomeDesc: 'आइए आपके नए एआई-संचालित व्यक्तिगत वित्त डैशबोर्ड का 1 मिनट का त्वरित दौरा करें।',
-    langTitle: 'स्थानीय भाषाएं',
-    langDesc: 'यहां कभी भी अपनी स्थानीय भाषा बदलें। हम अंग्रेजी, हिंदी, मराठी और तमिल का समर्थन करते हैं।',
-    navTitle: 'आसान नेविगेशन',
-    navDesc: 'खाते देखने, लेनदेन दर्ज करने, बजट सेट करने या एआई रिपोर्ट देखने के लिए पेजों को बदलें।',
-    addTxTitle: 'त्वरित लेनदेन जोड़ें',
-    addTxDesc: 'अपनी आय, दैनिक खर्च या बैंक ऋण दर्ज करने के लिए यहां क्लिक करें।',
-    loansTitle: 'ऋण और उधार',
-    loansDesc: 'सक्रिय ऋणों और उधारों की अंतिम देय तारीखों को लाइव ट्रैक करें।',
-    next: 'अगला',
-    back: 'पीछे',
-    skip: 'छोड़ें',
-    finish: 'समाप्त',
-    restartTour: 'दौरा फिर से शुरू करें'
-  },
-  mr: {
-    welcomeTitle: 'एक्सपेंज (Xpenz) मध्ये आपले स्वागत आहे!',
-    welcomeDesc: 'चला तुमच्या नवीन एआय-संचलित वैयक्तिक वित्त डॅशबोर्डची १ मिनिटाची जलद सफर करूया.',
-    langTitle: 'स्थानिक भाषा',
-    langDesc: 'येथे कधीही तुमची स्थानिक भाषा बदला. आम्ही इंग्रजी, हिंदी, मराठी आणि तमिळ भाषेला समर्थन देतो.',
-    navTitle: 'सुलभ नेव्हिगेशन',
-    navDesc: 'खाते पाहणे, व्यवहार नोंदवणे, बजेट सेट करणे किंवा एआई अहवाल पाहण्यासाठी सहजपणे पेजेस बदला.',
-    addTxTitle: 'व्यवहार जोडा',
-    addTxDesc: 'तुमचे उत्पन्न, दररोजचा खर्च किंवा बँकेचे कर्ज नोंदवण्यासाठी येथे क्लिक करा.',
-    loansTitle: 'कर्ज आणि येणे बाकी',
-    loansDesc: 'सक्रिय कर्ज आणि इतरांकडून येणारे पैसे यांचे ट्रॅकिंग मुदतीच्या तारखेसह येथे करा.',
-    next: 'पुढे',
-    back: 'मागे',
-    skip: 'वगळा',
-    finish: 'पूर्ण',
-    restartTour: 'दौरा पुन्हा सुरू करा'
-  },
-  ta: {
-    welcomeTitle: 'Xpenz-க்கு உங்களை வரவேற்கிறோம்!',
-    welcomeDesc: 'உங்கள் புதிய AI நிதி டாஷ்போர்டின் 1 நிமிட விரைவான சுற்றுப்பயணத்தை மேற்கொள்வோம்.',
-    langTitle: 'உள்ளூர் மொழிகள்',
-    langDesc: 'இங்கே எந்த நேரத்திலும் உங்கள் உள்ளூர் மொழிக்கு மாறலாம். நாங்கள் ஆங்கிலம், இந்தி, மராத்தி மற்றும் தமிழ் ஆதரிக்கிறோம்.',
-    navTitle: 'எளிதான வழிசெலுத்தல்',
-    navDesc: 'கணக்குகளைப் பார்க்க, பரிவர்த்தனைகளைப் பதிவு செய்ய அல்லது பட்ஜெட்டை உள்ளமைக்க பக்கங்களை மாற்றவும்.',
-    addTxTitle: 'பரிவர்த்தனை சேர்க்க',
-    addTxDesc: 'உங்கள் வருமானம், தினசரி செலவு அல்லது கடன்களைப் பதிவு செய்ய இங்கே கிளிக் செய்யவும்.',
-    loansTitle: 'கடன்கள் & வசூலிப்புகள்',
-    loansDesc: 'பணம் செலுத்துபவர்கள் மற்றும் கடன்களின் நிலைமைகளை இங்கே கண்காணிக்கவும்.',
-    next: 'அடுத்து',
-    back: 'முந்தைய',
-    skip: 'தவிர்',
-    finish: 'முடி',
-    restartTour: 'சுற்றுப்பயணத்தை மீண்டும் தொடங்கு'
-  }
+const pageTours = {
+  '/dashboard': [
+    {
+      target: null,
+      placement: 'center',
+      title: {
+        en: 'Dashboard Overview',
+        hi: 'डैशबोर्ड अवलोकन',
+        mr: 'डॅशबोर्ड विहंगावलोकन',
+        ta: 'டாஷ்போர்டு கண்ணோட்டம்'
+      },
+      desc: {
+        en: 'Welcome to your financial home! Let\'s walk through how to monitor your savings and log entries.',
+        hi: 'आपके वित्तीय गृह में आपका स्वागत है! आइए देखें कि अपनी बचत की निगरानी कैसे करें और लेनदेन कैसे दर्ज करें।',
+        mr: 'तुमच्या आर्थिक होमवर आपले स्वागत आहे! तुमची बचत कशी तपासायची आणि व्यवहारांची नोंद कशी करायची ते पाहूया.',
+        ta: 'உங்கள் நிதி இல்லத்திற்கு வரவேற்கிறோம்! உங்கள் சேமிப்பை எவ்வாறு கண்காணிப்பது மற்றும் பரிவர்த்தனைகளைப் பதிவு செய்வது என்பதைப் பார்ப்போம்.'
+      }
+    },
+    {
+      target: '#total-balance-card-tour',
+      placement: 'bottom',
+      title: {
+        en: 'Total Balance Card',
+        hi: 'कुल शेष कार्ड',
+        mr: 'एकूण शिल्लक कार्ड',
+        ta: 'மொத்த இருப்பு அட்டை'
+      },
+      desc: {
+        en: 'See your net saving balance combined across cash and all linked bank accounts in real time.',
+        hi: 'वास्तविक समय में नकद और सभी जुड़े बैंक खातों में अपनी कुल शुद्ध बचत शेष राशि देखें।',
+        mr: 'तुमची एकूण रोकड आणि सर्व बँक खाती मिळून होणारी निव्वळ शिल्लक रिअल-टाइममध्ये येथे पहा.',
+        ta: 'ரொக்கம் மற்றும் இணைக்கப்பட்ட அனைத்து வங்கி கணக்குகளின் மொத்த சேமிப்பு இருப்பை நிகழ்நேரத்தில் பார்க்கவும்.'
+      }
+    },
+    {
+      target: '#add-transaction-btn-tour',
+      placement: 'bottom',
+      title: {
+        en: 'Quick Add Transaction',
+        hi: 'त्वरित लेनदेन जोड़ें',
+        mr: 'व्यवहार जोडा',
+        ta: 'பரிவர்த்தனை சேர்க்க'
+      },
+      desc: {
+        en: 'Click here to log a new daily expense or income inflow in 5 seconds.',
+        hi: '5 सेकंड में एक नया दैनिक खर्च या आय दर्ज करने के लिए यहां क्लिक करें।',
+        mr: 'अवघ्या ५ सेकंदात नवीन दैनिक खर्च किंवा उत्पन्न नोंदवण्यासाठी येथे क्लिक करा.',
+        ta: '5 வினாடிகளில் ஒரு புதிய தினசரி செலவு அல்லது வருமானத்தைப் பதிவு செய்ய இங்கே கிளிக் செய்யவும்.'
+      }
+    },
+    {
+      target: '#category-distribution-chart-tour',
+      placement: 'left',
+      title: {
+        en: 'Category Share',
+        hi: 'श्रेणी हिस्सा',
+        mr: 'श्रेणीनुसार विभागणी',
+        ta: 'பிரிவு வாரியான செலவு'
+      },
+      desc: {
+        en: 'Understand which categories (like Food, Rent, Travel) are consuming your budget.',
+        hi: 'समझें कि कौन सी श्रेणियां (जैसे भोजन, किराया, यात्रा) आपके बजट का उपभोग कर रही हैं।',
+        mr: 'तुमच्या बजेटमधील खर्च कोणत्या गोष्टींवर (उदा. अन्न, भाडे, प्रवास) होत आहे ते समजून घ्या.',
+        ta: 'உணவு, வாடகை, பயணம் போன்ற எந்தப் பிரிவுகள் உங்கள் பட்ஜெட்டை அதிகம் பயன்படுத்துகின்றன என்பதைப் புரிந்து கொள்ளுங்கள்.'
+      }
+    },
+    {
+      target: '#income-expense-chart-tour',
+      placement: 'top',
+      title: {
+        en: 'Income vs Expense Comparison',
+        hi: 'आय बनाम खर्च तुलना',
+        mr: 'उत्पन्न विरुद्ध खर्च तुलना',
+        ta: 'வருமானம் மற்றும் செலவு ஒப்பீடு'
+      },
+      desc: {
+        en: 'View how much money came in versus went out in prior months using this comparison chart.',
+        hi: 'इस तुलना चार्ट का उपयोग करके देखें कि पिछले महीनों में कितना पैसा आया और कितना गया।',
+        mr: 'या तुलना तक्त्याद्वारे मागील महिन्यांत किती पैसे आले आणि गेले ते पहा.',
+        ta: 'கடந்த மாதங்களில் எவ்வளவு பணம் வந்தது மற்றும் எவ்வளவு செலவானது என்பதை இந்த ஒப்பீட்டு விளக்கப்படம் மூலம் பார்க்கவும்.'
+      }
+    },
+    {
+      target: '#recent-activity-tour',
+      placement: 'left',
+      title: {
+        en: 'Recent Activity Log',
+        hi: 'हाल ही की गतिविधि लॉग',
+        mr: 'अलीकडील व्यवहार सूची',
+        ta: 'சமீபத்திய பரிவர்த்தனைகள்'
+      },
+      desc: {
+        en: 'Check the chronological history of your most recent transactions instantly.',
+        hi: 'अपने सबसे हाल के लेनदेन का कालानुक्रमिक इतिहास तुरंत देखें।',
+        mr: 'तुमच्या सर्वात अलीकडील व्यवहारांचा इतिहास त्वरित तपासा.',
+        ta: 'உங்கள் மிகச் சமீபத்திய பரிவர்த்தனைகளின் வரலாற்றை உடனடியாக இங்கே சரிபார்க்கவும்.'
+      }
+    }
+  ],
+  '/balance': [
+    {
+      target: null,
+      placement: 'center',
+      title: {
+        en: 'Accounts Management',
+        hi: 'खाता प्रबंधन',
+        mr: 'खाते व्यवस्थापन',
+        ta: 'கணக்குகள் மேலாண்மை'
+      },
+      desc: {
+        en: 'Here you can manage multiple bank accounts and track physical cash balances separately.',
+        hi: 'यहाँ आप कई बैंक खातों का प्रबंधन कर सकते हैं और भौतिक नकद शेष राशि को अलग से ट्रैक कर सकते हैं।',
+        mr: 'येथे तुम्ही अनेक बँक खाती व्यवस्थापित करू शकता आणि रोख रकमेचा मागोवा स्वतंत्रपणे ठेवू शकता.',
+        ta: 'இங்கே நீங்கள் பல வங்கி கணக்குகளை நிர்வகிக்கலாம் மற்றும் ரொக்க இருப்பை தனியாக கண்காணிக்கலாம்.'
+      }
+    },
+    {
+      target: '#add-account-btn-tour',
+      placement: 'bottom',
+      title: {
+        en: 'Add Bank Account',
+        hi: 'बैंक खाता जोड़ें',
+        mr: 'बँक खाते जोडा',
+        ta: 'வங்கி கணக்கு சேர்'
+      },
+      desc: {
+        en: 'Add new bank accounts to link transactions and deduct/credit their balances dynamically.',
+        hi: 'लेनदेन को जोड़ने और उनकी शेष राशि को गतिशील रूप से डेबिट/क्रेडिट करने के लिए नए बैंक खाते जोड़ें।',
+        mr: 'नवीन बँक खाती जोडून व्यवहार लिंक करा आणि शिल्लक रक्कम थेट व्यवस्थापित करा.',
+        ta: 'பரிவர்த்தனைகளை இணைக்கவும் மற்றும் இருப்புகளை மாறும் வகையில் சரிசெய்யவும் புதிய வங்கி கணக்குகளைச் சேர்க்கவும்.'
+      }
+    },
+    {
+      target: '#cash-wallet-card-tour',
+      placement: 'bottom',
+      title: {
+        en: 'Cash Wallet Card',
+        hi: 'नकद वॉलेट कार्ड',
+        mr: 'रोख पाकीट कार्ड',
+        ta: 'ரொக்க வாலட் அட்டை'
+      },
+      desc: {
+        en: 'Track the physical cash money held in hand. You can adjust this balance at any time.',
+        hi: 'हाथ में मौजूद भौतिक नकद राशि को ट्रैक करें। आप किसी भी समय इस शेष राशि को समायोजित कर सकते हैं।',
+        mr: 'तुमच्याकडे स्वतःजवळ असलेल्या रोख रकमेचा मागोवा घ्या. तुम्ही ही शिल्लक कधीही बदलू शकता.',
+        ta: 'கையில் வைத்திருக்கும் ரொக்கப் பணத்தைக் கண்காணிக்கவும். இந்த இருப்பை நீங்கள் எப்போது வேண்டுமானாலும் சரிசெய்யலாம்.'
+      }
+    },
+    {
+      target: '#bank-accounts-grid-tour',
+      placement: 'top',
+      title: {
+        en: 'Bank Accounts List',
+        hi: 'बैंक खातों की सूची',
+        mr: 'बँक खात्यांची यादी',
+        ta: 'வங்கி கணக்குகள் பட்டியல்'
+      },
+      desc: {
+        en: 'View all active institution accounts. Click edit to adjust current funds or delete to unlink.',
+        hi: 'सभी सक्रिय संस्था खातों को देखें। वर्तमान धन को समायोजित करने के लिए संपादन पर क्लिक करें या हटाने के लिए हटाएं।',
+        mr: 'सर्व सक्रिय बँक खाती पहा. शिल्लक रक्कम बदलण्यासाठी बदला क्लिक करा किंवा खाते काढून टाकण्यासाठी डिलीट करा.',
+        ta: 'செயலில் உள்ள அனைத்து கணக்குகளையும் பார்க்கவும். திருத்த எடிட் என்பதை கிளிக் செய்யவும், நீக்க டெலிட் என்பதை கிளிக் செய்யவும்.'
+      }
+    }
+  ],
+  '/transactions': [
+    {
+      target: null,
+      placement: 'center',
+      title: {
+        en: 'Transactions & Loan Filters',
+        hi: 'लेनदेन और ऋण फ़िल्टर',
+        mr: 'व्यवहार आणि कर्ज फिल्टर्स',
+        ta: 'பரிவர்த்தனைகள் & கடன் வடிகட்டிகள்'
+      },
+      desc: {
+        en: 'This page shows your full financial ledger. Use filters to search details or isolate specific loans.',
+        hi: 'यह पृष्ठ आपका पूरा वित्तीय बहीखाता दिखाता है। विवरण खोजने या विशिष्ट ऋणों को अलग करने के लिए फ़िल्टर का उपयोग करें।',
+        mr: 'हे पान तुमचे पूर्ण आर्थिक दप्तर दर्शवते. व्यवहार शोधण्यासाठी किंवा विशिष्ट कर्जाचे फिल्टर लावण्यासाठी हे वापरा.',
+        ta: 'இந்தப் பக்கம் உங்கள் முழு நிதிப் பதிவேட்டைக் காட்டுகிறது. விவரங்களைத் தேட அல்லது குறிப்பிட்ட கடன்களைத் தனிமைப்படுத்த வடிகட்டிகளைப் பயன்படுத்தவும்.'
+      }
+    },
+    {
+      target: '#transactions-filter-tour',
+      placement: 'bottom',
+      title: {
+        en: 'Search and Filter Options',
+        hi: 'खोज और फ़िल्टर विकल्प',
+        mr: 'शोध आणि फिल्टर पर्याय',
+        ta: 'தேடல் மற்றும் வடிகட்டி விருப்பங்கள்'
+      },
+      desc: {
+        en: 'Filter by search keywords, category types, income/expense flows, or reset active settings.',
+        hi: 'खोज कीवर्ड, श्रेणी प्रकार, आय/व्यय प्रवाह के आधार पर फ़िल्टर करें या सक्रिय सेटिंग्स रीसेट करें।',
+        mr: 'कीवर्ड, श्रेणी, उत्पन्न/खर्च यानुसार फिल्टर करा किंवा मूळ स्थितीत आणा.',
+        ta: 'தேடல் முக்கிய வார்த்தைகள், பிரிவுகள், வரவு/செலவு ஆகியவற்றின் மூலம் வடிகட்டவும் அல்லது அமைப்புகளை மீட்டமைக்கவும்.'
+      }
+    },
+    {
+      target: '#transactions-table-tour',
+      placement: 'top',
+      title: {
+        en: 'Transactions List Table',
+        hi: 'लेनदेन सूची तालिका',
+        mr: 'व्यवहार यादी तक्ता',
+        ta: 'பரிவர்த்தனைகள் பட்டியல் அட்டவணை'
+      },
+      desc: {
+        en: 'Shows details of title, category, type, and options to edit or delete any logged transaction.',
+        hi: 'शीर्षक, श्रेणी, प्रकार और किसी भी लॉग किए गए लेनदेन को संपादित करने या हटाने के विकल्पों का विवरण दिखाता है।',
+        mr: 'शीर्षक, श्रेणी, प्रकार आणि कोणताही व्यवहार सुधारण्यासाठी किंवा हटवण्यासाठीचे पर्याय दाखवतो.',
+        ta: 'தலைப்பு, வகை, பிரிவு மற்றும் பரிவர்த்தனைகளைத் திருத்த அல்லது நீக்குவதற்கான விருப்பங்களைக் காட்டுகிறது.'
+      }
+    },
+    {
+      target: '#active-loans-sidebar-tour',
+      placement: 'left',
+      title: {
+        en: 'Active Loans & Debts Panel',
+        hi: 'सक्रिय ऋण और उधार पैनल',
+        mr: 'सक्रिय कर्ज आणि येणे पॅनेल',
+        ta: 'செயலில் உள்ள கடன்கள் பேனல்'
+      },
+      desc: {
+        en: 'View active liabilities (what you owe banks/people) and assets (money lent to friends/family). Click a card to filter transactions by that loan!',
+        hi: 'सक्रिय देनदारियां (जो आपको बैंकों/लोगों को देना है) और संपत्ति (मित्रों/परिवार को दिया उधार) देखें। उस ऋण के लेनदेन को फ़िल्टर करने के लिए किसी कार्ड पर क्लिक करें!',
+        mr: 'घेतलेली कर्जे आणि इतरांना दिलेले पैसे यांची यादी पहा. या कर्जाचे व्यवहार पाहण्यासाठी कार्डवर क्लिक करा!',
+        ta: 'செயலில் உள்ள கடன்கள் மற்றும் வசூலிப்புகளைக் காணவும். அந்த கடனின் பரிவர்த்தனைகளை மட்டும் வடிகட்ட கார்டை கிளிக் செய்யவும்!'
+      }
+    },
+    {
+      target: '#due-date-calendar-tour',
+      placement: 'left',
+      title: {
+        en: 'Amortization Calendar',
+        hi: 'ऋण भुगतान कैलेंडर',
+        mr: 'कर्ज मुदत दिनदर्शिका',
+        ta: 'கடன் தவணை காலண்டர்'
+      },
+      desc: {
+        en: 'Days with active loan end dates are highlighted in Red (owed) or Green (collect). Click a date to filter the transactions table.',
+        hi: 'सक्रिय ऋण समाप्ति तिथियों वाले दिनों को लाल (देना है) या हरे (लेना है) रंग में हाइलाइट किया जाता है। लेनदेन तालिका को फ़िल्टर करने के लिए एक तारीख पर क्लिक करें।',
+        mr: 'कर्ज समाप्तीची तारीख असलेले दिवस लाल (देणे) किंवा हिरव्या (येणे) रंगात दर्शवले आहेत. फिल्टर करण्यासाठी तारखेवर क्लिक करा.',
+        ta: 'கடன் முடியும் நாட்கள் சிவப்பு (செலுத்த வேண்டியது) அல்லது பச்சை (வசூலிக்க வேண்டியது) நிறத்தில் குறிக்கப்படும். வடிகட்ட தேதியை கிளிக் செய்யவும்.'
+      }
+    }
+  ],
+  '/budget': [
+    {
+      target: null,
+      placement: 'center',
+      title: {
+        en: 'Budgeting Controls',
+        hi: 'बजट नियंत्रण',
+        mr: 'बजेट नियंत्रण',
+        ta: 'பட்டுக்கட்டுப்பாடு'
+      },
+      desc: {
+        en: 'Plan monthly expenses and configure limits per category to prevent overspending.',
+        hi: 'मासिक खर्चों की योजना बनाएं और अधिक खर्च को रोकने के लिए प्रति श्रेणी सीमाएं निर्धारित करें।',
+        mr: 'मासिक खर्चाचे नियोजन करा आणि अतिखर्च टाळण्यासाठी प्रत्येक गोष्टीवर मर्यादा सेट करा.',
+        ta: 'மாதாந்திர செலவுகளைத் திட்டமிடுங்கள் மற்றும் அதிக செலவு செய்வதைத் தடுக்க ஒவ்வொரு பிரிவிற்கும் வரம்புகளை அமைக்கவும்.'
+      }
+    },
+    {
+      target: '#budget-global-limit-tour',
+      placement: 'bottom',
+      title: {
+        en: 'Global Limit Setting',
+        hi: 'वैश्विक सीमा सेटिंग',
+        mr: 'एकूण मासिक मर्यादा',
+        ta: 'ஒட்டுமொத்த வரம்பு அமைப்பு'
+      },
+      desc: {
+        en: 'Set your maximum monthly spending budget. You will receive warning alerts if outflows exceed this.',
+        hi: 'अपना अधिकतम मासिक खर्च बजट निर्धारित करें। यदि खर्च इससे अधिक होता है तो आपको चेतावनी मिलेगी।',
+        mr: 'तुमचे कमाल मासिक खर्च बजेट ठरवा. खर्च यापेक्षा जास्त झाल्यास तुम्हाला चेतावणी मिळेल.',
+        ta: 'உங்கள் அதிகபட்ச மாதாந்திர பட்ஜெட்டை அமைக்கவும். செலவு இந்த வரம்பை தாண்டினால் உங்களுக்கு எச்சரிக்கைகள் வரும்.'
+      }
+    },
+    {
+      target: '#budget-category-budgets-tour',
+      placement: 'top',
+      title: {
+        en: 'Category Budget Limits',
+        hi: 'श्रेणी बजट सीमाएं',
+        mr: 'श्रेणीनुसार बजेट मर्यादा',
+        ta: 'பிரிவு பட்ஜெட் வரம்புகள்'
+      },
+      desc: {
+        en: 'Add limit caps on specific categories like Food or Travel and monitor their usage progress bars.',
+        hi: 'भोजन या यात्रा जैसी विशिष्ट श्रेणियों पर सीमाएं जोड़ें और उनकी उपयोग प्रगति पट्टियों की निगरानी करें।',
+        mr: 'अन्न किंवा प्रवास यासारख्या विशिष्ट गोष्टींवर मर्यादा घाला आणि खर्च किती झाला ते पहा.',
+        ta: 'உணவு அல்லது பயணம் போன்ற குறிப்பிட்ட பிரிவுகளுக்கு வரம்புகளைச் சேர்த்து, செலவு நிலவரத்தைக் கண்காணிக்கவும்.'
+      }
+    },
+    {
+      target: '#budget-progress-sidebar-tour',
+      placement: 'left',
+      title: {
+        en: 'Budget Progress Stats',
+        hi: 'बजट प्रगति आंकड़े',
+        mr: 'बजेट प्रगती आकडेवारी',
+        ta: 'பட்ஜெட் முன்னேற்ற புள்ளிவிவரங்கள்'
+      },
+      desc: {
+        en: 'Monitor total month spending, available budget balance, and utilized percentage in real time.',
+        hi: 'वास्तविक समय में कुल मासिक खर्च, उपलब्ध बजट शेष और उपयोग किए गए प्रतिशत की निगरानी करें।',
+        mr: 'एकूण मासिक खर्च, शिल्लक बजेट आणि वापरलेली टक्केवारी रिअल-टाइममध्ये तपासा.',
+        ta: 'மொத்த மாதாந்திர செலவு, மீதமுள்ள பட்ஜெட் இருப்பு மற்றும் பயன்படுத்தப்பட்ட சதவீதத்தை நிகழ்நேரத்தில் கண்காணிக்கவும்.'
+      }
+    }
+  ],
+  '/insights': [
+    {
+      target: null,
+      placement: 'center',
+      title: {
+        en: 'Insights & Statement Reports',
+        hi: 'अंतर्दृष्टि और विवरण रिपोर्ट',
+        mr: 'विश्लेषण आणि अहवाल',
+        ta: 'நுண்ணறிவு & அறிக்கை விவரங்கள்'
+      },
+      desc: {
+        en: 'View AI spending advice forecasts and retrieve PDF statements for tax or accounting purposes.',
+        hi: 'एआई खर्च सलाह पूर्वानुमान देखें और कर या लेखांकन उद्देश्यों के लिए पीडीएफ विवरण प्राप्त करें।',
+        mr: 'एआय खर्च अंदाज पहा आणि कर किंवा हिशोबासाठी पीडीएफ अहवाल डाउनलोड करा.',
+        ta: 'AI செலவு கணிப்புகளைக் கண்டறிந்து, வரி அல்லது கணக்கியல் தேவைகளுக்காக PDF அறிக்கைகளைப் பதிவிறக்கவும்.'
+      }
+    },
+    {
+      target: '#analytics-ai-advice-tour',
+      placement: 'bottom',
+      title: {
+        en: 'AI Financial Advice Card',
+        hi: 'एआई वित्तीय सलाह कार्ड',
+        mr: 'एआय आर्थिक सल्ला कार्ड',
+        ta: 'AI நிதி ஆலோசனை அட்டை'
+      },
+      desc: {
+        en: 'Review tailored budget tips and saving advice computed to help optimize spending habits.',
+        hi: 'खर्च करने की आदतों को अनुकूलित करने में मदद के लिए तैयार किए गए बजट सुझावों और बचत सलाह की समीक्षा करें।',
+        mr: 'खर्च कमी करण्यासाठी आणि बचत वाढवण्यासाठी तयार केलेल्या सल्ल्यांचे पुनरावलोकन करा.',
+        ta: 'செலவுகளைக் குறைக்கவும் சேமிப்பை அதிகரிக்கவும் வடிவமைக்கப்பட்ட பட்ஜெட் ஆலோசனைகளை இங்கே பார்க்கவும்.'
+      }
+    },
+    {
+      target: '#analytics-ai-forecast-tour',
+      placement: 'left',
+      title: {
+        en: 'Spending Forecast Panel',
+        hi: 'व्यय पूर्वानुमान पैनल',
+        mr: 'खर्च अंदाज पॅनेल',
+        ta: 'செலவு கணிப்பு பேனல்'
+      },
+      desc: {
+        en: 'View projections of next-month outflows calculated by models based on historical trends.',
+        hi: 'ऐतिहासिक प्रवृत्तियों के आधार पर मॉडलों द्वारा गणना की गई अगले महीने के खर्चों के पूर्वानुमान देखें।',
+        mr: 'मागील व्यवहारांच्या आधारे तयार केलेला पुढील महिन्याचा खर्चाचा अंदाज येथे पहा.',
+        ta: 'கடந்த கால செலவுப் போக்குகளின் அடிப்படையில் கணிக்கப்பட்ட அடுத்த மாத செலவு விவரங்களை இங்கே காணலாம்.'
+      }
+    }
+  ]
 }
 
-const steps = [
-  {
-    target: null, // Center
-    titleKey: 'welcomeTitle',
-    descKey: 'welcomeDesc',
-    placement: 'center'
-  },
-  {
-    target: '#language-switcher-tour',
-    titleKey: 'langTitle',
-    descKey: 'langDesc',
-    placement: 'bottom'
-  },
-  {
-    target: '#sidebar-navigation-tour',
-    titleKey: 'navTitle',
-    descKey: 'navDesc',
-    placement: 'right'
-  },
-  {
-    target: '#add-transaction-btn-tour',
-    titleKey: 'addTxTitle',
-    descKey: 'addTxDesc',
-    placement: 'bottom'
-  },
-  {
-    target: '#active-loans-sidebar-tour',
-    titleKey: 'loansTitle',
-    descKey: 'loansDesc',
-    placement: 'left'
-  }
-]
+const commonTranslations = {
+  en: { next: 'Next', back: 'Back', skip: 'Skip Tour', finish: 'Finish', restartTour: 'Page Tour' },
+  hi: { next: 'अगला', back: 'पीछे', skip: 'छोड़ें', finish: 'समाप्त', restartTour: 'पेज गाइड' },
+  mr: { next: 'पुढे', back: 'मागे', skip: 'वगळा', finish: 'पूर्ण', restartTour: 'सफर सुरू करा' },
+  ta: { next: 'அடுத்து', back: 'முந்தைய', skip: 'தவிர்', finish: 'முடி', restartTour: 'பக்க வழிகாட்டி' }
+}
 
 export default function OnboardingTour() {
   const { language } = useLanguage()
+  const location = useLocation()
+  const currentPath = location.pathname
+  
   const [active, setActive] = useState(false)
   const [stepIndex, setStepIndex] = useState(0)
   const [coords, setCoords] = useState(null)
   
-  const strings = tourTranslations[language] || tourTranslations['en']
+  const steps = pageTours[currentPath] || []
+  const labels = commonTranslations[language] || commonTranslations['en']
 
+  // Auto start tour if not completed for this page
   useEffect(() => {
-    const completed = localStorage.getItem('xpenz_onboarding_completed')
-    if (!completed) {
-      // Delay slightly to allow layout calculations
-      const timer = setTimeout(() => {
-        setActive(true)
-      }, 1500)
-      return () => clearTimeout(timer)
+    if (steps.length === 0) {
+      setActive(false)
+      return
     }
-  }, [])
 
+    const completed = localStorage.getItem('xpenz_tour_completed_' + currentPath)
+    if (!completed) {
+      const timer = setTimeout(() => {
+        setStepIndex(0)
+        setActive(true)
+      }, 1000)
+      return () => clearTimeout(timer)
+    } else {
+      setActive(false)
+    }
+  }, [currentPath, steps.length])
+
+  // Track position recalculation for active step element
   useEffect(() => {
-    if (!active) return
+    if (!active || steps.length === 0) return
     
     const calculatePosition = () => {
       const step = steps[stepIndex]
-      if (!step.target) {
+      if (!step || !step.target) {
         setCoords(null)
         return
       }
@@ -165,7 +447,7 @@ export default function OnboardingTour() {
       window.removeEventListener('resize', calculatePosition)
       window.removeEventListener('scroll', calculatePosition)
     }
-  }, [stepIndex, active])
+  }, [stepIndex, active, currentPath, steps.length])
 
   const handleNext = () => {
     if (stepIndex < steps.length - 1) {
@@ -182,7 +464,7 @@ export default function OnboardingTour() {
   }
 
   const handleComplete = () => {
-    localStorage.setItem('xpenz_onboarding_completed', 'true')
+    localStorage.setItem('xpenz_tour_completed_' + currentPath, 'true')
     setActive(false)
     setStepIndex(0)
   }
@@ -192,26 +474,33 @@ export default function OnboardingTour() {
     setActive(true)
   }
 
+  if (steps.length === 0) return null
+
   if (!active) {
     // Show a floating help button at bottom right to trigger tour manually
     return (
       <button
         onClick={triggerRestart}
         className="fixed bottom-20 right-6 z-40 bg-indigo-650 dark:bg-purple-650 hover:bg-indigo-750 dark:hover:bg-purple-750 text-white p-3 rounded-full shadow-lg flex items-center justify-center gap-1.5 font-bold text-xs cursor-pointer hover:scale-105 transition-all"
-        title={strings.restartTour}
+        title={labels.restartTour}
       >
         <FiHelpCircle className="w-4 h-4" />
-        <span className="hidden sm:inline">{strings.restartTour}</span>
+        <span className="hidden sm:inline">{labels.restartTour}</span>
       </button>
     )
   }
 
   const currentStep = steps[stepIndex]
+  if (!currentStep) return null
+
+  const stepTitle = currentStep.title[language] || currentStep.title['en']
+  const stepDesc = currentStep.desc[language] || currentStep.desc['en']
+
   let cardStyle = { zIndex: 1000 }
 
   if (coords) {
     if (window.innerWidth < 768) {
-      // Force mobile bottom sheet layout (completely overrides absolute placement to avoid screen clippings)
+      // Mobile bottom sheet layout
       cardStyle = {
         ...cardStyle,
         position: 'fixed',
@@ -313,10 +602,10 @@ export default function OnboardingTour() {
 
         <div className="space-y-1">
           <h4 className="font-extrabold text-base text-slate-800 dark:text-white">
-            {strings[currentStep.titleKey]}
+            {stepTitle}
           </h4>
           <p className="text-slate-500 dark:text-dark-text-muted text-xs leading-relaxed">
-            {strings[currentStep.descKey]}
+            {stepDesc}
           </p>
         </div>
 
@@ -325,7 +614,7 @@ export default function OnboardingTour() {
             onClick={handleComplete}
             className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-350 text-xs font-bold hover:underline cursor-pointer"
           >
-            {strings.skip}
+            {labels.skip}
           </button>
           
           <div className="flex gap-2">
@@ -335,14 +624,14 @@ export default function OnboardingTour() {
                 className="flex items-center gap-1 px-3 py-1.5 border border-slate-200 dark:border-dark-border text-slate-600 dark:text-slate-350 rounded-xl text-xs font-bold hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors cursor-pointer"
               >
                 <FiChevronLeft className="w-3.5 h-3.5" />
-                {strings.back}
+                {labels.back}
               </button>
             )}
             <button
               onClick={handleNext}
               className="flex items-center gap-1 px-4 py-1.5 bg-secondary dark:bg-purple-650 hover:bg-indigo-700 dark:hover:bg-purple-750 text-white rounded-xl text-xs font-bold shadow-md shadow-secondary/15 transition-colors cursor-pointer"
             >
-              {stepIndex === steps.length - 1 ? strings.finish : strings.next}
+              {stepIndex === steps.length - 1 ? labels.finish : labels.next}
               <FiChevronRight className="w-3.5 h-3.5" />
             </button>
           </div>

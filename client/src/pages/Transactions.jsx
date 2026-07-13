@@ -351,7 +351,7 @@ function Transactions() {
         <div className="lg:col-span-3 space-y-6">
           
           {/* Filters Form Block */}
-          <section className="rounded-2xl border border-slate-100 dark:border-dark-border bg-white dark:bg-dark-card p-4 shadow-premium">
+          <section id="transactions-filter-tour" className="rounded-2xl border border-slate-100 dark:border-dark-border bg-white dark:bg-dark-card p-4 shadow-premium">
             <div className="grid gap-3 sm:grid-cols-2 md:grid-cols-5">
               <div className="relative">
                 <FiSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500" />
@@ -438,7 +438,7 @@ function Transactions() {
           )}
 
           {/* Transactions Table Section */}
-          <section className="overflow-hidden rounded-2xl border border-slate-100 dark:border-dark-border bg-white dark:bg-dark-card shadow-premium">
+          <section id="transactions-table-tour" className="overflow-hidden rounded-2xl border border-slate-100 dark:border-dark-border bg-white dark:bg-dark-card shadow-premium">
             <div className="overflow-x-auto">
               <table className="w-full min-w-[800px] text-left text-sm">
                 <thead className="bg-slate-50/80 dark:bg-slate-900/40 text-slate-500 dark:text-dark-text-muted font-bold uppercase text-xs border-b border-slate-100 dark:border-dark-border">
@@ -666,7 +666,7 @@ function Transactions() {
                 )}
 
                 {/* Amortization Calendar Widget */}
-                <div className="border-t border-slate-100 dark:border-dark-border pt-4 mt-4 space-y-3">
+                <div id="due-date-calendar-tour" className="border-t border-slate-100 dark:border-dark-border pt-4 mt-4 space-y-3">
                   <div className="flex justify-between items-center">
                     <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">{t('dueDateCalendar')}</span>
                     <div className="flex gap-1">

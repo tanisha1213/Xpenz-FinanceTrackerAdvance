@@ -70,7 +70,7 @@ function Budget() {
           <form onSubmit={save} className="space-y-6">
             <div>
               <label className="block text-xs font-bold text-slate-500 dark:text-dark-text-muted uppercase mb-2">{t('monthlyBudgetLimit')}</label>
-              <div className="relative">
+              <div id="budget-global-limit-tour" className="relative">
                 <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500 font-bold">₹</span>
                 <input
                   type="number"
@@ -94,7 +94,7 @@ function Budget() {
               </button>
             </div>
 
-            <div className="space-y-4">
+            <div id="budget-category-budgets-tour" className="space-y-4">
               {categoryBudgets.map((item, index) => {
                 const spent = summary?.categoryBreakdown?.find((entry) => entry.category === item.category)?.amount || 0
                 const percent = item.limit ? Math.min(100, Math.round((spent / item.limit) * 100)) : 0
@@ -163,7 +163,7 @@ function Budget() {
         </section>
 
         {/* Budget Status Sidebar Info */}
-        <section className="rounded-2xl border border-slate-100 dark:border-dark-border bg-white dark:bg-dark-card p-6 shadow-premium h-fit space-y-6">
+        <section id="budget-progress-sidebar-tour" className="rounded-2xl border border-slate-100 dark:border-dark-border bg-white dark:bg-dark-card p-6 shadow-premium h-fit space-y-6">
           <div className="flex items-center gap-2 pb-4 border-b border-slate-100 dark:border-dark-border">
             <FiActivity className="w-5 h-5 text-secondary dark:text-purple-400" />
             <h3 className="font-bold text-slate-800 dark:text-white text-lg">Overall Progress</h3>

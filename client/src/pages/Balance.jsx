@@ -124,6 +124,7 @@ function Balance() {
           <p className="text-slate-400 dark:text-dark-text-muted text-sm mt-0.5">{t('accountsSubtitle')}</p>
         </div>
         <button
+          id="add-account-btn-tour"
           onClick={handleOpenAdd}
           className="flex items-center gap-1.5 rounded-xl bg-secondary dark:bg-purple-600 px-4 py-2.5 font-bold text-white text-sm hover:bg-indigo-700 dark:hover:bg-purple-700 transition-colors shadow-md shadow-secondary/15 cursor-pointer"
         >
@@ -175,7 +176,7 @@ function Balance() {
 
       <div className="grid gap-6 md:grid-cols-2">
         {/* Cash Account Card */}
-        <section className="rounded-2xl border border-slate-100 dark:border-dark-border bg-white dark:bg-dark-card p-6 shadow-premium flex flex-col justify-between min-h-[180px]">
+        <section id="cash-wallet-card-tour" className="rounded-2xl border border-slate-100 dark:border-dark-border bg-white dark:bg-dark-card p-6 shadow-premium flex flex-col justify-between min-h-[180px]">
           <div>
             <div className="flex justify-between items-start">
               <div className="flex items-center gap-2">
@@ -211,7 +212,7 @@ function Balance() {
             <p className="text-slate-400 dark:text-dark-text-muted text-xs mt-0.5">Manage bank account balances and linked card transactions.</p>
           </div>
           
-          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          <div id="bank-accounts-grid-tour" className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {bankAccounts.map((account) => (
               <div
                 key={account._id}

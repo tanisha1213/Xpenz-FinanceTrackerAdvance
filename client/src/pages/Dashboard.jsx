@@ -124,7 +124,7 @@ function Dashboard() {
   return (
     <div className="space-y-8 text-slate-800 dark:text-slate-100">
       {/* Premium Hero Balance Section */}
-      <div className="rounded-3xl border border-slate-100 dark:border-slate-800/80 bg-white dark:bg-gradient-to-b dark:from-[#131522] dark:to-[#0d0f17] p-6 md:p-8 shadow-premium relative overflow-hidden flex flex-col justify-between min-h-[200px]">
+      <div id="total-balance-card-tour" className="rounded-3xl border border-slate-100 dark:border-slate-800/80 bg-white dark:bg-gradient-to-b dark:from-[#131522] dark:to-[#0d0f17] p-6 md:p-8 shadow-premium relative overflow-hidden flex flex-col justify-between min-h-[200px]">
         {/* Subtle glow accent */}
         <div className="absolute -left-12 -top-12 w-32 h-32 rounded-full bg-purple-500/10 blur-3xl pointer-events-none" />
         {/* Top/Right glowing light effect matching references */}
@@ -232,7 +232,7 @@ function Dashboard() {
         </section>
 
         {/* Category Share Donut Chart */}
-        <section className="rounded-3xl border border-slate-100 dark:border-slate-800/80 bg-white dark:bg-gradient-to-b dark:from-[#131522] dark:to-[#0d0f17] p-6 shadow-premium">
+        <section id="category-distribution-chart-tour" className="rounded-3xl border border-slate-100 dark:border-slate-800/80 bg-white dark:bg-gradient-to-b dark:from-[#131522] dark:to-[#0d0f17] p-6 shadow-premium">
           <h3 className="font-bold text-slate-800 dark:text-white text-lg mb-4">{t('spendingByCat')}</h3>
           <div className="h-72 flex items-center justify-center relative">
             <ResponsiveContainer width="100%" height="100%">
@@ -262,7 +262,7 @@ function Dashboard() {
       {/* Comparisons & Recent Listings Grid */}
       <div className="grid gap-6 lg:grid-cols-3">
         {/* Income vs Expenses Bar Chart */}
-        <section className="rounded-3xl border border-slate-100 dark:border-slate-800/80 bg-white dark:bg-gradient-to-b dark:from-[#131522] dark:to-[#0d0f17] p-6 shadow-premium lg:col-span-2">
+        <section id="income-expense-chart-tour" className="rounded-3xl border border-slate-100 dark:border-slate-800/80 bg-white dark:bg-gradient-to-b dark:from-[#131522] dark:to-[#0d0f17] p-6 shadow-premium lg:col-span-2">
           <h3 className="font-bold text-slate-800 dark:text-white text-lg mb-4">{t('incomeVsExpense')}</h3>
           <div className="h-72">
             <ResponsiveContainer width="100%" height="100%">
@@ -285,7 +285,7 @@ function Dashboard() {
         </section>
 
         {/* Recent Transactions List */}
-        <section className="rounded-3xl border border-slate-100 dark:border-slate-800/80 bg-white dark:bg-gradient-to-b dark:from-[#131522] dark:to-[#0d0f17] p-6 shadow-premium flex flex-col justify-between">
+        <section id="recent-activity-tour" className="rounded-3xl border border-slate-100 dark:border-slate-800/80 bg-white dark:bg-gradient-to-b dark:from-[#131522] dark:to-[#0d0f17] p-6 shadow-premium flex flex-col justify-between">
           <div>
             <h3 className="font-bold text-slate-800 dark:text-white text-lg mb-4">{t('recentTransactions')}</h3>
             <div className="space-y-4">
