@@ -322,7 +322,7 @@ const pageTours = {
       placement: 'center',
       title: {
         en: 'Insights & Statement Reports',
-        hi: 'अंतर्दृष्टि और विवरण रिपोर्ट',
+        hi: 'अन्तरदृष्टि और विवरण रिपोर्ट',
         mr: 'विश्लेषण आणि अहवाल',
         ta: 'நுண்ணறிவு & அறிக்கை விவரங்கள்'
       },
@@ -427,25 +427,38 @@ export default function OnboardingTour() {
       if (el) {
         const rect = el.getBoundingClientRect()
         setCoords({
-          top: rect.top + window.scrollY,
-          left: rect.left + window.scrollX,
+          top: rect.top,
+          left: rect.left,
           width: rect.width,
           height: rect.height,
-          bottom: rect.bottom + window.scrollY,
-          right: rect.right + window.scrollX
+          bottom: rect.bottom,
+          right: rect.right
         })
-        el.scrollIntoView({ behavior: 'smooth', block: 'center' })
+        
+        // Only scroll into view if not already fully visible in main scroll area
+        if (rect.top < 60 || rect.bottom > window.innerHeight - 80) {
+          el.scrollIntoView({ behavior: 'smooth', block: 'center' })
+        }
       } else {
         setCoords(null)
       }
     }
 
     calculatePosition()
+    
+    // Add scroll event listener to main element (since window doesn't scroll)
+    const mainEl = document.querySelector('main')
+    
     window.addEventListener('resize', calculatePosition)
-    window.addEventListener('scroll', calculatePosition)
+    if (mainEl) {
+      mainEl.addEventListener('scroll', calculatePosition)
+    }
+    
     return () => {
       window.removeEventListener('resize', calculatePosition)
-      window.removeEventListener('scroll', calculatePosition)
+      if (mainEl) {
+        mainEl.removeEventListener('scroll', calculatePosition)
+      }
     }
   }, [stepIndex, active, currentPath, steps.length])
 
@@ -512,18 +525,28 @@ export default function OnboardingTour() {
         top: 'auto'
       }
     } else {
-      const placement = currentStep.placement || 'bottom'
+      let placement = currentStep.placement || 'bottom'
+      
+      // Auto-adjust left placement if it would go off-screen
+      if (placement === 'left' && coords.left < 380) {
+        placement = 'bottom'
+      }
+      // Auto-adjust right placement if it would go off-screen
+      if (placement === 'right' && (window.innerWidth - coords.right) < 380) {
+        placement = 'bottom'
+      }
+
       if (placement === 'bottom') {
         cardStyle = {
           ...cardStyle,
-          position: 'absolute',
-          top: coords.bottom + 12 + 'px',
+          position: 'fixed',
+          top: Math.min(window.innerHeight - 220, coords.bottom + 12) + 'px',
           left: Math.max(16, Math.min(window.innerWidth - 370, coords.left + coords.width/2 - 175)) + 'px'
         }
       } else if (placement === 'top') {
         cardStyle = {
           ...cardStyle,
-          position: 'absolute',
+          position: 'fixed',
           top: coords.top - 12 + 'px',
           left: Math.max(16, Math.min(window.innerWidth - 370, coords.left + coords.width/2 - 175)) + 'px',
           transform: 'translateY(-100%)'
@@ -531,15 +554,15 @@ export default function OnboardingTour() {
       } else if (placement === 'right') {
         cardStyle = {
           ...cardStyle,
-          position: 'absolute',
-          top: coords.top + 10 + 'px',
+          position: 'fixed',
+          top: Math.max(16, Math.min(window.innerHeight - 220, coords.top + 10)) + 'px',
           left: coords.right + 12 + 'px'
         }
       } else if (placement === 'left') {
         cardStyle = {
           ...cardStyle,
-          position: 'absolute',
-          top: coords.top + 10 + 'px',
+          position: 'fixed',
+          top: Math.max(16, Math.min(window.innerHeight - 220, coords.top + 10)) + 'px',
           left: coords.left - 370 + 'px'
         }
       }
