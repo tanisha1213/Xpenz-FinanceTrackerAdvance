@@ -64,7 +64,7 @@ const tourTranslations = {
     addTxTitle: 'பரிவர்த்தனை சேர்க்க',
     addTxDesc: 'உங்கள் வருமானம், தினசரி செலவு அல்லது கடன்களைப் பதிவு செய்ய இங்கே கிளிக் செய்யவும்.',
     loansTitle: 'கடன்கள் & வசூலிப்புகள்',
-    loansDesc: 'பணம் செலுத்த வேண்டிய நாட்கள் மற்றும் கடன்களின் நிலைமைகளை இங்கே கண்காணிக்கவும்.',
+    loansDesc: 'பணம் செலுத்துபவர்கள் மற்றும் கடன்களின் நிலைமைகளை இங்கே கண்காணிக்கவும்.',
     next: 'அடுத்து',
     back: 'முந்தைய',
     skip: 'தவிர்',
@@ -77,27 +77,32 @@ const steps = [
   {
     target: null, // Center
     titleKey: 'welcomeTitle',
-    descKey: 'welcomeDesc'
+    descKey: 'welcomeDesc',
+    placement: 'center'
   },
   {
     target: '#language-switcher-tour',
     titleKey: 'langTitle',
-    descKey: 'langDesc'
+    descKey: 'langDesc',
+    placement: 'bottom'
   },
   {
     target: '#sidebar-navigation-tour',
     titleKey: 'navTitle',
-    descKey: 'navDesc'
+    descKey: 'navDesc',
+    placement: 'right'
   },
   {
     target: '#add-transaction-btn-tour',
     titleKey: 'addTxTitle',
-    descKey: 'addTxDesc'
+    descKey: 'addTxDesc',
+    placement: 'bottom'
   },
   {
     target: '#active-loans-sidebar-tour',
     titleKey: 'loansTitle',
-    descKey: 'loansDesc'
+    descKey: 'loansDesc',
+    placement: 'left'
   }
 ]
 
@@ -138,7 +143,8 @@ export default function OnboardingTour() {
           left: rect.left + window.scrollX,
           width: rect.width,
           height: rect.height,
-          bottom: rect.bottom + window.scrollY
+          bottom: rect.bottom + window.scrollY,
+          right: rect.right + window.scrollX
         })
         el.scrollIntoView({ behavior: 'smooth', block: 'center' })
       } else {
@@ -181,7 +187,7 @@ export default function OnboardingTour() {
     return (
       <button
         onClick={triggerRestart}
-        className="fixed bottom-20 right-6 z-40 bg-indigo-600 dark:bg-purple-650 hover:bg-indigo-750 dark:hover:bg-purple-750 text-white p-3 rounded-full shadow-lg flex items-center justify-center gap-1.5 font-bold text-xs cursor-pointer hover:scale-105 transition-all"
+        className="fixed bottom-20 right-6 z-40 bg-indigo-650 dark:bg-purple-650 hover:bg-indigo-750 dark:hover:bg-purple-750 text-white p-3 rounded-full shadow-lg flex items-center justify-center gap-1.5 font-bold text-xs cursor-pointer hover:scale-105 transition-all"
         title={strings.restartTour}
       >
         <FiHelpCircle className="w-4 h-4" />
@@ -191,24 +197,54 @@ export default function OnboardingTour() {
   }
 
   const currentStep = steps[stepIndex]
-  const cardStyle = coords 
-    ? {
+  let cardStyle = { zIndex: 1000 }
+
+  if (coords) {
+    let placement = currentStep.placement || 'bottom'
+    if (window.innerWidth < 768) {
+      // Force bottom on mobile devices
+      placement = 'bottom'
+    }
+
+    if (placement === 'bottom') {
+      cardStyle = {
+        ...cardStyle,
         position: 'absolute',
         top: coords.bottom + 12 + 'px',
-        left: Math.max(16, Math.min(window.innerWidth - 340, coords.left - 100)) + 'px',
-        zIndex: 1000
+        left: Math.max(16, Math.min(window.innerWidth - 370, coords.left + coords.width/2 - 175)) + 'px'
       }
-    : {
-        position: 'fixed',
-        top: '50%',
-        left: '50%',
-        transform: 'translate(-50%, -50%)',
-        zIndex: 1000
+    } else if (placement === 'top') {
+      cardStyle = {
+        ...cardStyle,
+        position: 'absolute',
+        top: coords.top - 12 + 'px',
+        left: Math.max(16, Math.min(window.innerWidth - 370, coords.left + coords.width/2 - 175)) + 'px',
+        transform: 'translateY(-100%)'
       }
-
-  // Draw viewport dimensions
-  const viewW = window.innerWidth
-  const viewH = Math.max(document.documentElement.scrollHeight, window.innerHeight)
+    } else if (placement === 'right') {
+      cardStyle = {
+        ...cardStyle,
+        position: 'absolute',
+        top: coords.top + 10 + 'px',
+        left: coords.right + 12 + 'px'
+      }
+    } else if (placement === 'left') {
+      cardStyle = {
+        ...cardStyle,
+        position: 'absolute',
+        top: coords.top + 10 + 'px',
+        left: coords.left - 370 + 'px'
+      }
+    }
+  } else {
+    cardStyle = {
+      ...cardStyle,
+      position: 'fixed',
+      top: '50%',
+      left: '50%',
+      transform: 'translate(-50%, -50%)'
+    }
+  }
 
   return (
     <>
@@ -242,7 +278,7 @@ export default function OnboardingTour() {
       {/* Tour Dialog Pop-up */}
       <div
         style={cardStyle}
-        className="w-[320px] sm:w-[350px] bg-white dark:bg-[#131522] border border-slate-100 dark:border-slate-800 rounded-3xl p-5 shadow-2xl space-y-4 animate-scaleUp z-[1000] text-slate-850 dark:text-slate-100"
+        className="w-[320px] sm:w-[350px] bg-white dark:bg-[#131522] border border-slate-100 dark:border-slate-800 rounded-3xl p-5 shadow-2xl space-y-4 animate-scaleUp z-[1000] text-slate-800 dark:text-slate-100"
       >
         <div className="flex justify-between items-start">
           <span className="text-[10px] font-bold text-indigo-500 dark:text-purple-400 bg-indigo-50 dark:bg-purple-950/20 px-2 py-0.5 rounded-full uppercase tracking-wider">
@@ -250,7 +286,7 @@ export default function OnboardingTour() {
           </span>
           <button
             onClick={handleComplete}
-            className="text-slate-400 hover:text-slate-650 dark:hover:text-white p-1 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors cursor-pointer"
+            className="text-slate-400 hover:text-slate-600 dark:hover:text-white p-1 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors cursor-pointer"
           >
             <FiX className="w-4 h-4" />
           </button>
@@ -268,7 +304,7 @@ export default function OnboardingTour() {
         <div className="flex justify-between items-center pt-2 border-t border-slate-100 dark:border-dark-border">
           <button
             onClick={handleComplete}
-            className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 text-xs font-bold hover:underline cursor-pointer"
+            className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-350 text-xs font-bold hover:underline cursor-pointer"
           >
             {strings.skip}
           </button>
