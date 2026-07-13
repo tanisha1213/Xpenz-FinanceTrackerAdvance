@@ -10,6 +10,7 @@ import Transactions from './pages/Transactions'
 import Budget from './pages/Budget'
 import InsightsReports from './pages/InsightsReports'
 import Profile from './pages/Profile'
+import Balance from './pages/Balance'
 
 // Layout
 import Layout from './components/layout/Layout'
@@ -44,6 +45,7 @@ function App() {
         <Route element={<ProtectedRoute />}>
           <Route element={<Layout />}>
             <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/balance" element={<Balance />} />
             <Route path="/transactions" element={<Transactions />} />
             <Route path="/budget" element={<Budget />} />
             <Route path="/insights" element={<InsightsReports />} />

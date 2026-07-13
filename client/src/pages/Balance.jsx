@@ -1,0 +1,410 @@
+import { useEffect, useState } from 'react'
+import { getAccounts, addBankAccount, updateAccount, deleteBankAccount } from '../services/accountService'
+import { formatCurrency } from '../utils/format'
+import { FiPlus, FiEdit2, FiTrash2, FiCreditCard, FiDollarSign, FiCheck, FiX, FiInfo } from 'react-icons/fi'
+
+function Balance() {
+  const [accounts, setAccounts] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [message, setMessage] = useState('')
+  const [error, setError] = useState('')
+
+  // Modal / Form states
+  const [modalType, setModalType] = useState(null) // 'add' | 'edit' | 'delete'
+  const [selectedAccount, setSelectedAccount] = useState(null)
+  
+  // Form fields
+  const [formData, setFormData] = useState({ name: '', balance: '' })
+
+  const fetchAccounts = async () => {
+    try {
+      setLoading(true)
+      const response = await getAccounts()
+      setAccounts(response.data.data)
+    } catch (err) {
+      setError(err.response?.data?.message || 'Failed to fetch accounts.')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    fetchAccounts()
+  }, [])
+
+  const handleOpenAdd = () => {
+    setFormData({ name: '', balance: '0' })
+    setModalType('add')
+  }
+
+  const handleOpenEdit = (account) => {
+    setSelectedAccount(account)
+    setFormData({ name: account.name, balance: account.balance.toString() })
+    setModalType('edit')
+  }
+
+  const handleOpenDelete = (account) => {
+    setSelectedAccount(account)
+    setModalType('delete')
+  }
+
+  const handleCloseModal = () => {
+    setModalType(null)
+    setSelectedAccount(null)
+    setFormData({ name: '', balance: '' })
+  }
+
+  const handleAddSubmit = async (e) => {
+    e.preventDefault()
+    setMessage('')
+    setError('')
+    try {
+      await addBankAccount({
+        name: formData.name,
+        balance: Number(formData.balance) || 0
+      })
+      setMessage('Bank account added successfully.')
+      fetchAccounts()
+      handleCloseModal()
+    } catch (err) {
+      setError(err.response?.data?.message || 'Failed to add bank account.')
+    }
+  }
+
+  const handleEditSubmit = async (e) => {
+    e.preventDefault()
+    setMessage('')
+    setError('')
+    try {
+      await updateAccount(selectedAccount._id, {
+        name: formData.name,
+        balance: Number(formData.balance) || 0
+      })
+      setMessage('Account updated successfully.')
+      fetchAccounts()
+      handleCloseModal()
+    } catch (err) {
+      setError(err.response?.data?.message || 'Failed to update account.')
+    }
+  }
+
+  const handleDeleteSubmit = async () => {
+    setMessage('')
+    setError('')
+    try {
+      await deleteBankAccount(selectedAccount._id)
+      setMessage('Bank account and all associated transactions deleted successfully.')
+      fetchAccounts()
+      handleCloseModal()
+    } catch (err) {
+      setError(err.response?.data?.message || 'Failed to delete bank account.')
+    }
+  }
+
+  const totalBalance = accounts.reduce((acc, curr) => acc + curr.balance, 0)
+  const cashAccounts = accounts.filter(a => a.type === 'cash')
+  const bankAccounts = accounts.filter(a => a.type === 'bank')
+
+  if (loading && accounts.length === 0) {
+    return (
+      <div className="flex items-center justify-center min-h-[50vh]">
+        <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-indigo-600 dark:border-purple-500"></div>
+      </div>
+    )
+  }
+
+  return (
+    <div className="space-y-6 text-slate-800 dark:text-slate-100 pb-10">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div>
+          <h2 className="text-2xl font-extrabold tracking-tight text-slate-800 dark:text-white">Balances & Accounts</h2>
+          <p className="text-slate-400 dark:text-dark-text-muted text-sm mt-0.5">Manage your bank accounts, cash funds, and track real-time balances.</p>
+        </div>
+        <button
+          onClick={handleOpenAdd}
+          className="flex items-center gap-1.5 rounded-xl bg-secondary dark:bg-purple-600 px-4 py-2.5 font-bold text-white text-sm hover:bg-indigo-700 dark:hover:bg-purple-700 transition-colors shadow-md shadow-secondary/15"
+        >
+          <FiPlus className="w-4 h-4" />
+          Add Bank Account
+        </button>
+      </div>
+
+      {/* Messages */}
+      {message && (
+        <div className="rounded-xl border border-emerald-100 dark:border-emerald-950/20 bg-emerald-50/50 dark:bg-emerald-950/5 p-3 text-sm text-emerald-700 dark:text-emerald-400 flex items-center gap-2">
+          <FiCheck className="w-4 h-4 flex-shrink-0" />
+          <span>{message}</span>
+        </div>
+      )}
+      {error && (
+        <div className="rounded-xl border border-rose-100 dark:border-rose-950/20 bg-rose-50/50 dark:bg-rose-950/5 p-3 text-sm text-rose-700 dark:text-rose-400 flex items-center gap-2">
+          <FiX className="w-4 h-4 flex-shrink-0" />
+          <span>{error}</span>
+        </div>
+      )}
+
+      {/* Total Balance Card */}
+      <div className="relative overflow-hidden rounded-2xl border border-slate-100 dark:border-dark-border bg-gradient-to-br from-slate-900 to-indigo-950 p-6 sm:p-8 text-white shadow-premium">
+        <div className="absolute right-0 top-0 translate-x-10 -translate-y-10 w-40 h-40 rounded-full bg-indigo-500/10 blur-2xl"></div>
+        <div className="absolute left-1/3 bottom-0 w-32 h-32 rounded-full bg-purple-500/10 blur-2xl"></div>
+        
+        <div className="relative z-10 flex flex-col sm:flex-row justify-between sm:items-center gap-4">
+          <div className="space-y-1">
+            <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Net Combined Balance</span>
+            <h3 className="text-3xl sm:text-4xl font-black tracking-tight">{formatCurrency(totalBalance)}</h3>
+          </div>
+          <div className="flex gap-4">
+            <div className="px-4 py-2 bg-white/5 backdrop-blur-md rounded-xl border border-white/10">
+              <span className="block text-[10px] text-slate-400 font-bold uppercase tracking-wider">Cash Balance</span>
+              <span className="text-base font-extrabold text-slate-200">
+                {formatCurrency(cashAccounts.reduce((acc, curr) => acc + curr.balance, 0))}
+              </span>
+            </div>
+            <div className="px-4 py-2 bg-white/5 backdrop-blur-md rounded-xl border border-white/10">
+              <span className="block text-[10px] text-slate-400 font-bold uppercase tracking-wider">Bank Balance</span>
+              <span className="text-base font-extrabold text-slate-200">
+                {formatCurrency(bankAccounts.reduce((acc, curr) => acc + curr.balance, 0))}
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="grid gap-6 md:grid-cols-2">
+        {/* Cash Account Card */}
+        <section className="rounded-2xl border border-slate-100 dark:border-dark-border bg-white dark:bg-dark-card p-6 shadow-premium flex flex-col justify-between min-h-[180px]">
+          <div>
+            <div className="flex justify-between items-start">
+              <div className="flex items-center gap-2">
+                <div className="p-2 rounded-lg bg-emerald-50 dark:bg-emerald-950/20 text-emerald-600 dark:text-emerald-400">
+                  <FiDollarSign className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="font-bold text-slate-800 dark:text-white text-base">Cash Funds</h3>
+                  <span className="text-xs text-slate-400 dark:text-dark-text-muted">Physical cash wallet</span>
+                </div>
+              </div>
+              <button
+                onClick={() => handleOpenEdit(cashAccounts[0])}
+                className="p-2 text-slate-400 hover:text-indigo-600 dark:hover:text-purple-400 rounded-lg hover:bg-slate-50 dark:hover:bg-dark-border transition-all"
+                title="Adjust Balance"
+              >
+                <FiEdit2 className="w-4 h-4" />
+              </button>
+            </div>
+            <div className="mt-6">
+              <span className="block text-[10px] text-slate-400 dark:text-dark-text-muted font-bold uppercase tracking-wider">Available Balance</span>
+              <span className="text-2xl font-black text-slate-800 dark:text-white">
+                {formatCurrency(cashAccounts[0]?.balance || 0)}
+              </span>
+            </div>
+          </div>
+        </section>
+
+        {/* Bank Accounts Grid */}
+        <div className="space-y-6 md:col-span-2">
+          <div>
+            <h3 className="font-extrabold text-slate-800 dark:text-white text-lg">Bank Accounts</h3>
+            <p className="text-slate-400 dark:text-dark-text-muted text-xs mt-0.5">Manage bank account balances and linked card transactions.</p>
+          </div>
+          
+          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {bankAccounts.map((account) => (
+              <div
+                key={account._id}
+                className="rounded-2xl border border-slate-100 dark:border-dark-border bg-white dark:bg-dark-card p-6 shadow-premium flex flex-col justify-between min-h-[180px] hover:border-indigo-100 dark:hover:border-purple-950/40 transition-all duration-200 group"
+              >
+                <div>
+                  <div className="flex justify-between items-start">
+                    <div className="flex items-center gap-2">
+                      <div className="p-2 rounded-lg bg-indigo-50 dark:bg-indigo-950/20 text-indigo-600 dark:text-purple-400">
+                        <FiCreditCard className="w-5 h-5" />
+                      </div>
+                      <div>
+                        <h4 className="font-bold text-slate-800 dark:text-white text-base line-clamp-1">{account.name}</h4>
+                        <span className="text-xs text-slate-400 dark:text-dark-text-muted">Saving/Current Account</span>
+                      </div>
+                    </div>
+                    <div className="flex gap-1 opacity-80 group-hover:opacity-100 transition-opacity">
+                      <button
+                        onClick={() => handleOpenEdit(account)}
+                        className="p-1.5 text-slate-400 hover:text-indigo-600 dark:hover:text-purple-400 rounded-lg hover:bg-slate-50 dark:hover:bg-dark-border transition-all"
+                        title="Edit Account"
+                      >
+                        <FiEdit2 className="w-4 h-4" />
+                      </button>
+                      <button
+                        onClick={() => handleOpenDelete(account)}
+                        className="p-1.5 text-slate-400 hover:text-rose-500 dark:hover:text-rose-400 rounded-lg hover:bg-slate-50 dark:hover:bg-dark-border transition-all"
+                        title="Delete Account"
+                      >
+                        <FiTrash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+                  </div>
+                  <div className="mt-6">
+                    <span className="block text-[10px] text-slate-400 dark:text-dark-text-muted font-bold uppercase tracking-wider">Available Balance</span>
+                    <span className="text-2xl font-black text-slate-800 dark:text-white">
+                      {formatCurrency(account.balance)}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Modals / Overlays */}
+      {modalType && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+          <div className="w-full max-w-md rounded-2xl bg-white dark:bg-dark-card border border-slate-100 dark:border-dark-border shadow-2xl p-6 relative overflow-hidden transition-all duration-300">
+            <button
+              onClick={handleCloseModal}
+              className="absolute right-4 top-4 p-1.5 text-slate-400 hover:text-slate-600 dark:hover:text-white rounded-lg hover:bg-slate-50 dark:hover:bg-dark-border transition-all"
+            >
+              <FiX className="w-5 h-5" />
+            </button>
+
+            {modalType === 'add' && (
+              <form onSubmit={handleAddSubmit} className="space-y-4">
+                <div>
+                  <h3 className="font-extrabold text-slate-800 dark:text-white text-lg">Add Bank Account</h3>
+                  <p className="text-slate-400 dark:text-dark-text-muted text-xs mt-0.5">Link a new bank account to record your savings.</p>
+                </div>
+                <div className="space-y-3">
+                  <div className="flex flex-col gap-1">
+                    <label className="text-xs font-bold text-slate-500 dark:text-dark-text-muted uppercase">Bank Name</label>
+                    <input
+                      type="text"
+                      value={formData.name}
+                      onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                      placeholder="e.g. HDFC Bank, ICICI Bank"
+                      className="rounded-xl border border-slate-200 dark:border-dark-border px-3 py-2.5 text-sm bg-white dark:bg-dark-card text-slate-800 dark:text-slate-200 focus:outline-none"
+                      required
+                    />
+                  </div>
+                  <div className="flex flex-col gap-1">
+                    <label className="text-xs font-bold text-slate-500 dark:text-dark-text-muted uppercase">Starting Balance (₹)</label>
+                    <input
+                      type="number"
+                      value={formData.balance}
+                      onChange={(e) => setFormData({ ...formData, balance: e.target.value })}
+                      className="rounded-xl border border-slate-200 dark:border-dark-border px-3 py-2.5 text-sm bg-white dark:bg-dark-card text-slate-800 dark:text-slate-200 focus:outline-none"
+                      required
+                    />
+                  </div>
+                </div>
+                <div className="flex justify-end gap-2 pt-2">
+                  <button
+                    type="button"
+                    onClick={handleCloseModal}
+                    className="px-4 py-2.5 rounded-xl border border-slate-200 dark:border-dark-border text-slate-500 dark:text-slate-300 font-semibold text-sm hover:bg-slate-50 dark:hover:bg-dark-border transition-colors"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    className="flex items-center gap-1 px-4 py-2.5 rounded-xl bg-secondary dark:bg-purple-600 font-bold text-white text-sm hover:bg-indigo-700 dark:hover:bg-purple-700 transition-colors shadow-md shadow-secondary/15"
+                  >
+                    <FiCheck className="w-4 h-4" />
+                    Add Account
+                  </button>
+                </div>
+              </form>
+            )}
+
+            {modalType === 'edit' && (
+              <form onSubmit={handleEditSubmit} className="space-y-4">
+                <div>
+                  <h3 className="font-extrabold text-slate-800 dark:text-white text-lg">Edit Account Details</h3>
+                  <p className="text-slate-400 dark:text-dark-text-muted text-xs mt-0.5">Modify account descriptors and adjust balances.</p>
+                </div>
+                <div className="space-y-3">
+                  <div className="flex flex-col gap-1">
+                    <label className="text-xs font-bold text-slate-500 dark:text-dark-text-muted uppercase">Account Name</label>
+                    <input
+                      type="text"
+                      value={formData.name}
+                      onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                      disabled={selectedAccount?.type === 'cash'}
+                      className="rounded-xl border border-slate-200 dark:border-dark-border px-3 py-2.5 text-sm bg-white dark:bg-dark-card text-slate-800 dark:text-slate-200 focus:outline-none disabled:opacity-50 disabled:bg-slate-50 dark:disabled:bg-slate-900"
+                      required
+                    />
+                  </div>
+                  <div className="flex flex-col gap-1">
+                    <label className="text-xs font-bold text-slate-500 dark:text-dark-text-muted uppercase">Balance (₹)</label>
+                    <input
+                      type="number"
+                      value={formData.balance}
+                      onChange={(e) => setFormData({ ...formData, balance: e.target.value })}
+                      className="rounded-xl border border-slate-200 dark:border-dark-border px-3 py-2.5 text-sm bg-white dark:bg-dark-card text-slate-800 dark:text-slate-200 focus:outline-none"
+                      required
+                    />
+                  </div>
+                </div>
+                <div className="flex justify-end gap-2 pt-2">
+                  <button
+                    type="button"
+                    onClick={handleCloseModal}
+                    className="px-4 py-2.5 rounded-xl border border-slate-200 dark:border-dark-border text-slate-500 dark:text-slate-300 font-semibold text-sm hover:bg-slate-50 dark:hover:bg-dark-border transition-colors"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    className="flex items-center gap-1 px-4 py-2.5 rounded-xl bg-secondary dark:bg-purple-600 font-bold text-white text-sm hover:bg-indigo-700 dark:hover:bg-purple-700 transition-colors shadow-md shadow-secondary/15"
+                  >
+                    <FiCheck className="w-4 h-4" />
+                    Save Changes
+                  </button>
+                </div>
+              </form>
+            )}
+
+            {modalType === 'delete' && (
+              <div className="space-y-4">
+                <div className="flex items-start gap-3">
+                  <div className="p-2 rounded-lg bg-rose-50 dark:bg-rose-950/20 text-rose-500 dark:text-rose-400 mt-1 flex-shrink-0">
+                    <FiInfo className="w-6 h-6 animate-pulse" />
+                  </div>
+                  <div>
+                    <h3 className="font-extrabold text-slate-800 dark:text-white text-lg">Delete Account</h3>
+                    <p className="text-slate-505 dark:text-dark-text-muted text-sm mt-1">
+                      Are you sure you want to delete <span className="font-bold text-slate-800 dark:text-white">{selectedAccount?.name}</span>?
+                    </p>
+                  </div>
+                </div>
+                
+                <div className="rounded-xl border border-amber-100 dark:border-amber-950/20 bg-amber-50/50 dark:bg-amber-950/5 p-3.5 text-xs text-amber-700 dark:text-amber-400 leading-relaxed">
+                  <strong>Warning:</strong> Deleting this bank account will perform a cascade delete. All transactions associated with this account will also be permanently removed.
+                </div>
+
+                <div className="flex justify-end gap-2 pt-2">
+                  <button
+                    type="button"
+                    onClick={handleCloseModal}
+                    className="px-4 py-2.5 rounded-xl border border-slate-200 dark:border-dark-border text-slate-500 dark:text-slate-300 font-semibold text-sm hover:bg-slate-50 dark:hover:bg-dark-border transition-colors"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleDeleteSubmit}
+                    className="flex items-center gap-1 px-4 py-2.5 rounded-xl bg-rose-500 hover:bg-rose-600 font-bold text-white text-sm transition-colors shadow-md shadow-rose-500/15"
+                  >
+                    <FiTrash2 className="w-4 h-4" />
+                    Delete Permanently
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
+
+export default Balance

@@ -1,7 +1,7 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { useDispatch } from 'react-redux'
 import { logout } from '../../redux/slices/authSlice'
-import { FiLayout, FiDollarSign, FiPieChart, FiTrendingUp, FiUser, FiLogOut } from 'react-icons/fi'
+import { FiLayout, FiDollarSign, FiPieChart, FiTrendingUp, FiUser, FiLogOut, FiCreditCard } from 'react-icons/fi'
 import { useTheme } from '../../context/ThemeContext'
 import logoLight from '../../assets/logo-light.png'
 import logoDark from '../../assets/logo-dark.png'
@@ -14,6 +14,7 @@ function Sidebar() {
 
   const navItems = [
     { label: 'Dashboard', path: '/dashboard', icon: FiLayout },
+    { label: 'Accounts', path: '/balance', icon: FiCreditCard },
     { label: 'Transactions', path: '/transactions', icon: FiDollarSign },
     { label: 'Budget', path: '/budget', icon: FiPieChart },
     { label: 'Analytics', path: '/insights', icon: FiTrendingUp },

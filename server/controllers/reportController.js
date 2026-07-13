@@ -9,19 +9,33 @@ export const getMonthlyReport = async (req, res) => {
   try {
     const now = new Date();
     const year = Number(req.query.year) || now.getFullYear();
-    const month = Number(req.query.month) || now.getMonth() + 1;
-    const start = new Date(year, month - 1, 1);
-    const end = new Date(year, month, 1);
+    const isYearly = req.query.type === 'yearly';
+
+    let start, end, periodStr;
+    if (isYearly) {
+      start = new Date(year, 0, 1);
+      end = new Date(year + 1, 0, 1);
+      periodStr = `${year} (Yearly)`;
+    } else {
+      const month = Number(req.query.month) || now.getMonth() + 1;
+      start = new Date(year, month - 1, 1);
+      end = new Date(year, month, 1);
+      periodStr = `${year}-${String(month).padStart(2, '0')}`;
+    }
 
     const transactions = await Transaction.find({
       userId: req.userId,
       transactionDate: { $gte: start, $lt: end }
-    }).sort({ transactionDate: -1 });
+    })
+    .populate('accountId', 'name type')
+    .populate('toAccountId', 'name type')
+    .sort({ transactionDate: -1 });
+
     const budget = await Budget.findOne({ userId: req.userId });
     const summary = summarizeTransactions(transactions, budget);
 
     const report = {
-      period: `${year}-${String(month).padStart(2, '0')}`,
+      period: periodStr,
       totalIncome: summary.totalIncome,
       totalExpense: summary.totalExpense,
       savings: summary.savings,
@@ -33,11 +47,11 @@ export const getMonthlyReport = async (req, res) => {
 
     if (req.query.format === 'pdf') {
       res.setHeader('Content-Type', 'application/pdf');
-      res.setHeader('Content-Disposition', `attachment; filename=finance-report-${report.period}.pdf`);
+      res.setHeader('Content-Disposition', `attachment; filename=finance-report-${report.period.replace(/\s+/g, '')}.pdf`);
 
       const doc = new PDFDocument({ margin: 48 });
       doc.pipe(res);
-      doc.fontSize(22).text('FinTrack Monthly Report');
+      doc.fontSize(22).text(isYearly ? 'FinTrack Yearly Report' : 'FinTrack Monthly Report');
       doc.moveDown(0.5).fontSize(12).text(`Period: ${report.period}`);
       doc.moveDown();
       doc.fontSize(14).text(`Income: ${formatCurrency(report.totalIncome)}`);
@@ -49,8 +63,15 @@ export const getMonthlyReport = async (req, res) => {
         doc.fontSize(11).text(`${item.category}: ${formatCurrency(item.amount)}`);
       });
       doc.moveDown().fontSize(16).text('Transactions');
-      report.transactions.slice(0, 40).forEach((item) => {
-        doc.fontSize(10).text(`${new Date(item.transactionDate).toLocaleDateString('en-IN')} | ${item.type} | ${item.title} | ${formatCurrency(item.amount)}`);
+      report.transactions.slice(0, 150).forEach((item) => {
+        let details = `${new Date(item.transactionDate).toLocaleDateString('en-IN')} | ${item.type.toUpperCase()}`;
+        if (item.type === 'transfer') {
+          details += ` | ${item.accountId?.name || 'Cash'} -> ${item.toAccountId?.name || 'Cash'}`;
+        } else {
+          details += ` | ${item.accountId?.name || 'Cash'}`;
+        }
+        details += ` | ${item.title} | ${formatCurrency(item.amount)}`;
+        doc.fontSize(10).text(details);
       });
       doc.end();
       return;

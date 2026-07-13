@@ -1,11 +1,12 @@
 import { Link, useLocation } from 'react-router-dom'
-import { FiLayout, FiDollarSign, FiPieChart, FiTrendingUp, FiUser } from 'react-icons/fi'
+import { FiLayout, FiDollarSign, FiPieChart, FiTrendingUp, FiUser, FiCreditCard } from 'react-icons/fi'
 
 function BottomNavigation() {
   const location = useLocation()
   
   const navItems = [
     { label: 'Dashboard', path: '/dashboard', icon: FiLayout },
+    { label: 'Accounts', path: '/balance', icon: FiCreditCard },
     { label: 'Transactions', path: '/transactions', icon: FiDollarSign },
     { label: 'Budget', path: '/budget', icon: FiPieChart },
     { label: 'Analytics', path: '/insights', icon: FiTrendingUp },

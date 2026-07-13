@@ -8,7 +8,7 @@ const transactionSchema = new mongoose.Schema({
   },
   type: {
     type: String,
-    enum: ['income', 'expense'],
+    enum: ['income', 'expense', 'transfer'],
     required: true
   },
   title: {
@@ -28,6 +28,18 @@ const transactionSchema = new mongoose.Schema({
     type: String,
     enum: ['cash', 'card', 'bank_transfer', 'upi', 'wallet', 'other'],
     default: 'card'
+  },
+  accountId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Account'
+  },
+  toAccountId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Account'
+  },
+  loanId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Loan'
   },
   description: {
     type: String,
