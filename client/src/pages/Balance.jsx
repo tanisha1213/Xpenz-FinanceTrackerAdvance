@@ -2,8 +2,10 @@ import { useEffect, useState } from 'react'
 import { getAccounts, addBankAccount, updateAccount, deleteBankAccount } from '../services/accountService'
 import { formatCurrency } from '../utils/format'
 import { FiPlus, FiEdit2, FiTrash2, FiCreditCard, FiDollarSign, FiCheck, FiX, FiInfo } from 'react-icons/fi'
+import { useLanguage } from '../context/LanguageContext'
 
 function Balance() {
+  const { t } = useLanguage()
   const [accounts, setAccounts] = useState([])
   const [loading, setLoading] = useState(true)
   const [message, setMessage] = useState('')
@@ -118,15 +120,15 @@ function Balance() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h2 className="text-2xl font-extrabold tracking-tight text-slate-800 dark:text-white">Balances & Accounts</h2>
-          <p className="text-slate-400 dark:text-dark-text-muted text-sm mt-0.5">Manage your bank accounts, cash funds, and track real-time balances.</p>
+          <h2 className="text-2xl font-extrabold tracking-tight text-slate-800 dark:text-white">{t('accountsAndBalances')}</h2>
+          <p className="text-slate-400 dark:text-dark-text-muted text-sm mt-0.5">{t('accountsSubtitle')}</p>
         </div>
         <button
           onClick={handleOpenAdd}
-          className="flex items-center gap-1.5 rounded-xl bg-secondary dark:bg-purple-600 px-4 py-2.5 font-bold text-white text-sm hover:bg-indigo-700 dark:hover:bg-purple-700 transition-colors shadow-md shadow-secondary/15"
+          className="flex items-center gap-1.5 rounded-xl bg-secondary dark:bg-purple-600 px-4 py-2.5 font-bold text-white text-sm hover:bg-indigo-700 dark:hover:bg-purple-700 transition-colors shadow-md shadow-secondary/15 cursor-pointer"
         >
           <FiPlus className="w-4 h-4" />
-          Add Bank Account
+          {t('addAccount')}
         </button>
       </div>
 
@@ -151,18 +153,18 @@ function Balance() {
         
         <div className="relative z-10 flex flex-col sm:flex-row justify-between sm:items-center gap-4">
           <div className="space-y-1">
-            <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Net Combined Balance</span>
+            <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">{t('totalFunds')}</span>
             <h3 className="text-3xl sm:text-4xl font-black tracking-tight">{formatCurrency(totalBalance)}</h3>
           </div>
           <div className="flex gap-4">
             <div className="px-4 py-2 bg-white/5 backdrop-blur-md rounded-xl border border-white/10">
-              <span className="block text-[10px] text-slate-400 font-bold uppercase tracking-wider">Cash Balance</span>
+              <span className="block text-[10px] text-slate-400 font-bold uppercase tracking-wider">{t('cashBalance')}</span>
               <span className="text-base font-extrabold text-slate-200">
                 {formatCurrency(cashAccounts.reduce((acc, curr) => acc + curr.balance, 0))}
               </span>
             </div>
             <div className="px-4 py-2 bg-white/5 backdrop-blur-md rounded-xl border border-white/10">
-              <span className="block text-[10px] text-slate-400 font-bold uppercase tracking-wider">Bank Balance</span>
+              <span className="block text-[10px] text-slate-400 font-bold uppercase tracking-wider">{t('bankBalance')}</span>
               <span className="text-base font-extrabold text-slate-200">
                 {formatCurrency(bankAccounts.reduce((acc, curr) => acc + curr.balance, 0))}
               </span>
@@ -181,20 +183,20 @@ function Balance() {
                   <FiDollarSign className="w-5 h-5" />
                 </div>
                 <div>
-                  <h3 className="font-bold text-slate-800 dark:text-white text-base">Cash Funds</h3>
+                  <h3 className="font-bold text-slate-800 dark:text-white text-base">{t('cashBalance')}</h3>
                   <span className="text-xs text-slate-400 dark:text-dark-text-muted">Physical cash wallet</span>
                 </div>
               </div>
               <button
                 onClick={() => handleOpenEdit(cashAccounts[0])}
-                className="p-2 text-slate-400 hover:text-indigo-600 dark:hover:text-purple-400 rounded-lg hover:bg-slate-50 dark:hover:bg-dark-border transition-all"
+                className="p-2 text-slate-400 hover:text-indigo-600 dark:hover:text-purple-400 rounded-lg hover:bg-slate-50 dark:hover:bg-dark-border transition-all cursor-pointer"
                 title="Adjust Balance"
               >
                 <FiEdit2 className="w-4 h-4" />
               </button>
             </div>
             <div className="mt-6">
-              <span className="block text-[10px] text-slate-400 dark:text-dark-text-muted font-bold uppercase tracking-wider">Available Balance</span>
+              <span className="block text-[10px] text-slate-400 dark:text-dark-text-muted font-bold uppercase tracking-wider">{t('totalBalance')}</span>
               <span className="text-2xl font-black text-slate-800 dark:text-white">
                 {formatCurrency(cashAccounts[0]?.balance || 0)}
               </span>
@@ -205,7 +207,7 @@ function Balance() {
         {/* Bank Accounts Grid */}
         <div className="space-y-6 md:col-span-2">
           <div>
-            <h3 className="font-extrabold text-slate-800 dark:text-white text-lg">Bank Accounts</h3>
+            <h3 className="font-extrabold text-slate-800 dark:text-white text-lg">{t('accounts')}</h3>
             <p className="text-slate-400 dark:text-dark-text-muted text-xs mt-0.5">Manage bank account balances and linked card transactions.</p>
           </div>
           
@@ -229,14 +231,14 @@ function Balance() {
                     <div className="flex gap-1 opacity-80 group-hover:opacity-100 transition-opacity">
                       <button
                         onClick={() => handleOpenEdit(account)}
-                        className="p-1.5 text-slate-400 hover:text-indigo-600 dark:hover:text-purple-400 rounded-lg hover:bg-slate-50 dark:hover:bg-dark-border transition-all"
+                        className="p-1.5 text-slate-400 hover:text-indigo-600 dark:hover:text-purple-400 rounded-lg hover:bg-slate-50 dark:hover:bg-dark-border transition-all cursor-pointer"
                         title="Edit Account"
                       >
                         <FiEdit2 className="w-4 h-4" />
                       </button>
                       <button
                         onClick={() => handleOpenDelete(account)}
-                        className="p-1.5 text-slate-400 hover:text-rose-500 dark:hover:text-rose-400 rounded-lg hover:bg-slate-50 dark:hover:bg-dark-border transition-all"
+                        className="p-1.5 text-slate-400 hover:text-rose-500 dark:hover:text-rose-450 rounded-lg hover:bg-slate-50 dark:hover:bg-dark-border transition-all cursor-pointer"
                         title="Delete Account"
                       >
                         <FiTrash2 className="w-4 h-4" />
@@ -244,7 +246,7 @@ function Balance() {
                     </div>
                   </div>
                   <div className="mt-6">
-                    <span className="block text-[10px] text-slate-400 dark:text-dark-text-muted font-bold uppercase tracking-wider">Available Balance</span>
+                    <span className="block text-[10px] text-slate-400 dark:text-dark-text-muted font-bold uppercase tracking-wider">{t('totalBalance')}</span>
                     <span className="text-2xl font-black text-slate-800 dark:text-white">
                       {formatCurrency(account.balance)}
                     </span>
@@ -262,7 +264,7 @@ function Balance() {
           <div className="w-full max-w-md rounded-2xl bg-white dark:bg-dark-card border border-slate-100 dark:border-dark-border shadow-2xl p-6 relative overflow-hidden transition-all duration-300">
             <button
               onClick={handleCloseModal}
-              className="absolute right-4 top-4 p-1.5 text-slate-400 hover:text-slate-600 dark:hover:text-white rounded-lg hover:bg-slate-50 dark:hover:bg-dark-border transition-all"
+              className="absolute right-4 top-4 p-1.5 text-slate-400 hover:text-slate-600 dark:hover:text-white rounded-lg hover:bg-slate-50 dark:hover:bg-dark-border transition-all cursor-pointer"
             >
               <FiX className="w-5 h-5" />
             </button>
@@ -270,12 +272,12 @@ function Balance() {
             {modalType === 'add' && (
               <form onSubmit={handleAddSubmit} className="space-y-4">
                 <div>
-                  <h3 className="font-extrabold text-slate-800 dark:text-white text-lg">Add Bank Account</h3>
+                  <h3 className="font-extrabold text-slate-800 dark:text-white text-lg">{t('addAccount')}</h3>
                   <p className="text-slate-400 dark:text-dark-text-muted text-xs mt-0.5">Link a new bank account to record your savings.</p>
                 </div>
                 <div className="space-y-3">
                   <div className="flex flex-col gap-1">
-                    <label className="text-xs font-bold text-slate-500 dark:text-dark-text-muted uppercase">Bank Name</label>
+                    <label className="text-xs font-bold text-slate-500 dark:text-dark-text-muted uppercase">{t('accountName')}</label>
                     <input
                       type="text"
                       value={formData.name}
@@ -286,7 +288,7 @@ function Balance() {
                     />
                   </div>
                   <div className="flex flex-col gap-1">
-                    <label className="text-xs font-bold text-slate-500 dark:text-dark-text-muted uppercase">Starting Balance (₹)</label>
+                    <label className="text-xs font-bold text-slate-500 dark:text-dark-text-muted uppercase">{t('initialBalance')}</label>
                     <input
                       type="number"
                       value={formData.balance}
@@ -300,16 +302,16 @@ function Balance() {
                   <button
                     type="button"
                     onClick={handleCloseModal}
-                    className="px-4 py-2.5 rounded-xl border border-slate-200 dark:border-dark-border text-slate-500 dark:text-slate-300 font-semibold text-sm hover:bg-slate-50 dark:hover:bg-dark-border transition-colors"
+                    className="px-4 py-2.5 rounded-xl border border-slate-200 dark:border-dark-border text-slate-500 dark:text-slate-300 font-semibold text-sm hover:bg-slate-50 dark:hover:bg-dark-border transition-colors cursor-pointer"
                   >
-                    Cancel
+                    {t('cancel')}
                   </button>
                   <button
                     type="submit"
-                    className="flex items-center gap-1 px-4 py-2.5 rounded-xl bg-secondary dark:bg-purple-600 font-bold text-white text-sm hover:bg-indigo-700 dark:hover:bg-purple-700 transition-colors shadow-md shadow-secondary/15"
+                    className="flex items-center gap-1 px-4 py-2.5 rounded-xl bg-secondary dark:bg-purple-650 font-bold text-white text-sm hover:bg-indigo-700 dark:hover:bg-purple-750 transition-colors shadow-md shadow-secondary/15 cursor-pointer"
                   >
                     <FiCheck className="w-4 h-4" />
-                    Add Account
+                    {t('addAccount')}
                   </button>
                 </div>
               </form>
@@ -318,12 +320,12 @@ function Balance() {
             {modalType === 'edit' && (
               <form onSubmit={handleEditSubmit} className="space-y-4">
                 <div>
-                  <h3 className="font-extrabold text-slate-800 dark:text-white text-lg">Edit Account Details</h3>
+                  <h3 className="font-extrabold text-slate-800 dark:text-white text-lg">{t('editAccount')}</h3>
                   <p className="text-slate-400 dark:text-dark-text-muted text-xs mt-0.5">Modify account descriptors and adjust balances.</p>
                 </div>
                 <div className="space-y-3">
                   <div className="flex flex-col gap-1">
-                    <label className="text-xs font-bold text-slate-500 dark:text-dark-text-muted uppercase">Account Name</label>
+                    <label className="text-xs font-bold text-slate-500 dark:text-dark-text-muted uppercase">{t('accountName')}</label>
                     <input
                       type="text"
                       value={formData.name}
@@ -334,7 +336,7 @@ function Balance() {
                     />
                   </div>
                   <div className="flex flex-col gap-1">
-                    <label className="text-xs font-bold text-slate-500 dark:text-dark-text-muted uppercase">Balance (₹)</label>
+                    <label className="text-xs font-bold text-slate-500 dark:text-dark-text-muted uppercase">{t('totalBalance')}</label>
                     <input
                       type="number"
                       value={formData.balance}
@@ -348,16 +350,16 @@ function Balance() {
                   <button
                     type="button"
                     onClick={handleCloseModal}
-                    className="px-4 py-2.5 rounded-xl border border-slate-200 dark:border-dark-border text-slate-500 dark:text-slate-300 font-semibold text-sm hover:bg-slate-50 dark:hover:bg-dark-border transition-colors"
+                    className="px-4 py-2.5 rounded-xl border border-slate-200 dark:border-dark-border text-slate-500 dark:text-slate-300 font-semibold text-sm hover:bg-slate-50 dark:hover:bg-dark-border transition-colors cursor-pointer"
                   >
-                    Cancel
+                    {t('cancel')}
                   </button>
                   <button
                     type="submit"
-                    className="flex items-center gap-1 px-4 py-2.5 rounded-xl bg-secondary dark:bg-purple-600 font-bold text-white text-sm hover:bg-indigo-700 dark:hover:bg-purple-700 transition-colors shadow-md shadow-secondary/15"
+                    className="flex items-center gap-1 px-4 py-2.5 rounded-xl bg-secondary dark:bg-purple-650 font-bold text-white text-sm hover:bg-indigo-700 dark:hover:bg-purple-750 transition-colors shadow-md shadow-secondary/15 cursor-pointer"
                   >
                     <FiCheck className="w-4 h-4" />
-                    Save Changes
+                    {t('saveChanges')}
                   </button>
                 </div>
               </form>
@@ -366,7 +368,7 @@ function Balance() {
             {modalType === 'delete' && (
               <div className="space-y-4">
                 <div className="flex items-start gap-3">
-                  <div className="p-2 rounded-lg bg-rose-50 dark:bg-rose-950/20 text-rose-500 dark:text-rose-400 mt-1 flex-shrink-0">
+                  <div className="p-2 rounded-lg bg-rose-50 dark:bg-rose-950/20 text-rose-500 dark:text-rose-450 mt-1 flex-shrink-0">
                     <FiInfo className="w-6 h-6 animate-pulse" />
                   </div>
                   <div>
@@ -385,14 +387,14 @@ function Balance() {
                   <button
                     type="button"
                     onClick={handleCloseModal}
-                    className="px-4 py-2.5 rounded-xl border border-slate-200 dark:border-dark-border text-slate-500 dark:text-slate-300 font-semibold text-sm hover:bg-slate-50 dark:hover:bg-dark-border transition-colors"
+                    className="px-4 py-2.5 rounded-xl border border-slate-200 dark:border-dark-border text-slate-500 dark:text-slate-300 font-semibold text-sm hover:bg-slate-50 dark:hover:bg-dark-border transition-colors cursor-pointer"
                   >
-                    Cancel
+                    {t('cancel')}
                   </button>
                   <button
                     type="button"
                     onClick={handleDeleteSubmit}
-                    className="flex items-center gap-1 px-4 py-2.5 rounded-xl bg-rose-500 hover:bg-rose-600 font-bold text-white text-sm transition-colors shadow-md shadow-rose-500/15"
+                    className="flex items-center gap-1 px-4 py-2.5 rounded-xl bg-rose-500 hover:bg-rose-600 font-bold text-white text-sm transition-colors shadow-md shadow-rose-500/15 cursor-pointer"
                   >
                     <FiTrash2 className="w-4 h-4" />
                     Delete Permanently

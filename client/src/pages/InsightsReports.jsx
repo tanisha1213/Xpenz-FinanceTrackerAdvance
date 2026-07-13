@@ -15,10 +15,12 @@ import {
   FiLayers 
 } from 'react-icons/fi'
 import { useTheme } from '../context/ThemeContext'
+import { useLanguage } from '../context/LanguageContext'
 
 function InsightsReports() {
   const dispatch = useDispatch()
   const { theme } = useTheme()
+  const { t } = useLanguage()
   const isDark = theme === 'dark'
   const [activeTab, setActiveTab] = useState('insights') // 'insights' or 'reports'
 
@@ -74,26 +76,26 @@ function InsightsReports() {
       {/* Header */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h2 className="text-2xl font-extrabold text-slate-800 dark:text-white tracking-tight">Analytics & Reports</h2>
-          <p className="text-slate-400 dark:text-dark-text-muted text-sm mt-0.5">Explore AI-powered forecast predictions and download monthly statement reports.</p>
+          <h2 className="text-2xl font-extrabold text-slate-800 dark:text-white tracking-tight">{t('spendingInsights')}</h2>
+          <p className="text-slate-400 dark:text-dark-text-muted text-sm mt-0.5">{t('insightsSubtitle')}</p>
         </div>
 
         {/* Tab Switcher */}
         <div className="flex bg-slate-100 dark:bg-slate-dark p-1 rounded-xl w-fit">
           <button
             onClick={() => setActiveTab('insights')}
-            className={`flex items-center gap-2 px-4 py-2 text-sm font-bold rounded-lg transition-all ${
+            className={`flex items-center gap-2 px-4 py-2 text-sm font-bold rounded-lg transition-all cursor-pointer ${
               activeTab === 'insights'
                 ? 'bg-white dark:bg-dark-card text-secondary dark:text-purple-400 shadow-sm'
                 : 'text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200'
             }`}
           >
             <FiCpu className="w-4 h-4" />
-            AI Insights
+            {t('aiForecast')}
           </button>
           <button
             onClick={() => setActiveTab('reports')}
-            className={`flex items-center gap-2 px-4 py-2 text-sm font-bold rounded-lg transition-all ${
+            className={`flex items-center gap-2 px-4 py-2 text-sm font-bold rounded-lg transition-all cursor-pointer ${
               activeTab === 'reports'
                 ? 'bg-white dark:bg-dark-card text-secondary dark:text-purple-400 shadow-sm'
                 : 'text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200'
@@ -120,7 +122,7 @@ function InsightsReports() {
                 </div>
                 <button
                   onClick={() => { dispatch(fetchInsights()); dispatch(fetchPrediction()) }}
-                  className="flex items-center justify-center gap-2 rounded-lg border border-slate-200 dark:border-dark-border bg-white dark:bg-dark-card px-3 py-1.5 text-xs font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
+                  className="flex items-center justify-center gap-2 rounded-lg border border-slate-200 dark:border-dark-border bg-white dark:bg-dark-card px-3 py-1.5 text-xs font-bold text-slate-650 dark:text-slate-350 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors cursor-pointer"
                 >
                   <FiRefreshCw className="w-3.5 h-3.5" />
                   Refresh
@@ -152,7 +154,7 @@ function InsightsReports() {
             <section className="rounded-2xl border border-slate-100 dark:border-dark-border bg-white dark:bg-dark-card p-6 shadow-premium h-fit space-y-6">
               <div className="flex items-center gap-2 pb-4 border-b border-slate-100 dark:border-dark-border">
                 <FiTrendingUp className="w-5 h-5 text-secondary dark:text-purple-400" />
-                <h3 className="font-bold text-slate-800 dark:text-white text-lg">Spending Forecast</h3>
+                <h3 className="font-bold text-slate-800 dark:text-white text-lg">{t('aiForecast')}</h3>
               </div>
 
               <div className="space-y-4">
@@ -204,7 +206,7 @@ function InsightsReports() {
                 <select
                   value={period.month}
                   onChange={(e) => setPeriod({ ...period, month: Number(e.target.value) })}
-                  className="rounded-xl border border-slate-200 dark:border-dark-border px-3 py-2 text-sm bg-white dark:bg-dark-card text-slate-800 dark:text-slate-200 focus:outline-none"
+                  className="rounded-xl border border-slate-200 dark:border-dark-border px-3 py-2 text-sm bg-white dark:bg-dark-card text-slate-800 dark:text-slate-200 focus:outline-none cursor-pointer"
                 >
                   {Array.from({ length: 12 }, (_, index) => (
                     <option key={index + 1} value={index + 1}>
@@ -225,7 +227,7 @@ function InsightsReports() {
             <button
               onClick={exportPdf}
               disabled={reportLoading || !report}
-              className="flex items-center justify-center gap-2 rounded-xl bg-secondary dark:bg-purple-600 px-4 py-2.5 font-bold text-white text-sm hover:bg-indigo-700 dark:hover:bg-purple-700 transition-colors shadow-md disabled:opacity-50 w-full md:w-auto"
+              className="flex items-center justify-center gap-2 rounded-xl bg-secondary dark:bg-purple-600 px-4 py-2.5 font-bold text-white text-sm hover:bg-indigo-700 dark:hover:bg-purple-700 transition-colors shadow-md disabled:opacity-50 w-full md:w-auto cursor-pointer"
             >
               <FiDownload className="w-4 h-4" />
               Download Report
@@ -249,7 +251,7 @@ function InsightsReports() {
                 </div>
                 <div className="rounded-2xl border border-slate-100 dark:border-dark-border bg-white dark:bg-dark-card p-5 shadow-premium flex flex-col justify-between">
                   <span className="text-xs font-bold text-slate-400 dark:text-dark-text-muted uppercase tracking-wider">Statement Expenses</span>
-                  <span className="text-2xl font-extrabold text-rose-600 dark:text-rose-400 mt-2">{formatCurrency(report.totalExpense)}</span>
+                  <span className="text-2xl font-extrabold text-rose-600 dark:text-rose-455 mt-2">{formatCurrency(report.totalExpense)}</span>
                 </div>
                 <div className="rounded-2xl border border-slate-100 dark:border-dark-border bg-white dark:bg-dark-card p-5 shadow-premium flex flex-col justify-between">
                   <span className="text-xs font-bold text-slate-400 dark:text-dark-text-muted uppercase tracking-wider">Period Savings</span>
@@ -257,7 +259,7 @@ function InsightsReports() {
                 </div>
                 <div className="rounded-2xl border border-slate-100 dark:border-dark-border bg-white dark:bg-dark-card p-5 shadow-premium flex flex-col justify-between">
                   <span className="text-xs font-bold text-slate-400 dark:text-dark-text-muted uppercase tracking-wider">Remaining Budget</span>
-                  <span className="text-2xl font-extrabold text-indigo-600 dark:text-indigo-400 mt-2">{formatCurrency(report.budgetRemaining)}</span>
+                  <span className="text-2xl font-extrabold text-indigo-650 dark:text-purple-400 mt-2">{formatCurrency(report.budgetRemaining)}</span>
                 </div>
               </div>
 
@@ -297,7 +299,7 @@ function InsightsReports() {
                             <p className="font-bold text-slate-800 dark:text-slate-200 text-sm truncate max-w-[150px]">{item.title}</p>
                             <p className="text-xs text-slate-400 dark:text-dark-text-muted font-medium">{item.category} • {formatDate(item.transactionDate)}</p>
                           </div>
-                          <p className={`font-bold text-sm ${item.type === 'income' ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'}`}>
+                          <p className={`font-bold text-sm ${item.type === 'income' ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-450'}`}>
                             {item.type === 'income' ? '+' : '-'}{formatCurrency(item.amount)}
                           </p>
                         </div>

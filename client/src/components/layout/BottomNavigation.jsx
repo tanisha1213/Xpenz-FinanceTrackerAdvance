@@ -1,16 +1,18 @@
 import { Link, useLocation } from 'react-router-dom'
 import { FiLayout, FiDollarSign, FiPieChart, FiTrendingUp, FiUser, FiCreditCard } from 'react-icons/fi'
+import { useLanguage } from '../../context/LanguageContext'
 
 function BottomNavigation() {
   const location = useLocation()
+  const { t } = useLanguage()
   
   const navItems = [
-    { label: 'Dashboard', path: '/dashboard', icon: FiLayout },
-    { label: 'Accounts', path: '/balance', icon: FiCreditCard },
-    { label: 'Transactions', path: '/transactions', icon: FiDollarSign },
-    { label: 'Budget', path: '/budget', icon: FiPieChart },
-    { label: 'Analytics', path: '/insights', icon: FiTrendingUp },
-    { label: 'Profile', path: '/profile', icon: FiUser }
+    { labelKey: 'dashboard', path: '/dashboard', icon: FiLayout },
+    { labelKey: 'accounts', path: '/balance', icon: FiCreditCard },
+    { labelKey: 'transactions', path: '/transactions', icon: FiDollarSign },
+    { labelKey: 'budget', path: '/budget', icon: FiPieChart },
+    { labelKey: 'analytics', path: '/insights', icon: FiTrendingUp },
+    { labelKey: 'profile', path: '/profile', icon: FiUser }
   ]
 
   const isActive = (path) => location.pathname === path
@@ -32,7 +34,7 @@ function BottomNavigation() {
               }`}
             >
               <Icon className="w-5 h-5 mb-1" />
-              <span className="text-[10px] tracking-tight">{item.label}</span>
+              <span className="text-[10px] tracking-tight">{t(item.labelKey)}</span>
             </Link>
           )
         })}

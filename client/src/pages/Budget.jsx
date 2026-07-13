@@ -5,10 +5,12 @@ import { getDashboardSummary } from '../services/dashboardService'
 import { categories, formatCurrency } from '../utils/format'
 import { FiPlus, FiTrash2, FiActivity, FiCheck, FiInbox } from 'react-icons/fi'
 import { useTheme } from '../context/ThemeContext'
+import { useLanguage } from '../context/LanguageContext'
 
 function Budget() {
   const dispatch = useDispatch()
   const { theme } = useTheme()
+  const { t } = useLanguage()
   const budget = useSelector(state => state.budget)
   const [monthlyBudget, setMonthlyBudget] = useState(0)
   const [categoryBudgets, setCategoryBudgets] = useState([])
@@ -55,8 +57,8 @@ function Budget() {
   return (
     <div className="space-y-6 text-slate-800 dark:text-slate-100">
       <div>
-        <h2 className="text-2xl font-extrabold text-slate-800 dark:text-white tracking-tight">Budget Planner</h2>
-        <p className="text-slate-400 dark:text-dark-text-muted text-sm mt-0.5">Control your monthly outflows and restrict category levels.</p>
+        <h2 className="text-2xl font-extrabold text-slate-800 dark:text-white tracking-tight">{t('budgetSetup')}</h2>
+        <p className="text-slate-400 dark:text-dark-text-muted text-sm mt-0.5">{t('budgetSubtitle')}</p>
       </div>
 
       {message && <div className="rounded-xl border border-emerald-100 dark:border-emerald-950/20 bg-emerald-50/50 dark:bg-emerald-950/5 p-4 text-sm text-emerald-700 dark:text-emerald-400">{message}</div>}
@@ -67,7 +69,7 @@ function Budget() {
         <section className="rounded-2xl border border-slate-100 dark:border-dark-border bg-white dark:bg-dark-card p-6 shadow-premium lg:col-span-2">
           <form onSubmit={save} className="space-y-6">
             <div>
-              <label className="block text-xs font-bold text-slate-500 dark:text-dark-text-muted uppercase mb-2">Global Monthly Limit</label>
+              <label className="block text-xs font-bold text-slate-500 dark:text-dark-text-muted uppercase mb-2">{t('monthlyBudgetLimit')}</label>
               <div className="relative">
                 <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500 font-bold">₹</span>
                 <input
@@ -81,11 +83,11 @@ function Budget() {
             </div>
 
             <div className="flex items-center justify-between border-t border-slate-100 dark:border-dark-border pt-4">
-              <h3 className="font-bold text-slate-800 dark:text-white text-base">Category Budgets</h3>
+              <h3 className="font-bold text-slate-800 dark:text-white text-base">{t('categoryBudgets')}</h3>
               <button
                 type="button"
                 onClick={addCategory}
-                className="flex items-center gap-1.5 rounded-xl border border-slate-200 dark:border-dark-border bg-white dark:bg-dark-card px-3 py-2 text-xs font-bold text-slate-650 dark:text-slate-350 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
+                className="flex items-center gap-1.5 rounded-xl border border-slate-200 dark:border-dark-border bg-white dark:bg-dark-card px-3 py-2 text-xs font-bold text-slate-650 dark:text-slate-350 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors cursor-pointer"
               >
                 <FiPlus className="w-3.5 h-3.5" />
                 Add Category Limit
@@ -102,7 +104,7 @@ function Budget() {
                       <select
                         value={item.category}
                         onChange={(e) => updateCategory(index, 'category', e.target.value)}
-                        className="flex-1 rounded-xl border border-slate-200 dark:border-dark-border px-3 py-2 text-sm bg-white dark:bg-dark-card text-slate-800 dark:text-slate-200 focus:outline-none"
+                        className="flex-1 rounded-xl border border-slate-200 dark:border-dark-border px-3 py-2 text-sm bg-white dark:bg-dark-card text-slate-800 dark:text-slate-200 focus:outline-none cursor-pointer"
                       >
                         {categories.map((category) => <option key={category}>{category}</option>)}
                       </select>
@@ -119,7 +121,7 @@ function Budget() {
                       <button
                         type="button"
                         onClick={() => removeCategory(index)}
-                        className="flex items-center justify-center gap-1 p-2 rounded-xl text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/20 border border-transparent hover:border-rose-100 dark:hover:border-rose-900/30 transition-colors"
+                        className="flex items-center justify-center gap-1 p-2 rounded-xl text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/20 border border-transparent hover:border-rose-100 dark:hover:border-rose-900/30 transition-colors cursor-pointer"
                         title="Remove Category"
                       >
                         <FiTrash2 className="w-4 h-4" />
@@ -152,10 +154,10 @@ function Budget() {
 
             <button
               disabled={budget.loading}
-              className="flex items-center justify-center gap-1.5 rounded-xl bg-primary dark:bg-slate-800 px-4 py-3 font-bold text-white text-sm hover:bg-slate-800 dark:hover:bg-slate-700 disabled:opacity-50 transition-colors"
+              className="flex items-center justify-center gap-1.5 rounded-xl bg-primary dark:bg-slate-800 px-4 py-3 font-bold text-white text-sm hover:bg-slate-800 dark:hover:bg-slate-700 disabled:opacity-50 transition-colors cursor-pointer"
             >
               <FiCheck className="w-4 h-4" />
-              {budget.loading ? 'Saving...' : 'Save Settings'}
+              {budget.loading ? 'Saving...' : t('saveBudget')}
             </button>
           </form>
         </section>
@@ -178,7 +180,7 @@ function Budget() {
               </p>
             </div>
             <div>
-              <div className="mb-2 flex justify-between text-xs font-semibold text-slate-500 dark:text-dark-text-muted">
+              <div className="mb-2 flex justify-between text-xs font-semibold text-slate-550 dark:text-dark-text-muted">
                 <span>Budget Utilized</span>
                 <span>{usedPercent}%</span>
               </div>

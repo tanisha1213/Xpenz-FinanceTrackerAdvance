@@ -1,19 +1,70 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useSelector } from 'react-redux'
 import { FiUser, FiBell, FiSun, FiMoon } from 'react-icons/fi'
 import { useTheme } from '../../context/ThemeContext'
 import logoLight from '../../assets/logo-light.png'
 import logoDark from '../../assets/logo-dark.png'
+import { getLoans } from '../../services/loanService'
+import { useLanguage } from '../../context/LanguageContext'
 
 function Navbar() {
   const { user } = useSelector(state => state.auth)
   const { theme, toggleTheme } = useTheme()
+  const { language, setLanguage, t } = useLanguage()
   const [showNotifications, setShowNotifications] = useState(false)
   const [hasUnread, setHasUnread] = useState(true)
   const [notifications, setNotifications] = useState([
     { id: 1, title: 'Welcome to Xpenz', message: 'Smart AI spending forecasts and budget trackers are active.', time: 'Just now' },
     { id: 2, title: 'Budget Setup Complete', message: 'You have utilized 18% of your housing category limit.', time: '2 hours ago' }
   ])
+
+  useEffect(() => {
+    if (!user) return
+
+    const loadReminders = async () => {
+      try {
+        const res = await getLoans()
+        const activeLoans = res.data.data.filter(l => l.status === 'active' && l.endDate)
+        
+        const reminders = activeLoans.map((loan, idx) => {
+          const diffTime = new Date(loan.endDate) - new Date()
+          const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) // simple rounding to days
+          
+          let title = ''
+          let message = ''
+
+          if (diffDays < 0) {
+            title = 'Loan Overdue! ⚠️'
+            message = `Your ${loan.title} from ${loan.lenderName} was due on ${new Date(loan.endDate).toLocaleDateString()}. Outstanding: ₹${loan.remainingAmount.toLocaleString()}`
+          } else if (diffDays <= 7) {
+            title = 'Loan Due Soon ⏰'
+            message = `The end date for ${loan.title} is in ${diffDays} days (${new Date(loan.endDate).toLocaleDateString()}). Please plan your repayments.`
+          } else {
+            return null
+          }
+
+          return {
+            id: `loan-${loan._id}-${idx}`,
+            title,
+            message,
+            time: diffDays < 0 ? 'Overdue' : `${diffDays}d left`
+          }
+        }).filter(Boolean)
+
+        if (reminders.length > 0) {
+          setNotifications(prev => {
+            const filteredPrev = prev.filter(n => !n.id.toString().startsWith('loan-'))
+            return [...reminders, ...filteredPrev]
+          })
+          setHasUnread(true)
+        }
+      } catch (err) {
+        console.error('Failed to load loan reminders:', err)
+      }
+    }
+
+    loadReminders()
+  }, [user])
 
   return (
     <nav className="bg-white/80 dark:bg-dark-card/80 backdrop-blur-md border-b border-slate-100 dark:border-dark-border sticky top-0 z-30 transition-colors duration-200">
@@ -34,6 +85,25 @@ function Navbar() {
           >
             {theme === 'light' ? <FiMoon className="w-5 h-5" /> : <FiSun className="w-5 h-5 text-amber-400" />}
           </button>
+
+          {/* Language Switcher */}
+          <div className="relative flex items-center">
+            <select
+              value={language}
+              onChange={(e) => setLanguage(e.target.value)}
+              className="appearance-none bg-slate-50 dark:bg-dark-border border border-slate-200 dark:border-dark-border text-slate-650 dark:text-slate-300 rounded-xl pl-3 pr-7 py-1.5 text-xs font-bold focus:outline-none cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-800 transition-all font-sans"
+            >
+              <option value="en">English</option>
+              <option value="hi">हिन्दी</option>
+              <option value="mr">मराठी</option>
+              <option value="ta">தமிழ்</option>
+            </select>
+            <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-1.5 text-slate-400">
+              <svg className="fill-current h-3.5 w-3.5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
+                <path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z" />
+              </svg>
+            </div>
+          </div>
 
           <div className="relative">
             <button

@@ -21,6 +21,7 @@ import { saveTransaction } from '../redux/slices/transactionSlice'
 import { formatCurrency, formatDate, categories, paymentMethods } from '../utils/format'
 import { FiArrowUpRight, FiArrowDownRight, FiDollarSign, FiActivity, FiTrendingUp, FiPlus, FiCheck } from 'react-icons/fi'
 import { useTheme } from '../context/ThemeContext'
+import { useLanguage } from '../context/LanguageContext'
 import { motion } from 'framer-motion'
 
 const COLORS = ['#4f46e5', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#06b6d4']
@@ -38,6 +39,7 @@ const emptyForm = {
 function Dashboard() {
   const dispatch = useDispatch()
   const { theme } = useTheme()
+  const { t } = useLanguage()
   const [summary, setSummary] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
@@ -130,7 +132,7 @@ function Dashboard() {
 
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6 z-10">
           <div>
-            <p className="text-xs font-bold text-slate-400 dark:text-dark-text-muted uppercase tracking-wider">Total Balance</p>
+            <p className="text-xs font-bold text-slate-400 dark:text-dark-text-muted uppercase tracking-wider">{t('totalBalance')}</p>
             <div className="flex items-baseline gap-1 mt-2">
               <h2 className="text-4xl md:text-5xl font-black text-slate-800 dark:text-white tracking-tight">
                 {summary ? formatCurrency(summary.savings).split('.')[0] : '₹0'}
@@ -160,7 +162,7 @@ function Dashboard() {
               className="flex items-center justify-center gap-2 rounded-full bg-[#743BF7] hover:bg-[#602ee3] dark:bg-[#8B5CF6] dark:hover:bg-[#784ce3] px-8 py-4 font-black text-white text-sm shadow-xl shadow-purple-500/25 dark:shadow-purple-600/30 transition-all hover:scale-[1.03] active:scale-[0.98] cursor-pointer"
             >
               <FiPlus className="w-4 h-4 stroke-[3px]" />
-              Add Transaction
+              {t('addTransaction')}
             </button>
           </div>
         </div>
@@ -170,25 +172,25 @@ function Dashboard() {
       {summary && (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <SummaryCard
-            label="Total Income"
+            label={t('totalIncome')}
             value={formatCurrency(summary.totalIncome)}
             icon={FiArrowUpRight}
             tone="green"
           />
           <SummaryCard
-            label="Total Expense"
+            label={t('totalExpense')}
             value={formatCurrency(summary.totalExpense)}
             icon={FiArrowDownRight}
             tone="red"
           />
           <SummaryCard
-            label="Remaining Budget"
+            label={t('budgetSetup')}
             value={formatCurrency(summary.budgetRemaining)}
             icon={FiActivity}
             tone="blue"
           />
           <SummaryCard
-            label="Net Savings"
+            label={t('netSavings')}
             value={formatCurrency(summary.savings)}
             icon={FiDollarSign}
             tone="slate"
@@ -202,7 +204,7 @@ function Dashboard() {
         <section className="rounded-3xl border border-slate-100 dark:border-slate-800/80 bg-white dark:bg-gradient-to-b dark:from-[#131522] dark:to-[#0d0f17] p-6 shadow-premium lg:col-span-2">
           <div className="flex items-center gap-2 mb-4">
             <FiTrendingUp className="w-5 h-5 text-secondary dark:text-purple-400" />
-            <h3 className="font-bold text-slate-800 dark:text-white text-lg">Monthly Spending Trend</h3>
+            <h3 className="font-bold text-slate-800 dark:text-white text-lg">{t('monthlyTrend')}</h3>
           </div>
           <div className="h-72">
             <ResponsiveContainer width="100%" height="100%">
@@ -230,7 +232,7 @@ function Dashboard() {
 
         {/* Category Share Donut Chart */}
         <section className="rounded-3xl border border-slate-100 dark:border-slate-800/80 bg-white dark:bg-gradient-to-b dark:from-[#131522] dark:to-[#0d0f17] p-6 shadow-premium">
-          <h3 className="font-bold text-slate-800 dark:text-white text-lg mb-4">Category Distribution</h3>
+          <h3 className="font-bold text-slate-800 dark:text-white text-lg mb-4">{t('spendingByCat')}</h3>
           <div className="h-72 flex items-center justify-center relative">
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
@@ -260,7 +262,7 @@ function Dashboard() {
       <div className="grid gap-6 lg:grid-cols-3">
         {/* Income vs Expenses Bar Chart */}
         <section className="rounded-3xl border border-slate-100 dark:border-slate-800/80 bg-white dark:bg-gradient-to-b dark:from-[#131522] dark:to-[#0d0f17] p-6 shadow-premium lg:col-span-2">
-          <h3 className="font-bold text-slate-800 dark:text-white text-lg mb-4">Income vs Expense Comparison</h3>
+          <h3 className="font-bold text-slate-800 dark:text-white text-lg mb-4">{t('incomeVsExpense')}</h3>
           <div className="h-72">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={incomeExpense} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
@@ -284,7 +286,7 @@ function Dashboard() {
         {/* Recent Transactions List */}
         <section className="rounded-3xl border border-slate-100 dark:border-slate-800/80 bg-white dark:bg-gradient-to-b dark:from-[#131522] dark:to-[#0d0f17] p-6 shadow-premium flex flex-col justify-between">
           <div>
-            <h3 className="font-bold text-slate-800 dark:text-white text-lg mb-4">Recent Activity</h3>
+            <h3 className="font-bold text-slate-800 dark:text-white text-lg mb-4">{t('recentTransactions')}</h3>
             <div className="space-y-4">
               {summary?.recentTransactions?.length ? (
                 summary.recentTransactions.map((item) => (
@@ -324,10 +326,10 @@ function Dashboard() {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 dark:bg-black/60 backdrop-blur-sm p-4 animate-fadeIn">
           <div className="bg-white dark:bg-dark-card rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden border border-slate-100 dark:border-dark-border">
             <header className="px-6 py-4 border-b border-slate-100 dark:border-dark-border flex justify-between items-center bg-slate-50/50 dark:bg-dark-card/50">
-              <h3 className="text-lg font-bold text-slate-800 dark:text-white">Quick Add Transaction</h3>
+              <h3 className="text-lg font-bold text-slate-800 dark:text-white">{t('newTransaction')}</h3>
               <button
                 onClick={() => setShowForm(false)}
-                className="text-slate-400 hover:text-slate-600 dark:hover:text-white font-bold p-1 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg text-lg transition-colors"
+                className="text-slate-400 hover:text-slate-600 dark:hover:text-white font-bold p-1 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg text-lg transition-colors cursor-pointer"
               >
                 &times;
               </button>
@@ -338,19 +340,19 @@ function Dashboard() {
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-bold text-slate-500 dark:text-dark-text-muted uppercase mb-1">Type</label>
+                  <label className="block text-xs font-bold text-slate-500 dark:text-dark-text-muted uppercase mb-1">{t('typeLabel')}</label>
                   <select
                     name="type"
                     value={form.type}
                     onChange={handleFormChange}
-                    className="w-full rounded-xl border border-slate-200 dark:border-dark-border px-3 py-2 text-sm bg-white dark:bg-dark-card text-slate-800 dark:text-slate-200 focus:outline-none focus:border-secondary"
+                    className="w-full rounded-xl border border-slate-200 dark:border-dark-border px-3 py-2 text-sm bg-white dark:bg-dark-card text-slate-800 dark:text-slate-200 focus:outline-none focus:border-secondary cursor-pointer"
                   >
-                    <option value="expense">Expense</option>
-                    <option value="income">Income</option>
+                    <option value="expense">{t('expense')}</option>
+                    <option value="income">{t('income')}</option>
                   </select>
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-slate-500 dark:text-dark-text-muted uppercase mb-1">Amount</label>
+                  <label className="block text-xs font-bold text-slate-500 dark:text-dark-text-muted uppercase mb-1">{t('amountLabel')}</label>
                   <input
                     type="number"
                     name="amount"
@@ -365,7 +367,7 @@ function Dashboard() {
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-slate-500 dark:text-dark-text-muted uppercase mb-1">Title</label>
+                <label className="block text-xs font-bold text-slate-500 dark:text-dark-text-muted uppercase mb-1">{t('titleLabel')}</label>
                 <input
                   type="text"
                   name="title"
@@ -378,12 +380,12 @@ function Dashboard() {
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-bold text-slate-500 dark:text-dark-text-muted uppercase mb-1">Category</label>
+                  <label className="block text-xs font-bold text-slate-500 dark:text-dark-text-muted uppercase mb-1">{t('category')}</label>
                   <select
                     name="category"
                     value={form.category}
                     onChange={handleFormChange}
-                    className="w-full rounded-xl border border-slate-200 dark:border-dark-border px-3 py-2 text-sm bg-white dark:bg-dark-card text-slate-800 dark:text-slate-200 focus:outline-none focus:border-secondary"
+                    className="w-full rounded-xl border border-slate-200 dark:border-dark-border px-3 py-2 text-sm bg-white dark:bg-dark-card text-slate-800 dark:text-slate-200 focus:outline-none focus:border-secondary cursor-pointer"
                   >
                     {categories.map((c) => (
                       <option key={c} value={c}>{c}</option>
@@ -391,12 +393,12 @@ function Dashboard() {
                   </select>
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-slate-500 dark:text-dark-text-muted uppercase mb-1">Payment Method</label>
+                  <label className="block text-xs font-bold text-slate-500 dark:text-dark-text-muted uppercase mb-1">{t('paymentMethod')}</label>
                   <select
                     name="paymentMethod"
                     value={form.paymentMethod}
                     onChange={handleFormChange}
-                    className="w-full rounded-xl border border-slate-200 dark:border-dark-border px-3 py-2 text-sm bg-white dark:bg-dark-card text-slate-800 dark:text-slate-200 focus:outline-none focus:border-secondary capitalize"
+                    className="w-full rounded-xl border border-slate-200 dark:border-dark-border px-3 py-2 text-sm bg-white dark:bg-dark-card text-slate-800 dark:text-slate-200 focus:outline-none focus:border-secondary capitalize cursor-pointer"
                   >
                     {paymentMethods.map((p) => (
                       <option key={p} value={p}>{p.replace('_', ' ')}</option>
@@ -406,7 +408,7 @@ function Dashboard() {
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-slate-500 dark:text-dark-text-muted uppercase mb-1">Transaction Date</label>
+                <label className="block text-xs font-bold text-slate-500 dark:text-dark-text-muted uppercase mb-1">{t('transactionDate')}</label>
                 <input
                   type="date"
                   name="transactionDate"
@@ -418,7 +420,7 @@ function Dashboard() {
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-slate-500 dark:text-dark-text-muted uppercase mb-1">Description</label>
+                <label className="block text-xs font-bold text-slate-500 dark:text-dark-text-muted uppercase mb-1">{t('descriptionLabel')}</label>
                 <textarea
                   name="description"
                   value={form.description}
@@ -432,17 +434,17 @@ function Dashboard() {
                 <button
                   type="button"
                   onClick={() => setShowForm(false)}
-                  className="rounded-xl border border-slate-200 dark:border-dark-border px-4 py-2.5 text-sm font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
+                  className="rounded-xl border border-slate-200 dark:border-dark-border px-4 py-2.5 text-sm font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer"
                 >
-                  Cancel
+                  {t('cancel')}
                 </button>
                 <button
                   type="submit"
                   disabled={formLoading}
-                  className="flex items-center justify-center gap-1.5 rounded-xl bg-secondary dark:bg-purple-600 px-4 py-2.5 text-sm font-bold text-white hover:bg-indigo-700 dark:hover:bg-purple-700 shadow-md disabled:opacity-50"
+                  className="flex items-center justify-center gap-1.5 rounded-xl bg-secondary dark:bg-purple-600 px-4 py-2.5 text-sm font-bold text-white hover:bg-indigo-700 dark:hover:bg-purple-700 shadow-md disabled:opacity-50 cursor-pointer"
                 >
                   <FiCheck className="w-4 h-4" />
-                  {formLoading ? 'Saving...' : 'Save Entry'}
+                  {formLoading ? 'Saving...' : t('saveChanges')}
                 </button>
               </footer>
             </form>

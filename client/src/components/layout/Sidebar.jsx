@@ -3,6 +3,7 @@ import { useDispatch } from 'react-redux'
 import { logout } from '../../redux/slices/authSlice'
 import { FiLayout, FiDollarSign, FiPieChart, FiTrendingUp, FiUser, FiLogOut, FiCreditCard } from 'react-icons/fi'
 import { useTheme } from '../../context/ThemeContext'
+import { useLanguage } from '../../context/LanguageContext'
 import logoLight from '../../assets/logo-light.png'
 import logoDark from '../../assets/logo-dark.png'
 
@@ -11,14 +12,15 @@ function Sidebar() {
   const dispatch = useDispatch()
   const navigate = useNavigate()
   const { theme } = useTheme()
+  const { t } = useLanguage()
 
   const navItems = [
-    { label: 'Dashboard', path: '/dashboard', icon: FiLayout },
-    { label: 'Accounts', path: '/balance', icon: FiCreditCard },
-    { label: 'Transactions', path: '/transactions', icon: FiDollarSign },
-    { label: 'Budget', path: '/budget', icon: FiPieChart },
-    { label: 'Analytics', path: '/insights', icon: FiTrendingUp },
-    { label: 'Profile', path: '/profile', icon: FiUser }
+    { labelKey: 'dashboard', path: '/dashboard', icon: FiLayout },
+    { labelKey: 'accounts', path: '/balance', icon: FiCreditCard },
+    { labelKey: 'transactions', path: '/transactions', icon: FiDollarSign },
+    { labelKey: 'budget', path: '/budget', icon: FiPieChart },
+    { labelKey: 'analytics', path: '/insights', icon: FiTrendingUp },
+    { labelKey: 'profile', path: '/profile', icon: FiUser }
   ]
 
   const isActive = (path) => location.pathname === path
@@ -57,7 +59,7 @@ function Sidebar() {
               }`}
             >
               <Icon className="w-5 h-5 transition-transform duration-200 group-hover:scale-105" />
-              <span className="font-semibold text-sm">{item.label}</span>
+              <span className="font-semibold text-sm">{t(item.labelKey)}</span>
             </Link>
           )
         })}
@@ -70,7 +72,7 @@ function Sidebar() {
           className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-rose-500/10 text-rose-400 hover:text-white hover:bg-rose-600 rounded-xl transition-all duration-200 font-semibold text-sm shadow-sm"
         >
           <FiLogOut className="w-5 h-5" />
-          Logout
+          {t('logout')}
         </button>
       </div>
     </aside>
