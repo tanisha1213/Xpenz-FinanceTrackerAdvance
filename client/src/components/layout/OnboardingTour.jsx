@@ -7,7 +7,6 @@ const pageTours = {
   '/dashboard': [
     {
       target: null,
-      placement: 'center',
       title: {
         en: 'Dashboard Overview',
         hi: 'डैशबोर्ड अवलोकन',
@@ -23,7 +22,6 @@ const pageTours = {
     },
     {
       target: '#total-balance-card-tour',
-      placement: 'bottom',
       title: {
         en: 'Total Balance Card',
         hi: 'कुल शेष कार्ड',
@@ -39,7 +37,6 @@ const pageTours = {
     },
     {
       target: '#add-transaction-btn-tour',
-      placement: 'bottom',
       title: {
         en: 'Quick Add Transaction',
         hi: 'त्वरित लेनदेन जोड़ें',
@@ -55,7 +52,6 @@ const pageTours = {
     },
     {
       target: '#category-distribution-chart-tour',
-      placement: 'left',
       title: {
         en: 'Category Share',
         hi: 'श्रेणी हिस्सा',
@@ -71,7 +67,6 @@ const pageTours = {
     },
     {
       target: '#income-expense-chart-tour',
-      placement: 'top',
       title: {
         en: 'Income vs Expense Comparison',
         hi: 'आय बनाम खर्च तुलना',
@@ -87,12 +82,11 @@ const pageTours = {
     },
     {
       target: '#recent-activity-tour',
-      placement: 'left',
       title: {
         en: 'Recent Activity Log',
         hi: 'हाल ही की गतिविधि लॉग',
         mr: 'अलीकडील व्यवहार सूची',
-        ta: 'சமீபத்திய பரிவெற்றினைகள்'
+        ta: 'சமீபத்திய பரிவர்த்தனைகள்'
       },
       desc: {
         en: 'Check the chronological history of your most recent transactions instantly.',
@@ -105,7 +99,6 @@ const pageTours = {
   '/balance': [
     {
       target: null,
-      placement: 'center',
       title: {
         en: 'Accounts Management',
         hi: 'खाता प्रबंधन',
@@ -121,7 +114,6 @@ const pageTours = {
     },
     {
       target: '#add-account-btn-tour',
-      placement: 'bottom',
       title: {
         en: 'Add Bank Account',
         hi: 'बैंक खाता जोड़ें',
@@ -137,7 +129,6 @@ const pageTours = {
     },
     {
       target: '#cash-wallet-card-tour',
-      placement: 'bottom',
       title: {
         en: 'Cash Wallet Card',
         hi: 'नकद वॉलेट कार्ड',
@@ -148,12 +139,11 @@ const pageTours = {
         en: 'Track the physical cash money held in hand. You can adjust this balance at any time.',
         hi: 'हाथ में मौजूद भौतिक नकद राशि को ट्रैक करें। आप किसी भी समय इस शेष राशि को समायोजित कर सकते हैं।',
         mr: 'तुमच्याकडे स्वतःजवळ असलेल्या रोख रकमेचा मागोवा घ्या. तुम्ही ही शिल्लक कधीही बदलू शकता.',
-        ta: 'கையில் வைத்திருக்கும் ரொக்கப் பணத்தைக் கண்காணிக்கவும். இந்த இருப்பை நீங்கள் எப்போது வேண்டுமானாலும் சரிசெய்யலாம்.'
+        ta: 'கையில் வைத்திருக்கும் ரொக்கப் பணத்தைக் கண்காணிக்கவும். இந்த இருப்பை நீங்கள் எப்போது வேண்டுमानாலும் சரிசெய்யலாம்.'
       }
     },
     {
       target: '#bank-accounts-grid-tour',
-      placement: 'top',
       title: {
         en: 'Bank Accounts List',
         hi: 'बैंक खातों की सूची',
@@ -171,7 +161,6 @@ const pageTours = {
   '/transactions': [
     {
       target: null,
-      placement: 'center',
       title: {
         en: 'Transactions & Loan Filters',
         hi: 'लेनदेन और ऋण फ़िल्टर',
@@ -187,7 +176,6 @@ const pageTours = {
     },
     {
       target: '#transactions-filter-tour',
-      placement: 'bottom',
       title: {
         en: 'Search and Filter Options',
         hi: 'खोज और फ़िल्टर विकल्प',
@@ -203,7 +191,6 @@ const pageTours = {
     },
     {
       target: '#transactions-table-tour',
-      placement: 'top',
       title: {
         en: 'Transactions List Table',
         hi: 'लेनदेन सूची तालिका',
@@ -219,7 +206,6 @@ const pageTours = {
     },
     {
       target: '#active-loans-sidebar-tour',
-      placement: 'left',
       title: {
         en: 'Active Loans & Debts Panel',
         hi: 'सक्रिय ऋण और उधार पैनल',
@@ -235,7 +221,6 @@ const pageTours = {
     },
     {
       target: '#due-date-calendar-tour',
-      placement: 'left',
       title: {
         en: 'Amortization Calendar',
         hi: 'ऋण भुगतान कैलेंडर',
@@ -253,7 +238,6 @@ const pageTours = {
   '/budget': [
     {
       target: null,
-      placement: 'center',
       title: {
         en: 'Budgeting Controls',
         hi: 'बजट नियंत्रण',
@@ -269,7 +253,6 @@ const pageTours = {
     },
     {
       target: '#budget-global-limit-tour',
-      placement: 'bottom',
       title: {
         en: 'Global Limit Setting',
         hi: 'वैश्विक सीमा सेटिंग',
@@ -285,7 +268,6 @@ const pageTours = {
     },
     {
       target: '#budget-category-budgets-tour',
-      placement: 'top',
       title: {
         en: 'Category Budget Limits',
         hi: 'श्रेणी बजट सीमाएं',
@@ -301,12 +283,11 @@ const pageTours = {
     },
     {
       target: '#budget-progress-sidebar-tour',
-      placement: 'left',
       title: {
         en: 'Budget Progress Stats',
         hi: 'बजट प्रगति आंकड़े',
         mr: 'बजेट प्रगती आकडेवारी',
-        ta: 'பठ्ஜெட் முன்னேற்ற புள்ளிவிவரங்கள்'
+        ta: 'பட்ஜெட் முன்னேற்ற புள்ளிவிவரங்கள்'
       },
       desc: {
         en: 'Monitor total month spending, available budget balance, and utilized percentage in real time.',
@@ -319,7 +300,6 @@ const pageTours = {
   '/insights': [
     {
       target: null,
-      placement: 'center',
       title: {
         en: 'Insights & Statement Reports',
         hi: 'अंतर्दृष्टि और विवरण रिपोर्ट',
@@ -335,7 +315,6 @@ const pageTours = {
     },
     {
       target: '#analytics-ai-advice-tour',
-      placement: 'bottom',
       title: {
         en: 'AI Financial Advice Card',
         hi: 'एआई वित्तीय सलाह कार्ड',
@@ -351,7 +330,6 @@ const pageTours = {
     },
     {
       target: '#analytics-ai-forecast-tour',
-      placement: 'left',
       title: {
         en: 'Spending Forecast Panel',
         hi: 'व्यय पूर्वानुमान पैनल',
@@ -378,7 +356,7 @@ const commonTranslations = {
 export default function OnboardingTour() {
   const { language } = useLanguage()
   const location = useLocation()
-  const currentPath = location.pathname
+  const currentPath = location.pathname.replace(/\/$/, '') || '/'
   
   const [active, setActive] = useState(false)
   const [stepIndex, setStepIndex] = useState(0)
@@ -399,7 +377,7 @@ export default function OnboardingTour() {
       const timer = setTimeout(() => {
         setStepIndex(0)
         setActive(true)
-      }, 1000)
+      }, 1200)
       return () => clearTimeout(timer)
     } else {
       setActive(false)
@@ -435,7 +413,7 @@ export default function OnboardingTour() {
           right: rect.right
         })
         
-        // Only scroll into view if not already fully visible in main scroll area
+        // Auto scroll if not in visible area
         if (rect.top < 60 || rect.bottom > window.innerHeight - 80) {
           el.scrollIntoView({ behavior: 'smooth', block: 'center' })
         }
@@ -494,7 +472,7 @@ export default function OnboardingTour() {
     return (
       <button
         onClick={triggerRestart}
-        className="fixed bottom-20 right-6 z-40 bg-indigo-650 dark:bg-purple-650 hover:bg-indigo-750 dark:hover:bg-purple-750 text-white p-3 rounded-full shadow-lg flex items-center justify-center gap-1.5 font-bold text-xs cursor-pointer hover:scale-105 transition-all"
+        className="fixed bottom-20 right-6 z-[1000] bg-indigo-650 dark:bg-purple-650 hover:bg-indigo-750 dark:hover:bg-purple-750 text-white p-3 rounded-full shadow-lg flex items-center justify-center gap-1.5 font-bold text-xs cursor-pointer hover:scale-105 transition-all"
         title={labels.restartTour}
       >
         <FiHelpCircle className="w-4 h-4" />
@@ -509,75 +487,15 @@ export default function OnboardingTour() {
   const stepTitle = currentStep.title[language] || currentStep.title['en']
   const stepDesc = currentStep.desc[language] || currentStep.desc['en']
 
-  // Width is 350px on desktop
-  let cardStyle = {
-    zIndex: 1000,
-    width: window.innerWidth < 1024 ? 'auto' : '350px'
-  }
-
-  if (coords) {
-    if (window.innerWidth < 1024) {
-      // Stacked/Tablet/Mobile bottom sheet layout
-      cardStyle = {
-        ...cardStyle,
-        position: 'fixed',
-        bottom: '24px',
-        left: '16px',
-        right: '16px',
-        transform: 'none',
-        top: 'auto'
-      }
-    } else {
-      let placement = currentStep.placement || 'bottom'
-      
-      // Auto-adjust left placement if it would go off-screen
-      if (placement === 'left' && coords.left < 380) {
-        placement = 'bottom'
-      }
-      // Auto-adjust right placement if it would go off-screen
-      if (placement === 'right' && (window.innerWidth - coords.right) < 380) {
-        placement = 'bottom'
-      }
-
-      if (placement === 'bottom') {
-        cardStyle = {
-          ...cardStyle,
-          position: 'fixed',
-          top: Math.min(window.innerHeight - 220, coords.bottom + 12) + 'px',
-          left: Math.max(16, Math.min(window.innerWidth - 370, coords.left + coords.width/2 - 175)) + 'px'
-        }
-      } else if (placement === 'top') {
-        cardStyle = {
-          ...cardStyle,
-          position: 'fixed',
-          top: coords.top - 12 + 'px',
-          left: Math.max(16, Math.min(window.innerWidth - 370, coords.left + coords.width/2 - 175)) + 'px',
-          transform: 'translateY(-100%)'
-        }
-      } else if (placement === 'right') {
-        cardStyle = {
-          ...cardStyle,
-          position: 'fixed',
-          top: Math.max(16, Math.min(window.innerHeight - 220, coords.top + 10)) + 'px',
-          left: coords.right + 12 + 'px'
-        }
-      } else if (placement === 'left') {
-        cardStyle = {
-          ...cardStyle,
-          position: 'fixed',
-          top: Math.max(16, Math.min(window.innerHeight - 220, coords.top + 10)) + 'px',
-          left: coords.left - 370 + 'px'
-        }
-      }
-    }
-  } else {
-    cardStyle = {
-      ...cardStyle,
-      position: 'fixed',
-      top: '50%',
-      left: '50%',
-      transform: 'translate(-50%, -50%)'
-    }
+  // Unified high-end control console floating at bottom center of the viewport
+  const cardStyle = {
+    position: 'fixed',
+    bottom: '24px',
+    left: '50%',
+    transform: 'translateX(-50%)',
+    width: '380px',
+    maxWidth: 'calc(100% - 32px)',
+    zIndex: 1000
   }
 
   return (
@@ -609,10 +527,10 @@ export default function OnboardingTour() {
         />
       </svg>
 
-      {/* Tour Dialog Pop-up */}
+      {/* Tour Dialog Pop-up (Fixed Bottom Center console layout) */}
       <div
         style={cardStyle}
-        className="bg-white dark:bg-[#131522] border border-slate-100 dark:border-slate-800 rounded-3xl p-5 shadow-2xl space-y-4 animate-scaleUp z-[1000] text-slate-800 dark:text-slate-100"
+        className="bg-white dark:bg-[#131522] border border-slate-100 dark:border-slate-800 rounded-3xl p-5 shadow-2xl space-y-4 z-[1000] text-slate-800 dark:text-slate-100 transition-all duration-300"
       >
         <div className="flex justify-between items-start">
           <span className="text-[10px] font-bold text-indigo-500 dark:text-purple-400 bg-indigo-50 dark:bg-purple-950/20 px-2 py-0.5 rounded-full uppercase tracking-wider">
