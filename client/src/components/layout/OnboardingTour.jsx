@@ -92,7 +92,7 @@ const pageTours = {
         en: 'Recent Activity Log',
         hi: 'हाल ही की गतिविधि लॉग',
         mr: 'अलीकडील व्यवहार सूची',
-        ta: 'சமீபத்திய பரிவர்த்தனைகள்'
+        ta: 'சமீபத்திய பரிவெற்றினைகள்'
       },
       desc: {
         en: 'Check the chronological history of your most recent transactions instantly.',
@@ -306,7 +306,7 @@ const pageTours = {
         en: 'Budget Progress Stats',
         hi: 'बजट प्रगति आंकड़े',
         mr: 'बजेट प्रगती आकडेवारी',
-        ta: 'பட்ஜெட் முன்னேற்ற புள்ளிவிவரங்கள்'
+        ta: 'பठ्ஜெட் முன்னேற்ற புள்ளிவிவரங்கள்'
       },
       desc: {
         en: 'Monitor total month spending, available budget balance, and utilized percentage in real time.',
@@ -322,7 +322,7 @@ const pageTours = {
       placement: 'center',
       title: {
         en: 'Insights & Statement Reports',
-        hi: 'अन्तरदृष्टि और विवरण रिपोर्ट',
+        hi: 'अंतर्दृष्टि और विवरण रिपोर्ट',
         mr: 'विश्लेषण आणि अहवाल',
         ta: 'நுண்ணறிவு & அறிக்கை விவரங்கள்'
       },
@@ -509,18 +509,21 @@ export default function OnboardingTour() {
   const stepTitle = currentStep.title[language] || currentStep.title['en']
   const stepDesc = currentStep.desc[language] || currentStep.desc['en']
 
-  let cardStyle = { zIndex: 1000 }
+  // Width is 350px on desktop
+  let cardStyle = {
+    zIndex: 1000,
+    width: window.innerWidth < 1024 ? 'auto' : '350px'
+  }
 
   if (coords) {
-    if (window.innerWidth < 768) {
-      // Mobile bottom sheet layout
+    if (window.innerWidth < 1024) {
+      // Stacked/Tablet/Mobile bottom sheet layout
       cardStyle = {
         ...cardStyle,
         position: 'fixed',
         bottom: '24px',
         left: '16px',
         right: '16px',
-        width: 'auto',
         transform: 'none',
         top: 'auto'
       }
@@ -608,7 +611,7 @@ export default function OnboardingTour() {
 
       {/* Tour Dialog Pop-up */}
       <div
-        style={{ ...cardStyle, maxWidth: window.innerWidth < 768 ? 'none' : '350px' }}
+        style={cardStyle}
         className="bg-white dark:bg-[#131522] border border-slate-100 dark:border-slate-800 rounded-3xl p-5 shadow-2xl space-y-4 animate-scaleUp z-[1000] text-slate-800 dark:text-slate-100"
       >
         <div className="flex justify-between items-start">
