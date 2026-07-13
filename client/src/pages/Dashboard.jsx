@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { Link } from 'react-router-dom'
 import { useDispatch } from 'react-redux'
 import {
   Bar,
@@ -36,11 +37,79 @@ const emptyForm = {
   transactionDate: new Date().toISOString().slice(0, 10)
 }
 
+const checklistTranslations = {
+  en: {
+    setupGuide: '🚀 Quick Start Checklist',
+    setupGuideSubtitle: 'Follow these recommended steps to set up your finance tracker workspace:',
+    step1Budget: '1. Set up Monthly Budget (Do this first!)',
+    step1BudgetDesc: 'Plan your spending limits and target savings before recording expenses.',
+    step2Accounts: '2. Configure Balances & Accounts',
+    step2AccountsDesc: 'Set starting balances for Cash and Bank Accounts to reflect correct totals.',
+    step3Tx: '3. Log Your First Transaction',
+    step3TxDesc: 'Record an income or expense entry to populate your real-time charts.',
+    goToBudget: 'Set Budget',
+    goToAccounts: 'Set Balances',
+    addFirstTx: 'Add Transaction',
+    dismissGuide: 'Hide Checklist',
+    setupComplete: '🎉 Setup completed! You are ready to manage your finances.',
+  },
+  hi: {
+    setupGuide: '🚀 त्वरित शुरुआत चेकलिस्ट',
+    setupGuideSubtitle: 'अपने वित्त कार्यक्षेत्र को सेट करने के लिए इन अनुशंसित चरणों का पालन करें:',
+    step1Budget: '1. मासिक बजट सेट करें (यह पहले करें!)',
+    step1BudgetDesc: 'खर्चों को रिकॉर्ड करने से पहले अपनी खर्च सीमा और लक्षित बचत की योजना बनाएं।',
+    step2Accounts: '2. खातों और प्रारंभिक शेष राशि को कॉन्फ़िगर करें',
+    step2AccountsDesc: 'सही कुल राशि दर्शाने के लिए नकद और बैंक खातों के लिए प्रारंभिक शेष राशि सेट करें।',
+    step3Tx: '3. अपना पहला लेनदेन दर्ज करें',
+    step3TxDesc: 'अपने रीयल-टाइम चार्ट को भरने के लिए आय या व्यय प्रविष्टि रिकॉर्ड करें।',
+    goToBudget: 'बजट सेट करें',
+    goToAccounts: 'शेष राशि सेट करें',
+    addFirstTx: 'लेनदेन जोड़ें',
+    dismissGuide: 'चेकलिस्ट छुपाएं',
+    setupComplete: '🎉 सेटअप पूरा हुआ! आप अपने वित्त का प्रबंधन करने के लिए तैयार हैं।',
+  },
+  mr: {
+    setupGuide: '🚀 त्वरित सुरुवात चेकलिस्ट',
+    setupGuideSubtitle: 'तुमची आर्थिक जागा सेट करण्यासाठी या शिफारस केलेल्या चरणांचे अनुसरण करा:',
+    step1Budget: '१. मासिक बजेट सेट करा (हे आधी करा!)',
+    step1BudgetDesc: 'खर्च नोंदवण्यापूर्वी तुमच्या खर्चाच्या मर्यादा आणि लक्ष्यित बचतीचे नियोजन करा.',
+    step2Accounts: '२. खाती आणि शिल्लक रक्कम कॉन्फ़िगर करा',
+    step2AccountsDesc: 'योग्य एकूण रक्कम दर्शवण्यासाठी रोख आणि बँक खात्यांसाठी सुरुवातीची शिल्लक सेट करा.',
+    step3Tx: '३. तुमचा पहिला व्यवहार नोंदवा',
+    step3TxDesc: 'तुमचे रिअल-टाइम चार्ट अपडेट करण्यासाठी उत्पन्न किंवा खर्चाची नोंद करा.',
+    goToBudget: 'बजेट सेट करा',
+    goToAccounts: 'शिल्लक सेट करा',
+    addFirstTx: 'व्यवहार जोडा',
+    dismissGuide: 'चेकलिस्ट लपवा',
+    setupComplete: '🎉 सेटअप पूर्ण झाला! तुम्ही तुमचे आर्थिक नियोजन करण्यासाठी सज्ज आहात.',
+  },
+  ta: {
+    setupGuide: '🚀 விரைவு தொடக்க சரிபார்ப்பு பட்டியல்',
+    setupGuideSubtitle: 'உங்கள் நிதிப் பகுதியை அமைக்க இந்த பரிந்துரைக்கப்பட்ட வழிமுறைகளைப் பின்பற்றவும்:',
+    step1Budget: '1. மாதாந்திர பட்ஜெட்டை அமைக்கவும் (இதை முதலில் செய்யுங்கள்!)',
+    step1BudgetDesc: 'செலவுகளைப் பதிவுசெய்வதற்கு முன் உங்கள் செலவு வரம்புகள் மற்றும் இலக்கு சேமிப்புகளைத் திட்டமிடுங்கள்.',
+    step2Accounts: '2. கணக்குகள் மற்றும் இருப்புகளை அமைக்கவும்',
+    step2AccountsDesc: 'சரியான மொத்தத் தொகையைக் காட்ட ரொக்கம் மற்றும் வங்கிக் கணக்குகளுக்கான இருப்புகளை அமைக்கவும்.',
+    step3Tx: '3. உங்கள் முதல் பரிவர்த்தனையைப் பதிவு செய்யவும்',
+    step3TxDesc: 'உங்கள் நிகழ்நேர விளக்கப்படங்களைப் புதுப்பிக்க வரவு அல்லது செலவைப் பதிவு செய்யவும்.',
+    goToBudget: 'பட்ஜெட் அமை',
+    goToAccounts: 'இருப்புகளை அமை',
+    addFirstTx: 'பரிவர்த்தனை சேர்',
+    dismissGuide: 'பட்டியலை மறை',
+    setupComplete: '🎉 அமைவு முடிந்தது! உங்கள் நிதியை நிர்வகிக்க நீங்கள் தயாராக உள்ளீர்கள்.',
+  }
+}
+
 function Dashboard() {
   const dispatch = useDispatch()
   const { theme } = useTheme()
-  const { t } = useLanguage()
+  const { t, language } = useLanguage()
   const [summary, setSummary] = useState(null)
+  
+  // Setup Checklist state
+  const [dismissedChecklist, setDismissedChecklist] = useState(() => {
+    return localStorage.getItem('xpenz_dismissed_checklist') === 'true'
+  })
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   
@@ -121,8 +190,150 @@ function Dashboard() {
   const tooltipItemStyle = { color: isDark ? '#f8fafc' : '#0f172a' }
   const tooltipLabelStyle = { color: isDark ? '#94a3b8' : '#64748b' }
 
+  const isBudgetDone = summary?.monthlyBudget > 0
+  const isAccountsDone = summary?.totalBalance > 0
+  const isTxDone = summary?.recentTransactions?.length > 0
+  
+  const completedCount = [isBudgetDone, isAccountsDone, isTxDone].filter(Boolean).length
+  const progressPct = Math.round((completedCount / 3) * 100)
+  const showChecklist = !dismissedChecklist && completedCount < 3
+  const checklistLabels = checklistTranslations[language] || checklistTranslations['en']
+
   return (
     <div className="space-y-8 text-slate-800 dark:text-slate-100">
+      {/* Setup Guide / Checklist Card */}
+      {showChecklist && (
+        <section className="rounded-3xl border border-indigo-100 dark:border-purple-950/20 bg-indigo-50/10 dark:bg-purple-950/5 p-6 shadow-premium space-y-6">
+          <div className="flex justify-between items-start">
+            <div className="space-y-1">
+              <h3 className="font-extrabold text-indigo-650 dark:text-purple-400 text-lg flex items-center gap-2">
+                {checklistLabels.setupGuide}
+              </h3>
+              <p className="text-slate-500 dark:text-dark-text-muted text-xs">
+                {checklistLabels.setupGuideSubtitle}
+              </p>
+            </div>
+            <button
+              onClick={() => {
+                localStorage.setItem('xpenz_dismissed_checklist', 'true')
+                setDismissedChecklist(true)
+              }}
+              className="text-slate-400 hover:text-slate-650 dark:hover:text-white text-xs font-bold px-3 py-1 border border-slate-200 dark:border-dark-border rounded-xl cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+            >
+              {checklistLabels.dismissGuide}
+            </button>
+          </div>
+
+          {/* Progress Bar */}
+          <div className="space-y-2">
+            <div className="flex justify-between text-xs font-bold text-slate-400 dark:text-dark-text-muted uppercase tracking-wider">
+              <span>{t('progress') || 'Progress'}</span>
+              <span>{completedCount} / 3 {t('completed') || 'Completed'} ({progressPct}%)</span>
+            </div>
+            <div className="w-full h-2 bg-slate-200 dark:bg-dark-border rounded-full overflow-hidden">
+              <div className="h-full bg-indigo-600 dark:bg-purple-500 transition-all duration-500" style={{ width: `${progressPct}%` }}></div>
+            </div>
+          </div>
+
+          {/* Checklist Items */}
+          <div className="grid gap-4 md:grid-cols-3">
+            {/* Step 1: Budget */}
+            <div className={`p-4 rounded-2xl border transition-all ${
+              isBudgetDone 
+                ? 'border-emerald-100 dark:border-emerald-950/20 bg-emerald-50/20 dark:bg-emerald-950/5' 
+                : 'border-slate-100 dark:border-slate-800 bg-white dark:bg-dark-card shadow-sm'
+            }`}>
+              <div className="flex items-start gap-3">
+                <div className={`p-1.5 rounded-full ${
+                  isBudgetDone ? 'bg-emerald-100 text-emerald-600 dark:bg-emerald-950/30' : 'bg-slate-100 text-slate-400 dark:bg-slate-800 dark:text-slate-500'
+                }`}>
+                  <FiCheck className="w-4 h-4" />
+                </div>
+                <div className="space-y-2 flex-1">
+                  <h4 className={`font-bold text-sm ${isBudgetDone ? 'text-slate-400 dark:text-slate-500 line-through font-normal' : 'text-slate-800 dark:text-white'}`}>
+                    {checklistLabels.step1Budget}
+                  </h4>
+                  <p className="text-[11px] text-slate-400 dark:text-dark-text-muted leading-relaxed">
+                    {checklistLabels.step1BudgetDesc}
+                  </p>
+                  {!isBudgetDone && (
+                    <Link
+                      to="/budget"
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-indigo-650 dark:bg-purple-650 text-white rounded-xl text-xs font-bold shadow-md hover:bg-indigo-750 dark:hover:bg-purple-750 transition-colors"
+                    >
+                      {checklistLabels.goToBudget}
+                    </Link>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* Step 2: Accounts */}
+            <div className={`p-4 rounded-2xl border transition-all ${
+              isAccountsDone 
+                ? 'border-emerald-100 dark:border-emerald-950/20 bg-emerald-50/20 dark:bg-emerald-950/5' 
+                : 'border-slate-100 dark:border-slate-800 bg-white dark:bg-dark-card shadow-sm'
+            }`}>
+              <div className="flex items-start gap-3">
+                <div className={`p-1.5 rounded-full ${
+                  isAccountsDone ? 'bg-emerald-100 text-emerald-600 dark:bg-emerald-950/30' : 'bg-slate-100 text-slate-400 dark:bg-slate-800 dark:text-slate-500'
+                }`}>
+                  <FiCheck className="w-4 h-4" />
+                </div>
+                <div className="space-y-2 flex-1">
+                  <h4 className={`font-bold text-sm ${isAccountsDone ? 'text-slate-400 dark:text-slate-500 line-through font-normal' : 'text-slate-800 dark:text-white'}`}>
+                    {checklistLabels.step2Accounts}
+                  </h4>
+                  <p className="text-[11px] text-slate-400 dark:text-dark-text-muted leading-relaxed">
+                    {checklistLabels.step2AccountsDesc}
+                  </p>
+                  {!isAccountsDone && (
+                    <Link
+                      to="/balance"
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-indigo-650 dark:bg-purple-650 text-white rounded-xl text-xs font-bold shadow-md hover:bg-indigo-750 dark:hover:bg-purple-750 transition-colors"
+                    >
+                      {checklistLabels.goToAccounts}
+                    </Link>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* Step 3: Transaction */}
+            <div className={`p-4 rounded-2xl border transition-all ${
+              isTxDone 
+                ? 'border-emerald-100 dark:border-emerald-950/20 bg-emerald-50/20 dark:bg-emerald-950/5' 
+                : 'border-slate-100 dark:border-slate-800 bg-white dark:bg-dark-card shadow-sm'
+            }`}>
+              <div className="flex items-start gap-3">
+                <div className={`p-1.5 rounded-full ${
+                  isTxDone ? 'bg-emerald-100 text-emerald-600 dark:bg-emerald-950/30' : 'bg-slate-100 text-slate-400 dark:bg-slate-800 dark:text-slate-500'
+                }`}>
+                  <FiCheck className="w-4 h-4" />
+                </div>
+                <div className="space-y-2 flex-1">
+                  <h4 className={`font-bold text-sm ${isTxDone ? 'text-slate-400 dark:text-slate-500 line-through font-normal' : 'text-slate-800 dark:text-white'}`}>
+                    {checklistLabels.step3Tx}
+                  </h4>
+                  <p className="text-[11px] text-slate-400 dark:text-dark-text-muted leading-relaxed">
+                    {checklistLabels.step3TxDesc}
+                  </p>
+                  {!isTxDone && (
+                    <button
+                      onClick={() => setShowForm(true)}
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-indigo-650 dark:bg-purple-650 text-white rounded-xl text-xs font-bold shadow-md hover:bg-indigo-750 dark:hover:bg-purple-750 transition-colors cursor-pointer"
+                    >
+                      <FiPlus className="w-3.5 h-3.5" />
+                      {checklistLabels.addFirstTx}
+                    </button>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+      )}
+
       {/* Premium Hero Balance Section */}
       <div id="total-balance-card-tour" className="rounded-3xl border border-slate-100 dark:border-slate-800/80 bg-white dark:bg-gradient-to-b dark:from-[#131522] dark:to-[#0d0f17] p-6 md:p-8 shadow-premium relative overflow-hidden flex flex-col justify-between min-h-[200px]">
         {/* Subtle glow accent */}
