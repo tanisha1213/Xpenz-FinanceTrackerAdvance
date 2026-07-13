@@ -18,7 +18,7 @@ function BottomNavigation() {
   const isActive = (path) => location.pathname === path
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-40 block md:hidden bg-white/90 dark:bg-dark-card/90 border-t border-slate-100 dark:border-dark-border backdrop-blur-lg shadow-premium pb-safe">
+    <nav id="bottom-navigation-tour" className="fixed bottom-0 left-0 right-0 z-40 block md:hidden bg-white/90 dark:bg-dark-card/90 border-t border-slate-100 dark:border-dark-border backdrop-blur-lg shadow-premium pb-safe">
       <div className="flex justify-around items-center h-16 px-2">
         {navItems.map((item) => {
           const Icon = item.icon

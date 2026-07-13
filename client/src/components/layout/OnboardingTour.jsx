@@ -135,7 +135,13 @@ export default function OnboardingTour() {
         return
       }
       
-      const el = document.querySelector(step.target)
+      let el = document.querySelector(step.target)
+      
+      // Fallback redirection for mobile view navigation
+      if (!el && step.target === '#sidebar-navigation-tour') {
+        el = document.querySelector('#bottom-navigation-tour')
+      }
+      
       if (el) {
         const rect = el.getBoundingClientRect()
         setCoords({
@@ -154,7 +160,11 @@ export default function OnboardingTour() {
 
     calculatePosition()
     window.addEventListener('resize', calculatePosition)
-    return () => window.removeEventListener('resize', calculatePosition)
+    window.addEventListener('scroll', calculatePosition)
+    return () => {
+      window.removeEventListener('resize', calculatePosition)
+      window.removeEventListener('scroll', calculatePosition)
+    }
   }, [stepIndex, active])
 
   const handleNext = () => {
@@ -200,40 +210,49 @@ export default function OnboardingTour() {
   let cardStyle = { zIndex: 1000 }
 
   if (coords) {
-    let placement = currentStep.placement || 'bottom'
     if (window.innerWidth < 768) {
-      // Force bottom on mobile devices
-      placement = 'bottom'
-    }
-
-    if (placement === 'bottom') {
+      // Force mobile bottom sheet layout (completely overrides absolute placement to avoid screen clippings)
       cardStyle = {
         ...cardStyle,
-        position: 'absolute',
-        top: coords.bottom + 12 + 'px',
-        left: Math.max(16, Math.min(window.innerWidth - 370, coords.left + coords.width/2 - 175)) + 'px'
+        position: 'fixed',
+        bottom: '24px',
+        left: '16px',
+        right: '16px',
+        width: 'auto',
+        transform: 'none',
+        top: 'auto'
       }
-    } else if (placement === 'top') {
-      cardStyle = {
-        ...cardStyle,
-        position: 'absolute',
-        top: coords.top - 12 + 'px',
-        left: Math.max(16, Math.min(window.innerWidth - 370, coords.left + coords.width/2 - 175)) + 'px',
-        transform: 'translateY(-100%)'
-      }
-    } else if (placement === 'right') {
-      cardStyle = {
-        ...cardStyle,
-        position: 'absolute',
-        top: coords.top + 10 + 'px',
-        left: coords.right + 12 + 'px'
-      }
-    } else if (placement === 'left') {
-      cardStyle = {
-        ...cardStyle,
-        position: 'absolute',
-        top: coords.top + 10 + 'px',
-        left: coords.left - 370 + 'px'
+    } else {
+      const placement = currentStep.placement || 'bottom'
+      if (placement === 'bottom') {
+        cardStyle = {
+          ...cardStyle,
+          position: 'absolute',
+          top: coords.bottom + 12 + 'px',
+          left: Math.max(16, Math.min(window.innerWidth - 370, coords.left + coords.width/2 - 175)) + 'px'
+        }
+      } else if (placement === 'top') {
+        cardStyle = {
+          ...cardStyle,
+          position: 'absolute',
+          top: coords.top - 12 + 'px',
+          left: Math.max(16, Math.min(window.innerWidth - 370, coords.left + coords.width/2 - 175)) + 'px',
+          transform: 'translateY(-100%)'
+        }
+      } else if (placement === 'right') {
+        cardStyle = {
+          ...cardStyle,
+          position: 'absolute',
+          top: coords.top + 10 + 'px',
+          left: coords.right + 12 + 'px'
+        }
+      } else if (placement === 'left') {
+        cardStyle = {
+          ...cardStyle,
+          position: 'absolute',
+          top: coords.top + 10 + 'px',
+          left: coords.left - 370 + 'px'
+        }
       }
     }
   } else {
@@ -277,8 +296,8 @@ export default function OnboardingTour() {
 
       {/* Tour Dialog Pop-up */}
       <div
-        style={cardStyle}
-        className="w-[320px] sm:w-[350px] bg-white dark:bg-[#131522] border border-slate-100 dark:border-slate-800 rounded-3xl p-5 shadow-2xl space-y-4 animate-scaleUp z-[1000] text-slate-800 dark:text-slate-100"
+        style={{ ...cardStyle, maxWidth: window.innerWidth < 768 ? 'none' : '350px' }}
+        className="bg-white dark:bg-[#131522] border border-slate-100 dark:border-slate-800 rounded-3xl p-5 shadow-2xl space-y-4 animate-scaleUp z-[1000] text-slate-800 dark:text-slate-100"
       >
         <div className="flex justify-between items-start">
           <span className="text-[10px] font-bold text-indigo-500 dark:text-purple-400 bg-indigo-50 dark:bg-purple-950/20 px-2 py-0.5 rounded-full uppercase tracking-wider">
@@ -286,7 +305,7 @@ export default function OnboardingTour() {
           </span>
           <button
             onClick={handleComplete}
-            className="text-slate-400 hover:text-slate-600 dark:hover:text-white p-1 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors cursor-pointer"
+            className="text-slate-400 hover:text-slate-650 dark:hover:text-white p-1 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors cursor-pointer"
           >
             <FiX className="w-4 h-4" />
           </button>
