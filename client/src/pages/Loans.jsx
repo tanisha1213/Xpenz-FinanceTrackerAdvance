@@ -443,7 +443,7 @@ function Loans() {
       )}
 
       {/* Statistics Cards Grid */}
-      <div className="grid gap-4 grid-cols-2 md:grid-cols-5" id="loans-stats-grid-tour">
+      <div className="grid gap-4 grid-cols-2 sm:grid-cols-3 lg:grid-cols-5" id="loans-stats-grid-tour">
         <div className="bg-white dark:bg-dark-card border border-slate-100 dark:border-dark-border p-4 rounded-2xl shadow-sm">
           <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Left to Pay</p>
           <p className="text-lg font-black text-slate-800 dark:text-white mt-1">{formatCurrency(stats.totalRemaining)}</p>
@@ -478,7 +478,7 @@ function Loans() {
               <FiPercent className="text-secondary dark:text-purple-400" />
               Expected Payoff Date
             </h3>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-xs">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-xs">
               <div>
                 <p className="text-slate-400 font-semibold">Total Debt</p>
                 <p className="font-extrabold text-slate-700 dark:text-slate-200 mt-0.5">{formatCurrency(forecast.totalRemaining + forecast.totalPaid)}</p>
@@ -602,7 +602,7 @@ function Loans() {
                       </div>
 
                       {/* Actions */}
-                      <div className="flex items-center gap-2 self-end md:self-center">
+                      <div className="flex items-center flex-wrap gap-2 w-full md:w-auto justify-end md:justify-start mt-2 md:mt-0">
                         {!isCompleted && (
                           <button
                             onClick={() => handleMarkPaid(loan._id)}
@@ -870,7 +870,7 @@ function Loans() {
             </header>
 
             <form onSubmit={handleSaveLoan} className="p-6 space-y-4">
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="flex flex-col gap-1">
                   <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Loan Name</label>
                   <input
@@ -932,7 +932,7 @@ function Loans() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="flex flex-col gap-1">
                   <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Loan Option</label>
                   <select
@@ -957,7 +957,7 @@ function Loans() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="flex flex-col gap-1">
                   <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Loan Amount (₹)</label>
                   <input
@@ -980,7 +980,7 @@ function Loans() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div className="flex flex-col gap-1">
                   <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Interest Rate (%)</label>
                   <input
@@ -1012,7 +1012,7 @@ function Loans() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="flex flex-col gap-1">
                   <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider font-sans">First EMI Due Date</label>
                   <input
@@ -1039,7 +1039,7 @@ function Loans() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="flex flex-col gap-1">
                   <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">EMI Category</label>
                   <input
