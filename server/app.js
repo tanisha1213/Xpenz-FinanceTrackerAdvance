@@ -1,7 +1,7 @@
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
-import mongoose from 'mongoose';
+import { supabase } from './config/supabase.js';
 import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
 
@@ -48,10 +48,13 @@ app.use(express.urlencoded({ extended: true }));
 
 export const connectDB = async () => {
   try {
-    await mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/ai-finance-tracker');
-    console.log('MongoDB connected');
+    const { data, error } = await supabase.from('users').select('id').limit(1);
+    if (error && error.code !== 'PGRST116') {
+      throw new Error(`Supabase connection failed: ${error.message}`);
+    }
+    console.log('Supabase connection verified');
   } catch (err) {
-    console.error('MongoDB connection error:', err.message);
+    console.error('Supabase connection error:', err.message);
     throw err;
   }
 };
@@ -63,17 +66,14 @@ connectDB().catch((err) => {
 
 // Middleware to ensure DB connection is established before routing requests
 app.use(async (req, res, next) => {
-  if (mongoose.connection.readyState !== 1) {
-    try {
-      await connectDB();
-    } catch (err) {
-      return res.status(500).json({
-        success: false,
-        message: `Database connection failed: ${err.message}`
-      });
-    }
+  try {
+    next();
+  } catch (err) {
+    return res.status(500).json({
+      success: false,
+      message: `Database check failed: ${err.message}`
+    });
   }
-  next();
 });
 
 // Routes

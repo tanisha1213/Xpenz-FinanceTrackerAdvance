@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useSelector } from 'react-redux'
-import { FiUser, FiBell, FiSun, FiMoon } from 'react-icons/fi'
+import { FiBell, FiSun, FiMoon } from 'react-icons/fi'
 import { useTheme } from '../../context/ThemeContext'
 import logoLight from '../../assets/logo-light.png'
 import logoDark from '../../assets/logo-dark.png'
@@ -10,7 +10,7 @@ import { useLanguage } from '../../context/LanguageContext'
 function Navbar() {
   const { user } = useSelector(state => state.auth)
   const { theme, toggleTheme } = useTheme()
-  const { language, setLanguage, t } = useLanguage()
+  const { language, setLanguage } = useLanguage()
   const [showNotifications, setShowNotifications] = useState(false)
   const [hasUnread, setHasUnread] = useState(true)
   const [notifications, setNotifications] = useState([

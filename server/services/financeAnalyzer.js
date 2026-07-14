@@ -26,6 +26,7 @@ export const summarizeTransactions = (transactions = [], budget = null) => {
 
   const monthlyBuckets = new Map();
   transactions.forEach((item) => {
+    if (item.type !== 'income' && item.type !== 'expense') return;
     const date = new Date(item.transactionDate);
     const key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
     const current = monthlyBuckets.get(key) || { month: key, income: 0, expense: 0 };

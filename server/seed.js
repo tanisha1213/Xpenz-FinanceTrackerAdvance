@@ -1,4 +1,4 @@
-import mongoose from 'mongoose';
+import { supabase } from './config/supabase.js';
 import dotenv from 'dotenv';
 import bcrypt from 'bcrypt';
 import User from './models/User.js';
@@ -11,10 +11,12 @@ dotenv.config();
 
 const seedData = async () => {
   try {
-    const mongoUri = process.env.MONGODB_URI || 'mongodb://localhost:27017/ai-finance-tracker';
-    console.log('Connecting to database...');
-    await mongoose.connect(mongoUri);
-    console.log('Connected to MongoDB.');
+    console.log('Connecting to Supabase...');
+    const { data, error } = await supabase.from('users').select('id').limit(1);
+    if (error && error.code !== 'PGRST116') {
+      throw new Error(`Failed to connect to Supabase: ${error.message}`);
+    }
+    console.log('Connected and verified Supabase connection.');
 
     // 1. Create/Reset Test User
     const testEmail = 'test@example.com';

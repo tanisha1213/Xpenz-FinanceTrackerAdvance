@@ -20,10 +20,10 @@ import SummaryCard from '../components/dashboard/SummaryCard'
 import { getDashboardSummary } from '../services/dashboardService'
 import { saveTransaction } from '../redux/slices/transactionSlice'
 import { formatCurrency, formatDate, categories, paymentMethods } from '../utils/format'
-import { FiArrowUpRight, FiArrowDownRight, FiDollarSign, FiActivity, FiTrendingUp, FiPlus, FiCheck } from 'react-icons/fi'
+import { FiArrowUpRight, FiArrowDownRight, FiDollarSign, FiActivity, FiTrendingUp, FiPlus, FiCheck, FiCalendar } from 'react-icons/fi'
 import { useTheme } from '../context/ThemeContext'
 import { useLanguage } from '../context/LanguageContext'
-import { motion } from 'framer-motion'
+import { getLoans, addLoan } from '../services/loanService'
 
 const COLORS = ['#4f46e5', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#06b6d4']
 
@@ -33,8 +33,21 @@ const emptyForm = {
   amount: '',
   category: 'Food',
   paymentMethod: 'upi',
+  accountId: '', // Explicit account association
+  toAccountId: '', // for transfers
   description: '',
-  transactionDate: new Date().toISOString().slice(0, 10)
+  transactionDate: new Date().toISOString().slice(0, 10),
+  
+  // Integrated Loan properties
+  isLoan: false,
+  loanAction: 'link', // 'link' = repay existing loan, 'create' = create new loan
+  loanId: '', // for linking existing
+  loanMainCategory: 'bank', // 'bank' | 'personal'
+  loanSubCategory: 'home',
+  loanLenderName: '',
+  loanInterestRate: '0',
+  loanEmiAmount: '0',
+  loanEndDate: ''
 }
 
 const checklistTranslations = {
@@ -118,6 +131,33 @@ function Dashboard() {
   const [form, setForm] = useState(emptyForm)
   const [formLoading, setFormLoading] = useState(false)
   const [message, setMessage] = useState('')
+  const [loans, setLoans] = useState([])
+
+  const subCategoryOptions = {
+    bank: [
+      { value: 'home', label: 'Home Loan' },
+      { value: 'car', label: 'Car Loan' },
+      { value: 'education', label: 'Education Loan' },
+      { value: 'personal', label: 'Personal Loan' },
+      { value: 'business', label: 'Business Loan' },
+      { value: 'other', label: 'Other Bank Loan' }
+    ],
+    personal: [
+      { value: 'friend', label: 'Friend' },
+      { value: 'family', label: 'Family' },
+      { value: 'colleague', label: 'Colleague' },
+      { value: 'other', label: 'Other Debt' }
+    ]
+  }
+
+  const fetchLoans = async () => {
+    try {
+      const response = await getLoans()
+      setLoans(response.data.data)
+    } catch (err) {
+      console.error('Failed to fetch loans:', err)
+    }
+  }
 
   const loadDashboard = () => {
     setLoading(true)
@@ -129,12 +169,73 @@ function Dashboard() {
 
   useEffect(() => {
     loadDashboard()
+    fetchLoans()
   }, [])
 
+  const openCreate = (type = 'expense') => {
+    setForm({
+      ...emptyForm,
+      type,
+      accountId: summary?.accounts?.[0]?._id || ''
+    })
+    setShowForm(true)
+    setMessage('')
+  }
+
   const handleFormChange = (e) => {
+    const { name, value, type, checked } = e.target
+    const val = type === 'checkbox' ? checked : value
+    
+    let extraChanges = {}
+
+    // Compute preview values including this input change
+    const currentIsLoan = name === 'isLoan' ? !!val : !!form.isLoan
+    const currentLoanAction = name === 'loanAction' ? val : form.loanAction
+    const currentLoanId = name === 'loanId' ? val : form.loanId
+    const currentAmount = name === 'amount' ? Number(val) : Number(form.amount)
+    const currentType = name === 'type' ? val : form.type
+    const currentLenderName = name === 'loanLenderName' ? val : form.loanLenderName
+    const currentMainCategory = name === 'loanMainCategory' ? val : form.loanMainCategory
+    const currentSubCategory = name === 'loanSubCategory' ? val : form.loanSubCategory
+
+    if (currentIsLoan) {
+      if (currentLoanAction === 'link') {
+        extraChanges.category = 'Bills' // force category to Bills for repayment
+        
+        const loan = loans.find(l => l._id === currentLoanId)
+        if (loan) {
+          if (currentAmount >= loan.remainingAmount) {
+            extraChanges.title = `Cleared loan of ${loan.lenderName}`
+          } else {
+            if (loan.type === 'borrowed') {
+              extraChanges.title = `Repayment of ${loan.title} to ${loan.lenderName}`
+            } else {
+              extraChanges.title = `Repayment received for ${loan.title} from ${loan.lenderName}`
+            }
+          }
+        }
+      } else if (currentLoanAction === 'create') {
+        extraChanges.category = 'Other' // force category to Other for creation
+        
+        if (currentLenderName && currentLenderName.trim() !== '') {
+          const capitalizedSub = currentSubCategory.charAt(0).toUpperCase() + currentSubCategory.slice(1)
+          if (currentMainCategory === 'bank') {
+            extraChanges.title = `${currentLenderName.trim()} - ${capitalizedSub} Loan`
+          } else {
+            if (currentType === 'income') {
+              extraChanges.title = `Loan from ${currentLenderName.trim()}`
+            } else {
+              extraChanges.title = `Loan to ${currentLenderName.trim()}`
+            }
+          }
+        }
+      }
+    }
+
     setForm({
       ...form,
-      [e.target.name]: e.target.value
+      [name]: val,
+      ...extraChanges
     })
   }
 
@@ -143,18 +244,49 @@ function Dashboard() {
     setMessage('')
     setFormLoading(true)
     try {
-      await dispatch(saveTransaction({ id: null, data: form })).unwrap()
-      setShowForm(false)
-      setForm(emptyForm)
-      // Reload dashboard charts & counters instantly
-      const response = await getDashboardSummary()
-      setSummary(response.data.data)
+      if (form.isLoan && form.loanAction === 'create') {
+        // Step 1: Create the new loan ledger with integrated initial transaction setup
+        await addLoan({
+          title: form.title,
+          type: form.type === 'income' ? 'borrowed' : 'lent',
+          mainCategory: form.loanMainCategory,
+          subCategory: form.loanSubCategory,
+          lenderName: form.loanLenderName,
+          totalAmount: Number(form.amount),
+          interestRate: Number(form.loanInterestRate) || 0,
+          emiAmount: Number(form.loanEmiAmount) || 0,
+          startDate: form.transactionDate,
+          endDate: form.loanEndDate || undefined,
+          accountId: form.accountId || undefined
+        })
+        
+        setShowForm(false)
+        setForm(emptyForm)
+        const response = await getDashboardSummary()
+        setSummary(response.data.data)
+        fetchLoans()
+      } else {
+        // Standard save (normal transaction or linking existing loan)
+        const payload = {
+          ...form,
+          loanId: (form.isLoan && form.loanAction === 'link') ? form.loanId : undefined
+        }
+        await dispatch(saveTransaction({ id: null, data: payload })).unwrap()
+        setShowForm(false)
+        setForm(emptyForm)
+        const response = await getDashboardSummary()
+        setSummary(response.data.data)
+        fetchLoans()
+      }
     } catch (err) {
-      setMessage(err || 'Failed to save transaction')
+      setMessage(err.response?.data?.message || err || 'Failed to save transaction')
     } finally {
       setFormLoading(false)
     }
   }
+
+  const accounts = summary?.accounts || []
+  const editingId = null
 
   if (loading && !summary) {
     return (
@@ -320,7 +452,7 @@ function Dashboard() {
                   </p>
                   {!isTxDone && (
                     <button
-                      onClick={() => setShowForm(true)}
+                      onClick={() => openCreate('expense')}
                       className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-indigo-650 dark:bg-purple-650 text-white rounded-xl text-xs font-bold shadow-md hover:bg-indigo-750 dark:hover:bg-purple-750 transition-colors cursor-pointer"
                     >
                       <FiPlus className="w-3.5 h-3.5" />
@@ -370,7 +502,7 @@ function Dashboard() {
           <div className="flex items-center flex-shrink-0">
             <button
               id="add-transaction-btn-tour"
-              onClick={() => { setMessage(''); setForm({ ...form, type: 'expense' }); setShowForm(true) }}
+              onClick={() => openCreate('expense')}
               className="flex items-center justify-center gap-2 rounded-full bg-[#743BF7] hover:bg-[#602ee3] dark:bg-[#8B5CF6] dark:hover:bg-[#784ce3] px-8 py-4 font-black text-white text-sm shadow-xl shadow-purple-500/25 dark:shadow-purple-600/30 transition-all hover:scale-[1.03] active:scale-[0.98] cursor-pointer"
             >
               <FiPlus className="w-4 h-4 stroke-[3px]" />
@@ -536,19 +668,21 @@ function Dashboard() {
       {/* Quick Add Overlay Form */}
       {showForm && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 dark:bg-black/60 backdrop-blur-sm p-4 animate-fadeIn">
-          <div className="bg-white dark:bg-dark-card rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden border border-slate-100 dark:border-dark-border">
+          <div className="bg-white dark:bg-dark-card rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden border border-slate-100 dark:border-dark-border max-h-[95vh] overflow-y-auto">
             <header className="px-6 py-4 border-b border-slate-100 dark:border-dark-border flex justify-between items-center bg-slate-50/50 dark:bg-dark-card/50">
-              <h3 className="text-lg font-bold text-slate-800 dark:text-white">{t('newTransaction')}</h3>
+              <h3 className="text-lg font-bold text-slate-800 dark:text-white">
+                {editingId ? t('editTransaction') : t('newTransaction')}
+              </h3>
               <button
                 onClick={() => setShowForm(false)}
-                className="text-slate-400 hover:text-slate-600 dark:hover:text-white font-bold p-1 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg text-lg transition-colors cursor-pointer"
+                className="text-slate-400 hover:text-slate-655 dark:hover:text-white font-bold p-1 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg text-lg transition-colors cursor-pointer"
               >
                 &times;
               </button>
             </header>
 
             <form onSubmit={submitForm} className="p-6 space-y-4">
-              {message && <div className="rounded-xl border border-rose-100 dark:border-rose-950/30 bg-rose-50/50 dark:bg-rose-950/10 p-3 text-xs text-rose-700 dark:text-rose-400">{message}</div>}
+              {message && <div className="rounded-xl border border-rose-100 dark:border-rose-950/30 bg-rose-50/50 dark:bg-rose-950/10 p-3 text-xs text-rose-700 dark:text-rose-450">{message}</div>}
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
@@ -557,7 +691,7 @@ function Dashboard() {
                     name="type"
                     value={form.type}
                     onChange={handleFormChange}
-                    className="w-full rounded-xl border border-slate-200 dark:border-dark-border px-3 py-2 text-sm bg-white dark:bg-dark-card text-slate-800 dark:text-slate-200 focus:outline-none focus:border-secondary cursor-pointer"
+                    className="w-full rounded-xl border border-slate-200 dark:border-dark-border px-3 py-2.5 text-sm bg-white dark:bg-dark-card text-slate-800 dark:text-slate-200 focus:outline-none cursor-pointer"
                   >
                     <option value="expense">{t('expense')}</option>
                     <option value="income">{t('income')}</option>
@@ -572,7 +706,7 @@ function Dashboard() {
                     step="any"
                     value={form.amount}
                     onChange={handleFormChange}
-                    className="w-full rounded-xl border border-slate-200 dark:border-dark-border px-3 py-2 text-sm bg-white dark:bg-dark-card text-slate-800 dark:text-slate-200 focus:outline-none focus:border-secondary"
+                    className="w-full rounded-xl border border-slate-200 dark:border-dark-border px-3 py-2.5 text-sm bg-white dark:bg-dark-card text-slate-800 dark:text-slate-200 focus:outline-none"
                     required
                   />
                 </div>
@@ -585,22 +719,24 @@ function Dashboard() {
                   name="title"
                   value={form.title}
                   onChange={handleFormChange}
-                  className="w-full rounded-xl border border-slate-200 dark:border-dark-border px-3 py-2 text-sm bg-white dark:bg-dark-card text-slate-800 dark:text-slate-200 focus:outline-none focus:border-secondary"
+                  placeholder="e.g. Monthly Salary, Grocery run"
+                  className="w-full rounded-xl border border-slate-200 dark:border-dark-border px-3 py-2.5 text-sm bg-white dark:bg-dark-card text-slate-800 dark:text-slate-200 focus:outline-none"
                   required
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-bold text-slate-500 dark:text-dark-text-muted uppercase mb-1">{t('category')}</label>
+                  <label className="block text-xs font-bold text-slate-500 dark:text-dark-text-muted uppercase mb-1">{t('accountLabel')}</label>
                   <select
-                    name="category"
-                    value={form.category}
+                    name="accountId"
+                    value={form.accountId}
                     onChange={handleFormChange}
-                    className="w-full rounded-xl border border-slate-200 dark:border-dark-border px-3 py-2 text-sm bg-white dark:bg-dark-card text-slate-800 dark:text-slate-200 focus:outline-none focus:border-secondary cursor-pointer"
+                    className="w-full rounded-xl border border-slate-200 dark:border-dark-border px-3 py-2.5 text-sm bg-white dark:bg-dark-card text-slate-800 dark:text-slate-200 focus:outline-none cursor-pointer"
+                    required
                   >
-                    {categories.map((c) => (
-                      <option key={c} value={c}>{c}</option>
+                    {accounts.map((acc) => (
+                      <option key={acc._id} value={acc._id}>{acc.name} ({formatCurrency(acc.balance)})</option>
                     ))}
                   </select>
                 </div>
@@ -610,7 +746,7 @@ function Dashboard() {
                     name="paymentMethod"
                     value={form.paymentMethod}
                     onChange={handleFormChange}
-                    className="w-full rounded-xl border border-slate-200 dark:border-dark-border px-3 py-2 text-sm bg-white dark:bg-dark-card text-slate-800 dark:text-slate-200 focus:outline-none focus:border-secondary capitalize cursor-pointer"
+                    className="w-full rounded-xl border border-slate-200 dark:border-dark-border px-3 py-2.5 text-sm bg-white dark:bg-dark-card text-slate-800 dark:text-slate-200 focus:outline-none capitalize cursor-pointer"
                   >
                     {paymentMethods.map((p) => (
                       <option key={p} value={p}>{p.replace('_', ' ')}</option>
@@ -619,16 +755,209 @@ function Dashboard() {
                 </div>
               </div>
 
-              <div>
-                <label className="block text-xs font-bold text-slate-500 dark:text-dark-text-muted uppercase mb-1">{t('transactionDate')}</label>
-                <input
-                  type="date"
-                  name="transactionDate"
-                  value={form.transactionDate}
-                  onChange={handleFormChange}
-                  className="w-full rounded-xl border border-slate-200 dark:border-dark-border px-3 py-2 text-sm bg-white dark:bg-dark-card text-slate-800 dark:text-slate-200 focus:outline-none"
-                  required
-                />
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-bold text-slate-500 dark:text-dark-text-muted uppercase mb-1">{t('category')}</label>
+                  <select
+                    name="category"
+                    value={form.category}
+                    onChange={handleFormChange}
+                    disabled={form.isLoan}
+                    className="w-full rounded-xl border border-slate-200 dark:border-dark-border px-3 py-2.5 text-sm bg-white dark:bg-dark-card text-slate-800 dark:text-slate-200 focus:outline-none disabled:opacity-60 cursor-pointer"
+                  >
+                    {categories.map((c) => (
+                      <option key={c} value={c}>{c}</option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-500 dark:text-dark-text-muted uppercase mb-1">{t('transactionDate')}</label>
+                  <div className="relative">
+                    <FiCalendar className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+                    <input
+                      type="date"
+                      name="transactionDate"
+                      value={form.transactionDate}
+                      onChange={handleFormChange}
+                      className="w-full rounded-xl border border-slate-200 dark:border-dark-border pr-10 pl-3 py-2.5 text-sm bg-white dark:bg-dark-card text-slate-800 dark:text-slate-200 focus:outline-none"
+                      required
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* INTEGRATED LOANS & DEBTS CONFIGURATION */}
+              <div className="bg-slate-50 dark:bg-slate-900/40 p-4 rounded-2xl border border-slate-100 dark:border-dark-border space-y-3">
+                <div className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    name="isLoan"
+                    id="isLoan"
+                    checked={form.isLoan}
+                    onChange={handleFormChange}
+                    className="rounded text-secondary focus:ring-secondary w-4 h-4 cursor-pointer"
+                  />
+                  <label htmlFor="isLoan" className="text-xs font-extrabold text-slate-700 dark:text-slate-200 uppercase cursor-pointer">
+                    {t('isLoanTx')}
+                  </label>
+                </div>
+
+                {form.isLoan && (
+                  <div className="space-y-3 pt-2 border-t border-slate-200/50 dark:border-dark-border">
+                    
+                    {/* Loan Action selection */}
+                    <div className="flex flex-col gap-1">
+                      <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">{t('loanAction')}</label>
+                      <div className="flex gap-4 mt-0.5">
+                        <label className="flex items-center gap-1.5 text-xs font-semibold cursor-pointer">
+                          <input
+                            type="radio"
+                            name="loanAction"
+                            value="link"
+                            checked={form.loanAction === 'link'}
+                            onChange={handleFormChange}
+                            className="text-secondary w-3.5 h-3.5 focus:ring-transparent cursor-pointer"
+                          />
+                          {t('repayExisting')}
+                        </label>
+                        <label className="flex items-center gap-1.5 text-xs font-semibold cursor-pointer">
+                          <input
+                            type="radio"
+                            name="loanAction"
+                            value="create"
+                            checked={form.loanAction === 'create'}
+                            onChange={handleFormChange}
+                            className="text-secondary w-3.5 h-3.5 focus:ring-transparent cursor-pointer"
+                          />
+                          {t('createNewLedger')}
+                        </label>
+                      </div>
+                    </div>
+
+                    {/* ACTION A: LINK EXISTING */}
+                    {form.loanAction === 'link' && (
+                      <div className="flex flex-col gap-1">
+                        <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">{t('selectActiveLoan')}</label>
+                        {loans.length === 0 ? (
+                          <span className="text-xs text-rose-500 font-semibold block mt-1">No active loan ledgers found. Please create one.</span>
+                        ) : (
+                          <select
+                            name="loanId"
+                            value={form.loanId}
+                            onChange={handleFormChange}
+                            className="rounded-xl border border-slate-200 dark:border-dark-border px-3 py-2 text-sm bg-white dark:bg-dark-card text-slate-800 dark:text-slate-200 focus:outline-none cursor-pointer"
+                            required
+                          >
+                            <option value="">-- Choose active loan --</option>
+                            {loans.filter(l => l.status === 'active').map((loan) => (
+                              <option key={loan._id} value={loan._id}>
+                                {loan.title} ({loan.type === 'borrowed' ? 'Owed' : 'Lent'}: {formatCurrency(loan.remainingAmount)})
+                              </option>
+                            ))}
+                          </select>
+                        )}
+                        <span className="text-[10px] text-slate-400 dark:text-dark-text-muted mt-1 leading-normal">
+                          * Selecting a loan will automatically log this as a repayment installment and update its remaining amount. Category is automatically set to &quot;Bills&quot;.
+                        </span>
+                      </div>
+                    )}
+
+                    {/* ACTION B: CREATE NEW LEDGER */}
+                    {form.loanAction === 'create' && (
+                      <div className="space-y-3">
+                        <div className="grid grid-cols-2 gap-4">
+                          <div className="flex flex-col gap-1">
+                            <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">{t('mainOption')}</label>
+                            <select
+                              name="loanMainCategory"
+                              value={form.loanMainCategory}
+                              onChange={handleFormChange}
+                              className="rounded-xl border border-slate-200 dark:border-dark-border px-3 py-2 text-sm bg-white dark:bg-dark-card text-slate-800 dark:text-slate-200 focus:outline-none cursor-pointer"
+                            >
+                              <option value="bank">{t('bankLoan')}</option>
+                              <option value="personal">{t('personalDebt')}</option>
+                            </select>
+                          </div>
+                          <div className="flex flex-col gap-1">
+                            <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">{t('subOption')}</label>
+                            <select
+                              name="loanSubCategory"
+                              value={form.loanSubCategory}
+                              onChange={handleFormChange}
+                              className="rounded-xl border border-slate-200 dark:border-dark-border px-3 py-2 text-sm bg-white dark:bg-dark-card text-slate-800 dark:text-slate-200 focus:outline-none capitalize cursor-pointer"
+                            >
+                              {subCategoryOptions[form.loanMainCategory].map((opt) => (
+                                <option key={opt.value} value={opt.value}>{opt.label}</option>
+                              ))}
+                            </select>
+                          </div>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-4">
+                          <div className="flex flex-col gap-1">
+                            <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                              {form.loanMainCategory === 'bank' ? t('bankName') : t('personName')}
+                            </label>
+                            <input
+                              type="text"
+                              name="loanLenderName"
+                              value={form.loanLenderName}
+                              onChange={handleFormChange}
+                              placeholder={form.loanMainCategory === 'bank' ? 'e.g. HDFC Bank' : 'e.g. Uncle John, Friend Raj'}
+                              className="rounded-xl border border-slate-200 dark:border-dark-border px-3 py-2 text-sm bg-white dark:bg-dark-card text-slate-800 dark:text-slate-200 focus:outline-none"
+                              required
+                            />
+                          </div>
+                          <div className="flex flex-col gap-1">
+                            <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">{t('endDate')}</label>
+                            <div className="relative">
+                              <FiCalendar className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+                              <input
+                                type="date"
+                                name="loanEndDate"
+                                value={form.loanEndDate}
+                                onChange={handleFormChange}
+                                className="w-full rounded-xl border border-slate-200 dark:border-dark-border pr-10 pl-3 py-2 text-sm bg-white dark:bg-dark-card text-slate-800 dark:text-slate-200 focus:outline-none"
+                              />
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-4">
+                          <div className="flex flex-col gap-1">
+                            <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">{t('interestRate')}</label>
+                            <input
+                              type="number"
+                              name="loanInterestRate"
+                              step="0.01"
+                              value={form.loanInterestRate}
+                              onChange={handleFormChange}
+                              className="rounded-xl border border-slate-200 dark:border-dark-border px-3 py-2 text-sm bg-white dark:bg-dark-card text-slate-800 dark:text-slate-200 focus:outline-none"
+                            />
+                          </div>
+                          <div className="flex flex-col gap-1">
+                            <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">{t('emi')}</label>
+                            <input
+                              type="number"
+                              name="loanEmiAmount"
+                              value={form.loanEmiAmount}
+                              onChange={handleFormChange}
+                              className="rounded-xl border border-slate-200 dark:border-dark-border px-3 py-2 text-sm bg-white dark:bg-dark-card text-slate-800 dark:text-slate-200 focus:outline-none"
+                            />
+                          </div>
+                        </div>
+
+                        <div className="rounded-xl border border-indigo-100 dark:border-indigo-950/20 bg-indigo-50/50 dark:bg-indigo-950/5 p-3 text-[10px] text-indigo-700 dark:text-indigo-400 leading-normal">
+                          <strong>{t('amortizationNote')}:</strong> Submitting this will create a new Loan ledger with a principal balance equal to the transaction amount (₹{form.amount || 0}).
+                          <br />
+                          {form.type === 'income' 
+                            ? '• Since this transaction is an Inflow, it will create a borrowed loan (Liability) deposited to your account.' 
+                            : '• Since this transaction is an Outflow, it will create a lent loan (Asset) withdrawn from your account.'}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
 
               <div>
@@ -638,7 +967,7 @@ function Dashboard() {
                   value={form.description}
                   onChange={handleFormChange}
                   rows="3"
-                  className="w-full rounded-xl border border-slate-200 dark:border-dark-border px-3 py-2 text-sm bg-white dark:bg-dark-card text-slate-800 dark:text-slate-200 focus:outline-none focus:border-secondary"
+                  className="w-full rounded-xl border border-slate-200 dark:border-dark-border px-3 py-2.5 text-sm bg-white dark:bg-dark-card text-slate-800 dark:text-slate-200 focus:outline-none"
                 />
               </div>
 
@@ -646,17 +975,17 @@ function Dashboard() {
                 <button
                   type="button"
                   onClick={() => setShowForm(false)}
-                  className="rounded-xl border border-slate-200 dark:border-dark-border px-4 py-2.5 text-sm font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer"
+                  className="rounded-xl border border-slate-200 dark:border-dark-border px-4 py-2.5 text-sm font-bold text-slate-650 dark:text-slate-350 hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer"
                 >
                   {t('cancel')}
                 </button>
                 <button
                   type="submit"
                   disabled={formLoading}
-                  className="flex items-center justify-center gap-1.5 rounded-xl bg-secondary dark:bg-purple-600 px-4 py-2.5 text-sm font-bold text-white hover:bg-indigo-700 dark:hover:bg-purple-700 shadow-md disabled:opacity-50 cursor-pointer"
+                  className="flex items-center justify-center gap-1.5 rounded-xl bg-secondary dark:bg-purple-650 px-4 py-2.5 text-sm font-bold text-white hover:bg-indigo-700 dark:hover:bg-purple-755 shadow-md disabled:opacity-50 cursor-pointer"
                 >
                   <FiCheck className="w-4 h-4" />
-                  {formLoading ? 'Saving...' : t('saveChanges')}
+                  {formLoading ? 'Saving...' : form.isLoan && form.loanAction === 'create' ? t('createLoanAndLog') : t('addTransaction')}
                 </button>
               </footer>
             </form>

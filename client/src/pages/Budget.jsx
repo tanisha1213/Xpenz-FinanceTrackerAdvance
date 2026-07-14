@@ -4,12 +4,10 @@ import { fetchBudget, saveBudget } from '../redux/slices/budgetSlice'
 import { getDashboardSummary } from '../services/dashboardService'
 import { categories, formatCurrency } from '../utils/format'
 import { FiPlus, FiTrash2, FiActivity, FiCheck, FiInbox } from 'react-icons/fi'
-import { useTheme } from '../context/ThemeContext'
 import { useLanguage } from '../context/LanguageContext'
 
 function Budget() {
   const dispatch = useDispatch()
-  const { theme } = useTheme()
   const { t } = useLanguage()
   const budget = useSelector(state => state.budget)
   const [monthlyBudget, setMonthlyBudget] = useState(0)

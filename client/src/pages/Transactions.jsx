@@ -8,9 +8,8 @@ import {
 import { categories, formatCurrency, formatDate, paymentMethods } from '../utils/format'
 import {
   FiPlus, FiEdit2, FiTrash2, FiSearch, FiRefreshCw, FiChevronLeft, FiChevronRight,
-  FiCheck, FiPercent, FiTrendingDown, FiTrendingUp, FiInfo, FiDollarSign, FiCreditCard, FiX, FiCalendar
+  FiPercent, FiInfo, FiCalendar
 } from 'react-icons/fi'
-import { useTheme } from '../context/ThemeContext'
 import { useLanguage } from '../context/LanguageContext'
 import { getLoans, addLoan } from '../services/loanService'
 import { getAccounts } from '../services/accountService'
@@ -39,7 +38,6 @@ const emptyForm = {
 
 function Transactions() {
   const dispatch = useDispatch()
-  const { theme } = useTheme()
   const { t } = useLanguage()
   const { transactions, pagination, loading, error } = useSelector(state => state.transactions)
 
@@ -249,7 +247,7 @@ function Transactions() {
     try {
       if (form.isLoan && form.loanAction === 'create') {
         // Step 1: Create the new loan ledger with integrated initial transaction setup
-        const loanResponse = await addLoan({
+        await addLoan({
           title: form.title,
           type: form.type === 'income' ? 'borrowed' : 'lent',
           mainCategory: form.loanMainCategory,
@@ -954,7 +952,7 @@ function Transactions() {
                           </select>
                         )}
                         <span className="text-[10px] text-slate-400 dark:text-dark-text-muted mt-1 leading-normal">
-                          * Selecting a loan will automatically log this as a repayment installment and update its remaining amount. Category is automatically set to "Bills".
+                          * Selecting a loan will automatically log this as a repayment installment and update its remaining amount. Category is automatically set to &quot;Bills&quot;.
                         </span>
                       </div>
                     )}

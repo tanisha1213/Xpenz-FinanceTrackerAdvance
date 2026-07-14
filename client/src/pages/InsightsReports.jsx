@@ -25,7 +25,7 @@ function InsightsReports() {
   const [activeTab, setActiveTab] = useState('insights') // 'insights' or 'reports'
 
   // Insights (AI) Redux Selector
-  const { insights, predictions, provider, loading: aiLoading, error: aiError } = useSelector(state => state.insights)
+  const { insights, predictions, loading: aiLoading, error: aiError } = useSelector(state => state.insights)
 
   // Reports State
   const now = new Date()
