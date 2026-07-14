@@ -5,6 +5,8 @@ import './App.css'
 // Pages
 import Login from './pages/Login'
 import Signup from './pages/Signup'
+import Forgot from './pages/Forgot'
+import Reset from './pages/Reset'
 import Dashboard from './pages/Dashboard'
 import Transactions from './pages/Transactions'
 import Budget from './pages/Budget'
@@ -41,6 +43,8 @@ function App() {
       <Routes>
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
+        <Route path="/forgot-password" element={<Forgot />} />
+        <Route path="/reset-password/:token" element={<Reset />} />
 
         <Route element={<ProtectedRoute />}>
           <Route element={<Layout />}>

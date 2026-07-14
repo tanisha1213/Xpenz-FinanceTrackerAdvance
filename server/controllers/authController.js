@@ -1,4 +1,5 @@
 import jwt from 'jsonwebtoken';
+import crypto from 'crypto';
 import User from '../models/User.js';
 import Transaction from '../models/Transaction.js';
 import Budget from '../models/Budget.js';
@@ -206,6 +207,125 @@ export const getAccountStats = async (req, res) => {
         savings: summary.savings,
         budgetRemaining: summary.budgetRemaining
       }
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
+  }
+};
+
+export const forgotPassword = async (req, res) => {
+  try {
+    const { email } = req.body;
+    const normalizedEmail = email?.trim().toLowerCase();
+
+    if (!normalizedEmail) {
+      return res.status(400).json({
+        success: false,
+        message: 'Please provide your email address'
+      });
+    }
+
+    const user = await User.findOne({ email: normalizedEmail });
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'There is no user with that email address'
+      });
+    }
+
+    // Generate token
+    const resetToken = crypto.randomBytes(20).toString('hex');
+
+    // Hash token and set to resetPasswordToken field
+    const hashedToken = crypto
+      .createHash('sha256')
+      .update(resetToken)
+      .digest('hex');
+
+    // Set expire (10 minutes)
+    const expireDate = new Date(Date.now() + 10 * 60 * 1000);
+
+    user.resetPasswordToken = hashedToken;
+    user.resetPasswordExpire = expireDate;
+
+    await user.save();
+
+    // Dev/Test simulation response: log reset URL and return it in payload
+    const resetUrl = `${req.protocol}://${req.get('host')}/api/auth/reset-password/${resetToken}`;
+    const frontendResetUrl = `${process.env.FRONTEND_URL || 'http://localhost:5173'}/reset-password/${resetToken}`;
+
+    console.log(`\n=== PASSWORD RESET SIMULATION ===`);
+    console.log(`User: ${normalizedEmail}`);
+    console.log(`Reset Token: ${resetToken}`);
+    console.log(`Reset API Link: ${resetUrl}`);
+    console.log(`Reset Frontend Link: ${frontendResetUrl}`);
+    console.log(`=================================\n`);
+
+    res.status(200).json({
+      success: true,
+      message: 'Password reset link generated successfully',
+      resetToken, // return to frontend for testing
+      resetUrl: frontendResetUrl // return frontend link so user can click it in simulator
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
+  }
+};
+
+export const resetPassword = async (req, res) => {
+  try {
+    const { password } = req.body;
+    const { token } = req.params;
+
+    if (!password || password.length < 6) {
+      return res.status(400).json({
+        success: false,
+        message: 'Please provide a password of at least 6 characters'
+      });
+    }
+
+    // Hash token
+    const hashedToken = crypto
+      .createHash('sha256')
+      .update(token)
+      .digest('hex');
+
+    // Find user by token
+    const user = await User.findOne({
+      resetPasswordToken: hashedToken
+    });
+
+    if (!user) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid reset token'
+      });
+    }
+
+    // Verify expiration manually since PostgreSQL timestamp comparison
+    if (new Date(user.resetPasswordExpire).getTime() < Date.now()) {
+      return res.status(400).json({
+        success: false,
+        message: 'Password reset token has expired'
+      });
+    }
+
+    // Set new password (will be auto-hashed by user.save() pre-save hook)
+    user.password = password;
+    user.resetPasswordToken = null;
+    user.resetPasswordExpire = null;
+
+    await user.save();
+
+    res.status(200).json({
+      success: true,
+      message: 'Password reset successful! You can now log in.'
     });
   } catch (error) {
     res.status(500).json({

@@ -69,7 +69,12 @@ function Login() {
           </div>
 
           <div>
-            <label className="block text-slate-750 dark:text-dark-text-muted font-bold text-xs uppercase mb-1">Password</label>
+            <div className="flex justify-between items-center mb-1">
+              <label className="block text-slate-750 dark:text-dark-text-muted font-bold text-xs uppercase">Password</label>
+              <Link to="/forgot-password" className="text-secondary dark:text-purple-400 font-bold text-xs hover:underline">
+                Forgot password?
+              </Link>
+            </div>
             <input
               type="password"
               name="password"

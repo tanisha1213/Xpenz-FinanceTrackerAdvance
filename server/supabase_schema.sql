@@ -14,6 +14,8 @@ CREATE TABLE IF NOT EXISTS users (
   name TEXT NOT NULL,
   email TEXT UNIQUE NOT NULL,
   password TEXT NOT NULL,
+  "resetPasswordToken" TEXT,
+  "resetPasswordExpire" TIMESTAMPTZ,
   "createdAt" TIMESTAMPTZ DEFAULT now(),
   "updatedAt" TIMESTAMPTZ DEFAULT now()
 );
