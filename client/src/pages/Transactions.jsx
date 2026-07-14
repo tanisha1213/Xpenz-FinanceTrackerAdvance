@@ -86,9 +86,9 @@ function Transactions() {
       if (!loan.endDate || loan.status !== 'active') return false
       const loanDate = new Date(loan.endDate)
       return (
-        loanDate.getDate() === day.getDate() &&
-        loanDate.getMonth() === day.getMonth() &&
-        loanDate.getFullYear() === day.getFullYear()
+        loanDate.getUTCDate() === day.getDate() &&
+        loanDate.getUTCMonth() === day.getMonth() &&
+        loanDate.getUTCFullYear() === day.getFullYear()
       )
     })
   }
@@ -393,8 +393,8 @@ function Transactions() {
           
           {/* Filters Form Block */}
           <section id="transactions-filter-tour" className="rounded-2xl border border-slate-100 dark:border-dark-border bg-white dark:bg-dark-card p-4 shadow-premium">
-            <div className="grid gap-3 sm:grid-cols-2 md:grid-cols-5">
-              <div className="relative">
+            <div className="grid gap-3 grid-cols-2 sm:grid-cols-3 md:grid-cols-5">
+              <div className="relative col-span-2 sm:col-span-1">
                 <FiSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500" />
                 <input
                   type="text"
@@ -479,7 +479,7 @@ function Transactions() {
           )}
 
           {/* Transactions Table Section */}
-          <section id="transactions-table-tour" className="overflow-hidden rounded-2xl border border-slate-100 dark:border-dark-border bg-white dark:bg-dark-card shadow-premium">
+          <section id="transactions-table-tour" className="hidden md:block overflow-hidden rounded-2xl border border-slate-100 dark:border-dark-border bg-white dark:bg-dark-card shadow-premium">
             <div className="overflow-x-auto">
               <table className="w-full min-w-[800px] text-left text-sm">
                 <thead className="bg-slate-50/80 dark:bg-slate-900/40 text-slate-500 dark:text-dark-text-muted font-bold uppercase text-xs border-b border-slate-100 dark:border-dark-border">
@@ -600,6 +600,76 @@ function Transactions() {
               </div>
             </div>
           </section>
+
+          {/* Mobile Card List (Hidden on desktop) */}
+          <div className="block md:hidden space-y-4">
+            {loading ? (
+              <div className="bg-white dark:bg-dark-card border border-slate-100 dark:border-dark-border p-8 text-center rounded-2xl text-slate-400">
+                <div className="flex items-center justify-center gap-2 text-sm">
+                  <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-secondary dark:border-purple-400"></div>
+                  Loading entries...
+                </div>
+              </div>
+            ) : transactions.length > 0 ? (
+              transactions.map((item) => (
+                <div key={item._id} className="bg-white dark:bg-dark-card border border-slate-100 dark:border-dark-border p-4 rounded-2xl shadow-sm space-y-3">
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <h4 className="font-bold text-slate-800 dark:text-white text-sm leading-snug">{item.title}</h4>
+                      {item.loanId && (
+                        <span className="inline-flex items-center px-1.5 py-0.5 text-[9px] font-bold rounded bg-amber-50 dark:bg-amber-950/20 text-amber-600 dark:text-amber-400 border border-amber-100 dark:border-amber-950/10 mt-1">
+                          Linked: {item.loanId.title || 'Loan'}
+                        </span>
+                      )}
+                    </div>
+                    <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-[9px] font-bold uppercase tracking-wider ${
+                      item.type === 'income'
+                        ? 'bg-emerald-50 dark:bg-emerald-950/20 text-emerald-700 dark:text-emerald-400'
+                        : item.type === 'expense'
+                          ? 'bg-rose-50 dark:bg-rose-950/20 text-rose-700 dark:text-rose-400'
+                          : 'bg-blue-50 dark:bg-blue-950/20 text-blue-700 dark:text-blue-400'
+                    }`}>
+                      {item.type}
+                    </span>
+                  </div>
+                  
+                  <div className="flex justify-between text-xs text-slate-500 dark:text-slate-400">
+                    <span>{item.category} • {item.accountId?.name || 'Cash'}</span>
+                    <span>{formatDate(item.transactionDate)}</span>
+                  </div>
+                  
+                  <div className="flex justify-between items-center pt-2 border-t border-slate-50 dark:border-dark-border/40">
+                    <span className="text-[10px] text-slate-400 capitalize font-semibold">{item.paymentMethod.replace('_', ' ')}</span>
+                    <div className="flex items-center gap-3">
+                      <span className={`font-black text-sm ${
+                        item.type === 'income' ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'
+                      }`}>
+                        {item.type === 'income' ? '+' : '-'}{formatCurrency(item.amount)}
+                      </span>
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={() => openEdit(item)}
+                          className="p-1.5 bg-slate-50 dark:bg-slate-800 text-slate-500 hover:text-secondary dark:hover:text-purple-400 rounded-lg border border-slate-100 dark:border-dark-border cursor-pointer"
+                        >
+                          <FiEdit2 className="w-3.5 h-3.5" />
+                        </button>
+                        <button
+                          onClick={() => deleteItem(item)}
+                          className="p-1.5 bg-slate-50 dark:bg-slate-800 text-slate-500 hover:text-red-500 rounded-lg border border-slate-100 dark:border-dark-border cursor-pointer"
+                        >
+                          <FiTrash2 className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))
+            ) : (
+              <div className="bg-white dark:bg-dark-card border border-slate-100 dark:border-dark-border p-8 text-center rounded-2xl text-slate-450 font-medium text-xs">
+                No transactions found matching your criteria.
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Right Side: Active Loans Side Panel */}

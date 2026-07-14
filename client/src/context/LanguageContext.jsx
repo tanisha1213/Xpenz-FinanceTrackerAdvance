@@ -9,6 +9,7 @@ const translations = {
     budget: 'Budget',
     analytics: 'Analytics',
     profile: 'Profile',
+    loans: 'Loans & EMIs',
     logout: 'Logout',
     
     // Transactions Main
@@ -126,6 +127,7 @@ const translations = {
     budget: 'बजट',
     analytics: 'विश्लेषण',
     profile: 'प्रोफ़ाइल',
+    loans: 'ऋण और ईएमआई',
     logout: 'लॉगआउट',
     
     // Transactions Main
@@ -243,6 +245,7 @@ const translations = {
     budget: 'बजेट',
     analytics: 'विश्लेषण',
     profile: 'प्रोफाईल',
+    loans: 'कर्ज आणि ईएमआय',
     logout: 'लॉगआउट',
     
     // Transactions Main
@@ -360,6 +363,7 @@ const translations = {
     budget: 'பட்ஜெட்',
     analytics: 'பகுப்பாய்வு',
     profile: 'சுயவிவரம்',
+    loans: 'கடன் & இஎம்ஐ',
     logout: 'வெளியேறு',
     
     // Transactions Main

@@ -4,7 +4,9 @@ import {
   getLoans,
   addLoan,
   updateLoan,
-  deleteLoan
+  deleteLoan,
+  getLoanInstallments,
+  payInstallment
 } from '../controllers/loanController.js';
 
 const router = express.Router();
@@ -16,5 +18,9 @@ router.get('/', getLoans);
 router.post('/', addLoan);
 router.put('/:id', updateLoan);
 router.delete('/:id', deleteLoan);
+
+// Loan Installments Endpoints
+router.get('/:id/installments', getLoanInstallments);
+router.post('/installments/:installmentId/pay', payInstallment);
 
 export default router;

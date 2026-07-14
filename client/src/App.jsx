@@ -13,6 +13,7 @@ import Budget from './pages/Budget'
 import InsightsReports from './pages/InsightsReports'
 import Profile from './pages/Profile'
 import Balance from './pages/Balance'
+import Loans from './pages/Loans'
 
 // Layout
 import Layout from './components/layout/Layout'
@@ -54,6 +55,7 @@ function App() {
             <Route path="/budget" element={<Budget />} />
             <Route path="/insights" element={<InsightsReports />} />
             <Route path="/reports" element={<Navigate to="/insights" replace />} />
+            <Route path="/loans" element={<Loans />} />
             <Route path="/profile" element={<Profile />} />
             <Route path="/" element={<Navigate to="/dashboard" />} />
           </Route>

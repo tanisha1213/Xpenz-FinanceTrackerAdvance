@@ -43,9 +43,38 @@ CREATE TABLE IF NOT EXISTS loans (
   "remainingAmount" NUMERIC NOT NULL CHECK ("remainingAmount" >= 0),
   "interestRate" NUMERIC DEFAULT 0 CHECK ("interestRate" >= 0),
   "emiAmount" NUMERIC DEFAULT 0 CHECK ("emiAmount" >= 0),
+  "processingFee" NUMERIC DEFAULT 0 CHECK ("processingFee" >= 0),
+  "totalInstallments" INTEGER DEFAULT 1,
+  "installmentsPaid" INTEGER DEFAULT 0,
+  "firstEmiDate" TIMESTAMPTZ,
+  "nextDueDate" TIMESTAMPTZ,
+  "dueDayOfMonth" INTEGER DEFAULT 1,
+  "paymentFrequency" TEXT DEFAULT 'monthly',
+  "paymentSourceId" UUID REFERENCES accounts(id) ON DELETE SET NULL,
+  "emiCategory" TEXT DEFAULT 'Bills',
+  "notes" TEXT,
+  "reminder7Days" BOOLEAN DEFAULT TRUE,
+  "reminder3Days" BOOLEAN DEFAULT TRUE,
+  "reminder1Day" BOOLEAN DEFAULT TRUE,
+  "reminderDueDate" BOOLEAN DEFAULT TRUE,
+  "reminderDailyOverdue" BOOLEAN DEFAULT TRUE,
   "startDate" TIMESTAMPTZ DEFAULT now(),
   "endDate" TIMESTAMPTZ,
-  status TEXT DEFAULT 'active' CHECK (status IN ('active', 'paid')),
+  status TEXT DEFAULT 'active' CHECK (status IN ('active', 'completed', 'cancelled', 'paid')),
+  "createdAt" TIMESTAMPTZ DEFAULT now()
+);
+
+-- Create installments table to track installments separately
+CREATE TABLE IF NOT EXISTS loan_installments (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  "loanId" UUID NOT NULL REFERENCES loans(id) ON DELETE CASCADE,
+  "userId" UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  "installmentNumber" INTEGER NOT NULL,
+  amount NUMERIC NOT NULL CHECK (amount >= 0),
+  "dueDate" TIMESTAMPTZ NOT NULL,
+  "paidDate" TIMESTAMPTZ,
+  status TEXT DEFAULT 'upcoming' CHECK (status IN ('upcoming', 'paid', 'missed', 'overdue')),
+  "transactionId" UUID REFERENCES transactions(id) ON DELETE SET NULL,
   "createdAt" TIMESTAMPTZ DEFAULT now()
 );
 

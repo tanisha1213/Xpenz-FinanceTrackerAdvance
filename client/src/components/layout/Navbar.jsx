@@ -24,30 +24,57 @@ function Navbar() {
     const loadReminders = async () => {
       try {
         const res = await getLoans()
-        const activeLoans = res.data.data.filter(l => l.status === 'active' && l.endDate)
+        const activeLoans = res.data.data.filter(l => l.status === 'active')
         
         const reminders = activeLoans.map((loan, idx) => {
-          const diffTime = new Date(loan.endDate) - new Date()
-          const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) // simple rounding to days
+          if (!loan.nextDueDate) return null
+          
+          const diffTime = new Date(loan.nextDueDate) - new Date()
+          const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
           
           let title = ''
           let message = ''
+          let notify = false
 
           if (diffDays < 0) {
-            title = 'Loan Overdue! ⚠️'
-            message = `Your ${loan.title} from ${loan.lenderName} was due on ${new Date(loan.endDate).toLocaleDateString('en-IN', { timeZone: 'UTC' })}. Outstanding: ₹${loan.remainingAmount.toLocaleString()}`
-          } else if (diffDays <= 7) {
-            title = 'Loan Due Soon ⏰'
-            message = `The end date for ${loan.title} is in ${diffDays} days (${new Date(loan.endDate).toLocaleDateString('en-IN', { timeZone: 'UTC' })}). Please plan your repayments.`
-          } else {
-            return null
+            if (loan.reminderDailyOverdue !== false) {
+              title = 'EMI Overdue! 🟥'
+              message = `Your EMI of ₹${loan.emiAmount.toLocaleString()} for "${loan.title}" was due on ${new Date(loan.nextDueDate).toLocaleDateString('en-IN', { timeZone: 'UTC' })}. Overdue by ${Math.abs(diffDays)} days.`
+              notify = true
+            }
+          } else if (diffDays === 0) {
+            if (loan.reminderDueDate !== false) {
+              title = 'EMI Due Today ⏰'
+              message = `Your EMI of ₹${loan.emiAmount.toLocaleString()} for "${loan.title}" is due today.`
+              notify = true
+            }
+          } else if (diffDays === 1) {
+            if (loan.reminder1Day !== false) {
+              title = 'EMI Due Tomorrow ⏰'
+              message = `Your EMI of ₹${loan.emiAmount.toLocaleString()} for "${loan.title}" is due tomorrow.`
+              notify = true
+            }
+          } else if (diffDays > 1 && diffDays <= 3) {
+            if (loan.reminder3Days !== false) {
+              title = 'EMI Due in 3 Days 📅'
+              message = `Your EMI of ₹${loan.emiAmount.toLocaleString()} for "${loan.title}" is due in ${diffDays} days.`
+              notify = true
+            }
+          } else if (diffDays > 3 && diffDays <= 7) {
+            if (loan.reminder7Days !== false) {
+              title = 'EMI Due in 7 Days 📅'
+              message = `Your EMI of ₹${loan.emiAmount.toLocaleString()} for "${loan.title}" is due in ${diffDays} days.`
+              notify = true
+            }
           }
 
+          if (!notify) return null
+
           return {
-            id: `loan-${loan._id}-${idx}`,
+            id: `loan-${loan._id}-${idx}-${diffDays}`,
             title,
             message,
-            time: diffDays < 0 ? 'Overdue' : `${diffDays}d left`
+            time: diffDays < 0 ? 'Overdue' : diffDays === 0 ? 'Today' : `${diffDays}d left`
           }
         }).filter(Boolean)
 
