@@ -2,7 +2,7 @@ export const formatCurrency = (value = 0) =>
   `₹${Number(value || 0).toLocaleString('en-IN', { maximumFractionDigits: 0 })}`
 
 export const formatDate = (value) =>
-  value ? new Date(value).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) : '-'
+  value ? new Date(value).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric', timeZone: 'UTC' }) : '-'
 
 export const categories = [
   'Salary',

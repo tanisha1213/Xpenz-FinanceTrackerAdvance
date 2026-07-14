@@ -11,7 +11,7 @@ import {
   FiPercent, FiInfo, FiCalendar
 } from 'react-icons/fi'
 import { useLanguage } from '../context/LanguageContext'
-import { getLoans, addLoan } from '../services/loanService'
+import { getLoans, addLoan, updateLoan, deleteLoan } from '../services/loanService'
 import { getAccounts } from '../services/accountService'
 
 const emptyForm = {
@@ -58,6 +58,8 @@ function Transactions() {
   const [showForm, setShowForm] = useState(false)
   const [message, setMessage] = useState('')
   const [loansLoading, setLoansLoading] = useState(false)
+  const [editingLoan, setEditingLoan] = useState(null)
+  const [showEditLoan, setShowEditLoan] = useState(false)
   const [currentMonth, setCurrentMonth] = useState(new Date())
 
   // Get calendar days in month
@@ -121,6 +123,47 @@ function Transactions() {
   useEffect(() => {
     fetchLoansAndAccounts()
   }, [showForm])
+
+  const handleEditLoan = (loan) => {
+    setEditingLoan({
+      ...loan,
+      endDate: loan.endDate ? new Date(loan.endDate).getUTCFullYear() + '-' + String(new Date(loan.endDate).getUTCMonth() + 1).padStart(2, '0') + '-' + String(new Date(loan.endDate).getUTCDate()).padStart(2, '0') : ''
+    })
+    setShowEditLoan(true)
+  }
+
+  const handleSaveLoan = async (e) => {
+    e.preventDefault()
+    try {
+      await updateLoan(editingLoan._id, {
+        title: editingLoan.title,
+        lenderName: editingLoan.lenderName,
+        totalAmount: Number(editingLoan.totalAmount),
+        remainingAmount: Number(editingLoan.remainingAmount),
+        interestRate: Number(editingLoan.interestRate) || 0,
+        emiAmount: Number(editingLoan.emiAmount) || 0,
+        endDate: editingLoan.endDate ? new Date(editingLoan.endDate) : null,
+        status: editingLoan.status
+      })
+      setShowEditLoan(false)
+      setEditingLoan(null)
+      fetchLoansAndAccounts()
+      dispatch(fetchTransactions(query))
+    } catch (err) {
+      alert(err.response?.data?.message || 'Failed to update loan')
+    }
+  }
+
+  const handleDeleteLoan = async (loanId) => {
+    if (!window.confirm('Are you sure you want to delete this loan? This will not delete linked transactions.')) return
+    try {
+      await deleteLoan(loanId)
+      fetchLoansAndAccounts()
+      dispatch(fetchTransactions(query))
+    } catch (err) {
+      alert(err.response?.data?.message || 'Failed to delete loan')
+    }
+  }
 
   const handleFilterChange = (e) => {
     setFilters({
@@ -600,8 +643,32 @@ function Transactions() {
                           }`}
                         >
                           <div className="flex justify-between items-start">
-                            <span className="font-bold text-slate-700 dark:text-slate-200 line-clamp-1">{loan.title}</span>
-                            <span className="text-[10px] text-slate-400 capitalize">{loan.lenderName}</span>
+                            <div className="flex-1 min-w-0 pr-2">
+                              <span className="font-bold text-slate-700 dark:text-slate-200 line-clamp-1 block">{loan.title}</span>
+                              <span className="text-[10px] text-slate-400 capitalize block">{loan.lenderName}</span>
+                            </div>
+                            <div className="flex items-center gap-1.5 shrink-0">
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation()
+                                  handleEditLoan(loan)
+                                }}
+                                className="p-1 text-slate-400 hover:text-secondary dark:hover:text-purple-400 rounded transition-colors cursor-pointer"
+                                title="Edit Loan"
+                              >
+                                <FiEdit2 className="w-3.5 h-3.5" />
+                              </button>
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation()
+                                  handleDeleteLoan(loan._id)
+                                }}
+                                className="p-1 text-slate-400 hover:text-red-500 rounded transition-colors cursor-pointer"
+                                title="Delete Loan"
+                              >
+                                <FiTrash2 className="w-3.5 h-3.5" />
+                              </button>
+                            </div>
                           </div>
                           <div className="flex justify-between mt-2 font-extrabold text-slate-800 dark:text-white">
                             <span>{formatCurrency(loan.remainingAmount)}</span>
@@ -641,8 +708,32 @@ function Transactions() {
                           }`}
                         >
                           <div className="flex justify-between items-start">
-                            <span className="font-bold text-slate-700 dark:text-slate-200 line-clamp-1">{loan.title}</span>
-                            <span className="text-[10px] text-slate-400 capitalize">{loan.lenderName}</span>
+                            <div className="flex-1 min-w-0 pr-2">
+                              <span className="font-bold text-slate-700 dark:text-slate-200 line-clamp-1 block">{loan.title}</span>
+                              <span className="text-[10px] text-slate-400 capitalize block">{loan.lenderName}</span>
+                            </div>
+                            <div className="flex items-center gap-1.5 shrink-0">
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation()
+                                  handleEditLoan(loan)
+                                }}
+                                className="p-1 text-slate-400 hover:text-secondary dark:hover:text-purple-400 rounded transition-colors cursor-pointer"
+                                title="Edit Loan"
+                              >
+                                <FiEdit2 className="w-3.5 h-3.5" />
+                              </button>
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation()
+                                  handleDeleteLoan(loan._id)
+                                }}
+                                className="p-1 text-slate-400 hover:text-red-500 rounded transition-colors cursor-pointer"
+                                title="Delete Loan"
+                              >
+                                <FiTrash2 className="w-3.5 h-3.5" />
+                              </button>
+                            </div>
                           </div>
                           <div className="flex justify-between mt-2 font-extrabold text-slate-800 dark:text-white">
                             <span>{formatCurrency(loan.remainingAmount)}</span>
@@ -1079,6 +1170,132 @@ function Transactions() {
                   className="rounded-xl bg-secondary dark:bg-purple-650 px-5 py-2.5 font-bold text-white text-sm hover:bg-indigo-700 dark:hover:bg-purple-750 transition-colors shadow-md shadow-secondary/15 cursor-pointer"
                 >
                   {editingId ? t('saveChanges') : form.isLoan && form.loanAction === 'create' ? t('createLoanAndLog') : t('addTransaction')}
+                </button>
+              </footer>
+            </form>
+          </div>
+        </div>
+      )}
+      {/* Edit Loan Modal */}
+      {showEditLoan && editingLoan && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-sm animate-fade-in">
+          <div className="bg-white dark:bg-dark-card border border-slate-100 dark:border-dark-border rounded-2xl shadow-2xl p-6 w-full max-w-md relative">
+            <header className="pb-3 border-b border-slate-100 dark:border-dark-border flex justify-between items-center mb-4">
+              <h3 className="text-lg font-extrabold text-slate-800 dark:text-white">Edit Loan Details</h3>
+              <button
+                onClick={() => setShowEditLoan(false)}
+                className="text-slate-400 hover:text-slate-650 dark:hover:text-white cursor-pointer"
+              >
+                ✕
+              </button>
+            </header>
+            
+            <form onSubmit={handleSaveLoan} className="space-y-4">
+              <div>
+                <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Loan Title</label>
+                <input
+                  type="text"
+                  value={editingLoan.title}
+                  onChange={(e) => setEditingLoan({ ...editingLoan, title: e.target.value })}
+                  className="w-full rounded-xl border border-slate-200 dark:border-dark-border px-3 py-2 text-sm bg-white dark:bg-dark-card text-slate-800 dark:text-slate-200 focus:outline-none"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">
+                  {editingLoan.mainCategory === 'bank' ? 'Bank Name' : 'Person Name'}
+                </label>
+                <input
+                  type="text"
+                  value={editingLoan.lenderName}
+                  onChange={(e) => setEditingLoan({ ...editingLoan, lenderName: e.target.value })}
+                  className="w-full rounded-xl border border-slate-200 dark:border-dark-border px-3 py-2 text-sm bg-white dark:bg-dark-card text-slate-800 dark:text-slate-200 focus:outline-none"
+                  required
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Total Amount</label>
+                  <input
+                    type="number"
+                    value={editingLoan.totalAmount}
+                    onChange={(e) => setEditingLoan({ ...editingLoan, totalAmount: e.target.value })}
+                    className="w-full rounded-xl border border-slate-200 dark:border-dark-border px-3 py-2 text-sm bg-white dark:bg-dark-card text-slate-800 dark:text-slate-200 focus:outline-none"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Remaining Amount</label>
+                  <input
+                    type="number"
+                    value={editingLoan.remainingAmount}
+                    onChange={(e) => setEditingLoan({ ...editingLoan, remainingAmount: e.target.value })}
+                    className="w-full rounded-xl border border-slate-200 dark:border-dark-border px-3 py-2 text-sm bg-white dark:bg-dark-card text-slate-800 dark:text-slate-200 focus:outline-none"
+                    required
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Interest Rate (%)</label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    value={editingLoan.interestRate}
+                    onChange={(e) => setEditingLoan({ ...editingLoan, interestRate: e.target.value })}
+                    className="w-full rounded-xl border border-slate-200 dark:border-dark-border px-3 py-2 text-sm bg-white dark:bg-dark-card text-slate-800 dark:text-slate-200 focus:outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">EMI Amount</label>
+                  <input
+                    type="number"
+                    value={editingLoan.emiAmount}
+                    onChange={(e) => setEditingLoan({ ...editingLoan, emiAmount: e.target.value })}
+                    className="w-full rounded-xl border border-slate-200 dark:border-dark-border px-3 py-2 text-sm bg-white dark:bg-dark-card text-slate-800 dark:text-slate-200 focus:outline-none"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">End Date</label>
+                  <input
+                    type="date"
+                    value={editingLoan.endDate}
+                    onChange={(e) => setEditingLoan({ ...editingLoan, endDate: e.target.value })}
+                    className="w-full rounded-xl border border-slate-200 dark:border-dark-border px-3 py-2 text-sm bg-white dark:bg-dark-card text-slate-800 dark:text-slate-200 focus:outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Status</label>
+                  <select
+                    value={editingLoan.status}
+                    onChange={(e) => setEditingLoan({ ...editingLoan, status: e.target.value })}
+                    className="w-full rounded-xl border border-slate-200 dark:border-dark-border px-3 py-2 text-sm bg-white dark:bg-dark-card text-slate-800 dark:text-slate-200 focus:outline-none cursor-pointer"
+                  >
+                    <option value="active">Active</option>
+                    <option value="paid">Paid / Settled</option>
+                  </select>
+                </div>
+              </div>
+
+              <footer className="pt-4 border-t border-slate-100 dark:border-dark-border flex justify-end gap-3">
+                <button
+                  type="button"
+                  onClick={() => setShowEditLoan(false)}
+                  className="rounded-xl border border-slate-200 dark:border-dark-border px-4 py-2 text-sm font-bold text-slate-600 dark:text-slate-350 hover:bg-slate-50 dark:hover:bg-slate-800 cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="rounded-xl bg-gradient-to-r from-secondary to-indigo-650 dark:from-purple-650 dark:to-indigo-650 text-white px-5 py-2 text-sm font-bold hover:shadow-lg hover:brightness-105 transition-all cursor-pointer"
+                >
+                  Save Loan
                 </button>
               </footer>
             </form>

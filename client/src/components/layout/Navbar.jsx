@@ -35,10 +35,10 @@ function Navbar() {
 
           if (diffDays < 0) {
             title = 'Loan Overdue! ⚠️'
-            message = `Your ${loan.title} from ${loan.lenderName} was due on ${new Date(loan.endDate).toLocaleDateString()}. Outstanding: ₹${loan.remainingAmount.toLocaleString()}`
+            message = `Your ${loan.title} from ${loan.lenderName} was due on ${new Date(loan.endDate).toLocaleDateString('en-IN', { timeZone: 'UTC' })}. Outstanding: ₹${loan.remainingAmount.toLocaleString()}`
           } else if (diffDays <= 7) {
             title = 'Loan Due Soon ⏰'
-            message = `The end date for ${loan.title} is in ${diffDays} days (${new Date(loan.endDate).toLocaleDateString()}). Please plan your repayments.`
+            message = `The end date for ${loan.title} is in ${diffDays} days (${new Date(loan.endDate).toLocaleDateString('en-IN', { timeZone: 'UTC' })}). Please plan your repayments.`
           } else {
             return null
           }

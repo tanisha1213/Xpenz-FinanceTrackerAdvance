@@ -89,10 +89,14 @@ export class SupabaseQueryBuilder {
       for (const condition of query.$or) {
         for (const [field, condVal] of Object.entries(condition)) {
           const pgField = field === '_id' ? 'id' : field;
+          let finalCondVal = condVal;
+          if (condVal instanceof Date) {
+            finalCondVal = condVal.toISOString();
+          }
           if (condVal && typeof condVal === 'object' && condVal.$regex) {
             orFilters.push(`${pgField}.ilike.%${condVal.$regex}%`);
           } else {
-            orFilters.push(`${pgField}.eq.${condVal}`);
+            orFilters.push(`${pgField}.eq.${finalCondVal}`);
           }
         }
       }
@@ -110,23 +114,31 @@ export class SupabaseQueryBuilder {
       // Handling query operators e.g., { transactionDate: { $gte: start, $lte: end } }
       if (val && typeof val === 'object' && !Array.isArray(val) && !(val instanceof Date)) {
         for (const [op, opVal] of Object.entries(val)) {
+          let finalVal = opVal;
+          if (opVal instanceof Date) {
+            finalVal = opVal.toISOString();
+          }
           if (op === '$gte') {
-            this._builder = this._builder.gte(pgKey, opVal);
+            this._builder = this._builder.gte(pgKey, finalVal);
           } else if (op === '$lte') {
-            this._builder = this._builder.lte(pgKey, opVal);
+            this._builder = this._builder.lte(pgKey, finalVal);
           } else if (op === '$gt') {
-            this._builder = this._builder.gt(pgKey, opVal);
+            this._builder = this._builder.gt(pgKey, finalVal);
           } else if (op === '$lt') {
-            this._builder = this._builder.lt(pgKey, opVal);
+            this._builder = this._builder.lt(pgKey, finalVal);
           } else if (op === '$ne') {
-            this._builder = this._builder.neq(pgKey, opVal);
+            this._builder = this._builder.neq(pgKey, finalVal);
           } else if (op === '$regex') {
-            this._builder = this._builder.ilike(pgKey, `%${opVal}%`);
+            this._builder = this._builder.ilike(pgKey, `%${finalVal}%`);
           }
         }
       } else {
         // Simple equal comparison
-        this._builder = this._builder.eq(pgKey, val);
+        let finalVal = val;
+        if (val instanceof Date) {
+          finalVal = val.toISOString();
+        }
+        this._builder = this._builder.eq(pgKey, finalVal);
       }
     }
   }
