@@ -353,6 +353,84 @@ const commonTranslations = {
   ta: { next: 'அடுத்து', back: 'முந்தைய', skip: 'தவிர்', finish: 'முடி', restartTour: 'பக்க வழிகாட்டி' }
 }
 
+const loansTourSteps = [
+  {
+    target: null,
+    title: {
+      en: 'Loans & EMI Dashboard',
+      hi: 'ऋण और ईएमआई डैशबोर्ड',
+      mr: 'कर्ज आणि ईएमआय व्यवस्थापन',
+      ta: 'கடன் மற்றும் ஈஎம்ஐ மேலாண்மை'
+    },
+    desc: {
+      en: 'Welcome to your Loans & EMI system. Here you can track active loans, see debt progress, and schedule notifications.',
+      hi: 'आपके ऋण और ईएमआई सिस्टम में आपका स्वागत है। यहां आप सक्रिय ऋणों को ट्रैक कर सकते हैं, प्रगति देख सकते हैं और सूचनाएं शेड्यूल कर सकते हैं।',
+      mr: 'तुमच्या कर्ज आणि ईएमआय प्रणालीमध्ये आपले स्वागत आहे. येथे तुम्ही कर्जे, त्याची प्रगती आणि सूचना पाहू शकता.',
+      ta: 'உங்கள் கடன் மற்றும் ஈஎம்ஐ முறைக்கு வரவேற்கிறோம். தவணைகள், முன்னேற்றம் ஆகியவற்றைக் கண்காணிக்கலாம்.'
+    }
+  },
+  {
+    target: '#loans-stats-grid-tour',
+    title: {
+      en: 'Loan Statistics Summary',
+      hi: 'ऋण सांख्यिकी सारांश',
+      mr: 'कर्ज आकडेवारी सारांश',
+      ta: 'கடன் புள்ளிவிவரங்கள்'
+    },
+    desc: {
+      en: 'Quick overview of left to pay balance, monthly EMI amounts, active/completed counts, and overdue reminders.',
+      hi: 'बचे हुए भुगतान शेष, मासिक ईएमआई राशियों, सक्रिय/पूर्ण गणनाओं और अतिदेय अनुस्मारकों का त्वरित अवलोकन।',
+      mr: 'येणे शिल्लक रक्कम, मासिक ईएमआय रक्कम, सक्रिय/पूर्ण कर्जे आणि थकबाकी यांचा सारांश पहा.',
+      ta: 'செலுத்த வேண்டிய தொகை, மாத தவணை, செயலில் உள்ள/முடிந்த கடன்கள் ஆகியவற்றின் சுருக்கம்.'
+    }
+  },
+  {
+    target: '#loans-payoff-date-tour',
+    title: {
+      en: 'Debt Free Forecast',
+      hi: 'ऋण मुक्ति पूर्वानुमान',
+      mr: 'कर्जमुक्ती अंदाज',
+      ta: 'கடன் இல்லாத கணிப்பு'
+    },
+    desc: {
+      en: 'Shows expected date when you will be completely debt free based on current installments paid.',
+      hi: 'वर्तमान भुगतान की गई किश्तों के आधार पर वह संभावित तारीख दिखाता है जब आप पूरी तरह से ऋण मुक्त हो जाएंगे।',
+      mr: 'सध्या भरलेल्या हप्त्यांच्या आधारे तुम्ही पूर्णपणे कर्जमुक्त होण्याच्या अपेक्षित तारखेचा अंदाज दर्शवतो.',
+      ta: 'தற்போதைய தவணைகளின் அடிப்படையில் நீங்கள் கடன் இல்லாதவராக माறும் எதிர்பார்க்கப்படும் தேதி.'
+    }
+  },
+  {
+    target: '#loans-filter-tour',
+    title: {
+      en: 'Status Filter Tabs',
+      hi: 'स्थिति फ़िल्टर टैब',
+      mr: 'स्थितीनुसार फिल्टर',
+      ta: 'நிலை வடிகட்டி தாவல்கள்'
+    },
+    desc: {
+      en: 'Filter your loans by Active, Overdue, Completed, or due this month.',
+      hi: 'सक्रिय, अतिदेय, पूर्ण या इस महीने देय के आधार पर अपने ऋणों को फ़िल्टर करें।',
+      mr: 'सक्रिय, थकबाकी, पूर्ण किंवा चालू महिन्यात देय असलेली कर्जे फिल्टर करा.',
+      ta: 'செயலில் உள்ளவை, காலாவதியானவை, முடிந்தவை அல்லது இந்த மாத தவணைகளின் அடிப்படையில் வடிகட்டவும்.'
+    }
+  },
+  {
+    target: '#loans-add-btn-tour',
+    title: {
+      en: 'Add New Loan',
+      hi: 'नया ऋण जोड़ें',
+      mr: 'नवीन कर्ज जोडा',
+      ta: 'புதிய கடன் சேர்க்கவும்'
+    },
+    desc: {
+      en: 'Create a new loan or personal debt ledger. It will automatically pre-generate all installment schedules.',
+      hi: 'नया ऋण या व्यक्तिगत ऋण बहीखाता बनाएं। यह स्वचालित रूप से सभी किश्त अनुसूचियों को उत्पन्न करेगा।',
+      mr: 'नवीन कर्ज किंवा येणे रक्कम नोंदवा. यामुळे आपोआप हप्त्यांचे वेळापत्रक तयार होईल.',
+      ta: 'புதிய கடன் கணக்கை உருவாக்கவும். இது தானாகவே தவணை அட்டவணையை உருவாக்கும்.'
+    }
+  }
+]
+
 export default function OnboardingTour() {
   const { language } = useLanguage()
   const location = useLocation()
@@ -362,8 +440,10 @@ export default function OnboardingTour() {
   const [stepIndex, setStepIndex] = useState(0)
   const [coords, setCoords] = useState(null)
   
-  const steps = pageTours[currentPath] || []
+  const isLoansTab = location.pathname === '/transactions' && location.search.includes('tab=loans')
+  const steps = isLoansTab ? loansTourSteps : (pageTours[currentPath] || [])
   const labels = commonTranslations[language] || commonTranslations['en']
+  const tourKey = currentPath + (isLoansTab ? '_loans' : '')
 
   // Auto start tour if not completed for this page
   useEffect(() => {
@@ -372,7 +452,7 @@ export default function OnboardingTour() {
       return
     }
 
-    const completed = localStorage.getItem('xpenz_tour_completed_' + currentPath)
+    const completed = localStorage.getItem('xpenz_tour_completed_' + tourKey)
     if (!completed) {
       const timer = setTimeout(() => {
         setStepIndex(0)
@@ -382,7 +462,7 @@ export default function OnboardingTour() {
     } else {
       setActive(false)
     }
-  }, [currentPath, steps.length])
+  }, [currentPath, steps.length, tourKey])
 
   // Track position recalculation for active step element
   useEffect(() => {
@@ -455,7 +535,7 @@ export default function OnboardingTour() {
   }
 
   const handleComplete = () => {
-    localStorage.setItem('xpenz_tour_completed_' + currentPath, 'true')
+    localStorage.setItem('xpenz_tour_completed_' + tourKey, 'true')
     setActive(false)
     setStepIndex(0)
   }

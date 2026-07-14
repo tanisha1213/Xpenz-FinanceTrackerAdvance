@@ -1,6 +1,7 @@
 import Transaction from '../models/Transaction.js';
 import Account from '../models/Account.js';
 import Loan from '../models/Loan.js';
+import { supabase } from '../config/supabase.js';
 
 // Helper to adjust account balance based on transaction type and operation (apply/revert)
 const adjustBalances = async (transaction, operation) => {
@@ -42,6 +43,9 @@ const adjustBalances = async (transaction, operation) => {
     const loan = await Loan.findById(transaction.loanId);
     if (loan) {
       const isApply = operation === 'apply';
+      const isRepayment = 
+        (loan.type === 'borrowed' && transaction.type === 'expense') ||
+        (loan.type === 'lent' && transaction.type === 'income');
       
       if (loan.type === 'borrowed') {
         // Borrowed Loan: 
@@ -66,8 +70,79 @@ const adjustBalances = async (transaction, operation) => {
       // Ensure remaining amount never goes below 0
       loan.remainingAmount = Math.max(0, loan.remainingAmount);
       
-      // Update loan status automatically
-      loan.status = loan.remainingAmount <= 0 ? 'paid' : 'active';
+      if (isRepayment) {
+        if (isApply) {
+          // Find next unpaid installment
+          const { data: nextIns } = await supabase
+            .from('loan_installments')
+            .select('*')
+            .eq('loanId', loan._id)
+            .neq('status', 'paid')
+            .order('installmentNumber', { ascending: true })
+            .limit(1);
+
+          if (nextIns && nextIns.length > 0) {
+            await supabase
+              .from('loan_installments')
+              .update({
+                status: 'paid',
+                paidDate: new Date().toISOString(),
+                transactionId: transaction._id
+              })
+              .eq('id', nextIns[0].id);
+
+            loan.installmentsPaid = (loan.installmentsPaid || 0) + 1;
+          }
+        } else {
+          // Revert installment
+          await supabase
+            .from('loan_installments')
+            .update({
+              status: 'upcoming',
+              paidDate: null,
+              transactionId: null
+            })
+            .eq('transactionId', transaction._id);
+
+          loan.installmentsPaid = Math.max(0, (loan.installmentsPaid || 0) - 1);
+        }
+      }
+
+      // Update nextDueDate based on the first unpaid installment
+      const { data: upcomingIns } = await supabase
+        .from('loan_installments')
+        .select('dueDate')
+        .eq('loanId', loan._id)
+        .eq('status', 'upcoming')
+        .order('installmentNumber', { ascending: true })
+        .limit(1);
+
+      if (upcomingIns && upcomingIns.length > 0) {
+        loan.nextDueDate = upcomingIns[0].dueDate;
+        loan.status = 'active';
+      } else {
+        loan.nextDueDate = null;
+        loan.status = 'completed';
+      }
+
+      if (loan.remainingAmount <= 0) {
+        loan.status = 'completed';
+        loan.nextDueDate = null;
+        
+        // If applying and remaining amount is 0, mark all remaining unpaid installments as paid
+        if (isApply) {
+          await supabase
+            .from('loan_installments')
+            .update({
+              status: 'paid',
+              paidDate: new Date().toISOString()
+            })
+            .eq('loanId', loan._id)
+            .neq('status', 'paid');
+          
+          loan.installmentsPaid = loan.totalInstallments;
+        }
+      }
       
       await loan.save();
     }

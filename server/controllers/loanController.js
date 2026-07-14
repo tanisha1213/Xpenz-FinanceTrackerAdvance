@@ -4,15 +4,46 @@ import Account from '../models/Account.js';
 import { supabase } from '../config/supabase.js';
 import { mapDoc } from '../models/adapter.js';
 
+// Helper to calculate due date based on payment frequency
+const calculateDueDate = (baseDate, index, frequency) => {
+  const date = new Date(baseDate);
+  if (frequency === 'weekly') {
+    date.setDate(date.getDate() + index * 7);
+  } else if (frequency === 'quarterly') {
+    date.setMonth(date.getMonth() + index * 3);
+  } else if (frequency === 'yearly') {
+    date.setFullYear(date.getFullYear() + index);
+  } else {
+    // default: monthly
+    date.setMonth(date.getMonth() + index);
+  }
+  return date;
+};
+
 // Get all loans for the logged-in user
 export const getLoans = async (req, res) => {
   try {
     const userId = req.userId;
     const loans = await Loan.find({ userId }).sort({ status: 1, startDate: -1 });
 
+    let updatedAny = false;
+    for (let loan of loans) {
+      if (loan.status === 'active') {
+        const isCompleted = (loan.installmentsPaid >= loan.totalInstallments) || (Number(loan.remainingAmount) <= 0);
+        if (isCompleted) {
+          loan.status = 'completed';
+          loan.nextDueDate = null;
+          await loan.save();
+          updatedAny = true;
+        }
+      }
+    }
+
+    const finalLoans = updatedAny ? await Loan.find({ userId }).sort({ status: 1, startDate: -1 }) : loans;
+
     res.status(200).json({
       success: true,
-      data: loans
+      data: finalLoans
     });
   } catch (error) {
     res.status(500).json({
@@ -101,8 +132,7 @@ export const addLoan = async (req, res) => {
     // Pre-generate installment records in database table
     const installments = [];
     for (let i = 1; i <= tInstallments; i++) {
-      const dueDate = new Date(fEmiDate);
-      dueDate.setMonth(dueDate.getMonth() + (i - 1));
+      const dueDate = calculateDueDate(fEmiDate, i - 1, paymentFrequency);
       
       installments.push({
         loanId: loan._id,
@@ -122,8 +152,9 @@ export const addLoan = async (req, res) => {
     }
 
     // Payout account linkage
-    if (accountId) {
-      const account = await Account.findOne({ _id: accountId, userId });
+    const finalAccountId = accountId || paymentSourceId;
+    if (finalAccountId) {
+      const account = await Account.findOne({ _id: finalAccountId, userId });
       if (account) {
         const isBorrowed = type === 'borrowed';
         await Transaction.create({
@@ -133,7 +164,7 @@ export const addLoan = async (req, res) => {
           amount: Number(totalAmount),
           category: 'Other',
           paymentMethod: 'bank_transfer',
-          accountId,
+          accountId: finalAccountId,
           loanId: loan._id,
           description: `Initial disbursement of ${title.trim()} from ${lenderName.trim()}`,
           transactionDate: startDate || new Date()
@@ -286,8 +317,7 @@ export const updateLoan = async (req, res) => {
       const baseDate = loan.firstEmiDate ? new Date(loan.firstEmiDate) : new Date();
 
       for (let i = paidCount + 1; i <= loan.totalInstallments; i++) {
-        const dueDate = new Date(baseDate);
-        dueDate.setMonth(dueDate.getMonth() + (i - 1));
+        const dueDate = calculateDueDate(baseDate, i - 1, loan.paymentFrequency);
 
         installmentsToCreate.push({
           loanId: loan._id,

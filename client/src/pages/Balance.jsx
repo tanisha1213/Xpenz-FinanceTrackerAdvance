@@ -4,6 +4,29 @@ import { formatCurrency } from '../utils/format'
 import { FiPlus, FiEdit2, FiTrash2, FiCreditCard, FiDollarSign, FiCheck, FiX, FiInfo } from 'react-icons/fi'
 import { useLanguage } from '../context/LanguageContext'
 
+const POPULAR_BANKS = [
+  'State Bank of India (SBI)',
+  'HDFC Bank',
+  'ICICI Bank',
+  'Axis Bank',
+  'Kotak Mahindra Bank',
+  'Bank of Baroda',
+  'Punjab National Bank (PNB)',
+  'Union Bank of India',
+  'Canara Bank',
+  'Bank of India',
+  'Bank of Maharashtra',
+  'Yes Bank',
+  'IndusInd Bank',
+  'Federal Bank',
+  'IDBI Bank',
+  'Central Bank of India',
+  'Indian Bank',
+  'UCO Bank',
+  'IDFC First Bank',
+  'Other (Type Below)'
+]
+
 function Balance() {
   const { t } = useLanguage()
   const [accounts, setAccounts] = useState([])
@@ -14,6 +37,7 @@ function Balance() {
   // Modal / Form states
   const [modalType, setModalType] = useState(null) // 'add' | 'edit' | 'delete'
   const [selectedAccount, setSelectedAccount] = useState(null)
+  const [isCustomBank, setIsCustomBank] = useState(false)
   
   // Form fields
   const [formData, setFormData] = useState({ name: '', balance: '' })
@@ -42,6 +66,8 @@ function Balance() {
   const handleOpenEdit = (account) => {
     setSelectedAccount(account)
     setFormData({ name: account.name, balance: account.balance.toString() })
+    const isCustom = account.type === 'bank' && !POPULAR_BANKS.includes(account.name)
+    setIsCustomBank(isCustom)
     setModalType('edit')
   }
 
@@ -54,6 +80,7 @@ function Balance() {
     setModalType(null)
     setSelectedAccount(null)
     setFormData({ name: '', balance: '' })
+    setIsCustomBank(false)
   }
 
   const handleAddSubmit = async (e) => {
@@ -106,6 +133,13 @@ function Balance() {
   const totalBalance = accounts.reduce((acc, curr) => acc + curr.balance, 0)
   const cashAccounts = accounts.filter(a => a.type === 'cash')
   const bankAccounts = accounts.filter(a => a.type === 'bank')
+
+  const existingAccountNames = accounts.map(a => a.name.toLowerCase().trim())
+  const availableBanks = POPULAR_BANKS.filter(bank => {
+    if (bank === 'Other (Type Below)') return true
+    if (modalType === 'edit' && selectedAccount && selectedAccount.name.toLowerCase().trim() === bank.toLowerCase().trim()) return true
+    return !existingAccountNames.includes(bank.toLowerCase().trim())
+  })
 
   if (loading && accounts.length === 0) {
     return (
@@ -278,15 +312,39 @@ function Balance() {
                 </div>
                 <div className="space-y-3">
                   <div className="flex flex-col gap-1">
-                    <label className="text-xs font-bold text-slate-500 dark:text-dark-text-muted uppercase">{t('accountName')}</label>
-                    <input
-                      type="text"
-                      value={formData.name}
-                      onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                      placeholder="e.g. HDFC Bank, ICICI Bank"
-                      className="rounded-xl border border-slate-200 dark:border-dark-border px-3 py-2.5 text-sm bg-white dark:bg-dark-card text-slate-800 dark:text-slate-200 focus:outline-none"
-                      required
-                    />
+                    <label className="text-xs font-bold text-slate-500 dark:text-dark-text-muted uppercase">Select Bank</label>
+                    <div className="space-y-2">
+                      <select
+                        value={isCustomBank ? 'Other (Type Below)' : formData.name}
+                        onChange={(e) => {
+                          const val = e.target.value
+                          if (val === 'Other (Type Below)') {
+                            setIsCustomBank(true)
+                            setFormData({ ...formData, name: '' })
+                          } else {
+                            setIsCustomBank(false)
+                            setFormData({ ...formData, name: val })
+                          }
+                        }}
+                        className="w-full rounded-xl border border-slate-200 dark:border-dark-border px-3 py-2.5 text-sm bg-white dark:bg-dark-card text-slate-800 dark:text-slate-200 focus:outline-none cursor-pointer"
+                        required
+                      >
+                        <option value="" disabled>Select a bank...</option>
+                        {availableBanks.map(bank => (
+                          <option key={bank} value={bank}>{bank}</option>
+                        ))}
+                      </select>
+                      {isCustomBank && (
+                        <input
+                          type="text"
+                          value={formData.name}
+                          onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                          placeholder="Type your bank name here..."
+                          className="w-full rounded-xl border border-slate-200 dark:border-dark-border px-3 py-2.5 text-sm bg-white dark:bg-dark-card text-slate-800 dark:text-slate-200 focus:outline-none"
+                          required
+                        />
+                      )}
+                    </div>
                   </div>
                   <div className="flex flex-col gap-1">
                     <label className="text-xs font-bold text-slate-500 dark:text-dark-text-muted uppercase">{t('initialBalance')}</label>
@@ -327,14 +385,49 @@ function Balance() {
                 <div className="space-y-3">
                   <div className="flex flex-col gap-1">
                     <label className="text-xs font-bold text-slate-500 dark:text-dark-text-muted uppercase">{t('accountName')}</label>
-                    <input
-                      type="text"
-                      value={formData.name}
-                      onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                      disabled={selectedAccount?.type === 'cash'}
-                      className="rounded-xl border border-slate-200 dark:border-dark-border px-3 py-2.5 text-sm bg-white dark:bg-dark-card text-slate-800 dark:text-slate-200 focus:outline-none disabled:opacity-50 disabled:bg-slate-50 dark:disabled:bg-slate-900"
-                      required
-                    />
+                    {selectedAccount?.type === 'cash' ? (
+                      <input
+                        type="text"
+                        value={formData.name}
+                        onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                        disabled={true}
+                        className="rounded-xl border border-slate-200 dark:border-dark-border px-3 py-2.5 text-sm bg-white dark:bg-dark-card text-slate-800 dark:text-slate-200 focus:outline-none disabled:opacity-50 disabled:bg-slate-50 dark:disabled:bg-slate-900"
+                        required
+                      />
+                    ) : (
+                      <div className="space-y-2">
+                        <select
+                          value={isCustomBank ? 'Other (Type Below)' : formData.name}
+                          onChange={(e) => {
+                            const val = e.target.value
+                            if (val === 'Other (Type Below)') {
+                              setIsCustomBank(true)
+                              setFormData({ ...formData, name: '' })
+                            } else {
+                              setIsCustomBank(false)
+                              setFormData({ ...formData, name: val })
+                            }
+                          }}
+                          className="w-full rounded-xl border border-slate-200 dark:border-dark-border px-3 py-2.5 text-sm bg-white dark:bg-dark-card text-slate-800 dark:text-slate-200 focus:outline-none cursor-pointer"
+                          required
+                        >
+                          <option value="" disabled>Select a bank...</option>
+                          {availableBanks.map(bank => (
+                            <option key={bank} value={bank}>{bank}</option>
+                          ))}
+                        </select>
+                        {isCustomBank && (
+                          <input
+                            type="text"
+                            value={formData.name}
+                            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                            placeholder="Type your bank name here..."
+                            className="w-full rounded-xl border border-slate-200 dark:border-dark-border px-3 py-2.5 text-sm bg-white dark:bg-dark-card text-slate-800 dark:text-slate-200 focus:outline-none"
+                            required
+                          />
+                        )}
+                      </div>
+                    )}
                   </div>
                   <div className="flex flex-col gap-1">
                     <label className="text-xs font-bold text-slate-500 dark:text-dark-text-muted uppercase">{t('totalBalance')}</label>

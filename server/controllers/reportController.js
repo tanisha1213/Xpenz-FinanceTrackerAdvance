@@ -51,28 +51,98 @@ export const getMonthlyReport = async (req, res) => {
 
       const doc = new PDFDocument({ margin: 48 });
       doc.pipe(res);
-      doc.fontSize(22).text(isYearly ? 'FinTrack Yearly Report' : 'FinTrack Monthly Report');
-      doc.moveDown(0.5).fontSize(12).text(`Period: ${report.period}`);
-      doc.moveDown();
-      doc.fontSize(14).text(`Income: ${formatCurrency(report.totalIncome)}`);
-      doc.text(`Expense: ${formatCurrency(report.totalExpense)}`);
-      doc.text(`Savings: ${formatCurrency(report.savings)}`);
-      doc.text(`Budget Remaining: ${formatCurrency(report.budgetRemaining)}`);
-      doc.moveDown().fontSize(16).text('Category Breakdown');
-      report.categoryBreakdown.forEach((item) => {
-        doc.fontSize(11).text(`${item.category}: ${formatCurrency(item.amount)}`);
-      });
-      doc.moveDown().fontSize(16).text('Transactions');
-      report.transactions.slice(0, 150).forEach((item) => {
-        let details = `${new Date(item.transactionDate).toLocaleDateString('en-IN')} | ${item.type.toUpperCase()}`;
-        if (item.type === 'transfer') {
-          details += ` | ${item.accountId?.name || 'Cash'} -> ${item.toAccountId?.name || 'Cash'}`;
-        } else {
-          details += ` | ${item.accountId?.name || 'Cash'}`;
-        }
-        details += ` | ${item.title} | ${formatCurrency(item.amount)}`;
-        doc.fontSize(10).text(details);
-      });
+
+      // 1. App Header Block
+      doc.fillColor('#4f46e5').fontSize(24).font('Helvetica-Bold').text('Xpenz', 48, 48);
+      doc.fillColor('#475569').fontSize(10).font('Helvetica').text('Smart Personal Finance Companion', 48, 76);
+      
+      // Period Right-Aligned
+      doc.fillColor('#1e293b').fontSize(11).font('Helvetica-Bold').text(`Statement Period: ${report.period}`, 350, 48, { align: 'right', width: 212 });
+      
+      // Decorative horizontal divider line
+      doc.moveDown(0.5);
+      doc.strokeColor('#e2e8f0').lineWidth(1.5).moveTo(48, 96).lineTo(562, 96).stroke();
+
+      // Report Header Title
+      doc.y = 115;
+      doc.fillColor('#1e293b').fontSize(16).font('Helvetica-Bold').text(isYearly ? 'Yearly Financial Report' : 'Monthly Financial Report', 48, doc.y);
+      doc.moveDown(1.2);
+
+      // 2. Summary Statistics Grid Cards
+      const startY = doc.y;
+      const cardW = 118;
+      const cardH = 55;
+      const gap = 12;
+
+      // Card 1: Total Income
+      doc.rect(48, startY, cardW, cardH).fill('#ecfdf5');
+      doc.fillColor('#065f46').fontSize(9).font('Helvetica-Bold').text('TOTAL INCOME', 58, startY + 12);
+      doc.fillColor('#047857').fontSize(12).font('Helvetica-Bold').text(formatCurrency(report.totalIncome), 58, startY + 28);
+
+      // Card 2: Total Expense
+      doc.rect(48 + cardW + gap, startY, cardW, cardH).fill('#fef2f2');
+      doc.fillColor('#991b1b').fontSize(9).font('Helvetica-Bold').text('TOTAL EXPENSE', 48 + cardW + gap + 10, startY + 12);
+      doc.fillColor('#b91c1c').fontSize(12).font('Helvetica-Bold').text(formatCurrency(report.totalExpense), 48 + cardW + gap + 10, startY + 28);
+
+      // Card 3: Net Savings
+      doc.rect(48 + (cardW + gap) * 2, startY, cardW, cardH).fill('#eff6ff');
+      doc.fillColor('#1e40af').fontSize(9).font('Helvetica-Bold').text('NET SAVINGS', 48 + (cardW + gap) * 2 + 10, startY + 12);
+      doc.fillColor('#1d4ed8').fontSize(12).font('Helvetica-Bold').text(formatCurrency(report.savings), 48 + (cardW + gap) * 2 + 10, startY + 28);
+
+      // Card 4: Budget Left
+      doc.rect(48 + (cardW + gap) * 3, startY, cardW, cardH).fill('#f5f3ff');
+      doc.fillColor('#5b21b6').fontSize(9).font('Helvetica-Bold').text('BUDGET LEFT', 48 + (cardW + gap) * 3 + 10, startY + 12);
+      doc.fillColor('#6d28d9').fontSize(12).font('Helvetica-Bold').text(formatCurrency(report.budgetRemaining), 48 + (cardW + gap) * 3 + 10, startY + 28);
+
+      // Reset coordinates and colors after drawing cards
+      doc.y = startY + cardH + 25;
+      doc.x = 48;
+
+      // 3. Category Breakdown Section
+      doc.fillColor('#1e293b').fontSize(14).font('Helvetica-Bold').text('Spending Breakdown by Category', 48, doc.y);
+      doc.moveDown(0.5);
+      
+      if (report.categoryBreakdown && report.categoryBreakdown.length > 0) {
+        report.categoryBreakdown.forEach((item) => {
+          doc.fillColor('#475569').fontSize(10).font('Helvetica').text(`• ${item.category}: `, { continued: true });
+          doc.fillColor('#1e293b').font('Helvetica-Bold').text(formatCurrency(item.amount));
+        });
+      } else {
+        doc.fillColor('#94a3b8').fontSize(10).font('Helvetica').text('No expense categories registered this period.');
+      }
+      doc.moveDown(1.5);
+
+      // 4. Detailed Ledger Section
+      doc.fillColor('#1e293b').fontSize(14).font('Helvetica-Bold').text('Detailed Ledger Statement', 48, doc.y);
+      doc.moveDown(0.5);
+      
+      doc.strokeColor('#e2e8f0').lineWidth(0.5).moveTo(48, doc.y).lineTo(562, doc.y).stroke();
+      doc.moveDown(0.6);
+
+      if (report.transactions && report.transactions.length > 0) {
+        report.transactions.slice(0, 150).forEach((item) => {
+          const dateStr = new Date(item.transactionDate).toLocaleDateString('en-IN', { timeZone: 'UTC', day: '2-digit', month: 'short' });
+          const typeStr = item.type === 'income' ? 'Income' : item.type === 'expense' ? 'Expense' : 'Transfer';
+          
+          let accountInfo = item.accountId?.name || 'Cash';
+          if (item.type === 'transfer') {
+            accountInfo = `${item.accountId?.name || 'Cash'} -> ${item.toAccountId?.name || 'Cash'}`;
+          }
+
+          const txDesc = `${dateStr}  |  ${item.title}  [${typeStr} - ${accountInfo}]`;
+          const txAmount = formatCurrency(item.amount);
+
+          // Render transaction line
+          doc.fillColor('#334155').fontSize(9.5).font('Helvetica').text(txDesc, 48, doc.y, { continued: true });
+          
+          const amountColor = item.type === 'income' ? '#059669' : item.type === 'expense' ? '#dc2626' : '#475569';
+          doc.fillColor(amountColor).font('Helvetica-Bold').text(`   ${txAmount}`, { align: 'right' });
+          doc.moveDown(0.1);
+        });
+      } else {
+        doc.fillColor('#94a3b8').fontSize(10).font('Helvetica').text('No transaction logs recorded in this period.');
+      }
+
       doc.end();
       return;
     }

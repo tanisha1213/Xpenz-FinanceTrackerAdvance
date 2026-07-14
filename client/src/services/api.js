@@ -4,8 +4,8 @@ const getBaseURL = () => {
   if (import.meta.env.VITE_API_URL) {
     return import.meta.env.VITE_API_URL;
   }
-  // If running in browser locally (Vite port 5173) or on Vercel, use relative proxy paths
-  if (window.location.hostname === 'localhost' && window.location.port === '5173') {
+  // If running in browser locally (Vite ports like 5173 or 4173) or on Vercel, use relative proxy paths
+  if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
     return '/api';
   }
   if (window.location.hostname.endsWith('.vercel.app') || window.location.hostname === 'vercel.app') {

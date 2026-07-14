@@ -27,6 +27,21 @@ import { getLoans, addLoan } from '../services/loanService'
 
 const COLORS = ['#4f46e5', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#06b6d4']
 
+const POPULAR_BANKS = [
+  'State Bank of India (SBI)',
+  'HDFC Bank',
+  'ICICI Bank',
+  'Axis Bank',
+  'Kotak Mahindra Bank',
+  'Bank of Baroda',
+  'Punjab National Bank (PNB)',
+  'Union Bank of India',
+  'Canara Bank',
+  'Bank of India',
+  'Bank of Maharashtra',
+  'Other (Type Below)'
+]
+
 const emptyForm = {
   type: 'expense',
   title: '',
@@ -47,7 +62,16 @@ const emptyForm = {
   loanLenderName: '',
   loanInterestRate: '0',
   loanEmiAmount: '0',
-  loanEndDate: ''
+  loanEndDate: '',
+  loanProcessingFee: '0',
+  loanTotalInstallments: '12',
+  loanFirstEmiDate: new Date().toISOString().slice(0, 10),
+  loanPaymentFrequency: 'monthly',
+  loanReminder7Days: true,
+  loanReminder3Days: true,
+  loanReminder1Day: true,
+  loanReminderDueDate: true,
+  loanReminderDailyOverdue: true
 }
 
 const checklistTranslations = {
@@ -129,6 +153,7 @@ function Dashboard() {
   // Quick Add Form States
   const [showForm, setShowForm] = useState(false)
   const [form, setForm] = useState(emptyForm)
+  const [isCustomBank, setIsCustomBank] = useState(false)
   const [formLoading, setFormLoading] = useState(false)
   const [message, setMessage] = useState('')
   const [loans, setLoans] = useState([])
@@ -245,7 +270,6 @@ function Dashboard() {
     setFormLoading(true)
     try {
       if (form.isLoan && form.loanAction === 'create') {
-        // Step 1: Create the new loan ledger with integrated initial transaction setup
         await addLoan({
           title: form.title,
           type: form.type === 'income' ? 'borrowed' : 'lent',
@@ -257,10 +281,21 @@ function Dashboard() {
           emiAmount: Number(form.loanEmiAmount) || 0,
           startDate: form.transactionDate,
           endDate: form.loanEndDate || undefined,
-          accountId: form.accountId || undefined
+          accountId: form.accountId || undefined,
+          
+          processingFee: Number(form.loanProcessingFee) || 0,
+          totalInstallments: Number(form.loanTotalInstallments) || 12,
+          firstEmiDate: form.loanFirstEmiDate,
+          paymentFrequency: form.loanPaymentFrequency || 'monthly',
+          reminder7Days: form.loanReminder7Days !== false,
+          reminder3Days: form.loanReminder3Days !== false,
+          reminder1Day: form.loanReminder1Day !== false,
+          reminderDueDate: form.loanReminderDueDate !== false,
+          reminderDailyOverdue: form.loanReminderDailyOverdue !== false
         })
         
         setShowForm(false)
+        setIsCustomBank(false)
         setForm(emptyForm)
         const response = await getDashboardSummary()
         setSummary(response.data.data)
@@ -478,10 +513,10 @@ function Dashboard() {
             <p className="text-xs font-bold text-slate-400 dark:text-dark-text-muted uppercase tracking-wider">{t('totalBalance')}</p>
             <div className="flex items-baseline gap-1 mt-2">
               <h2 className="text-4xl md:text-5xl font-black text-slate-800 dark:text-white tracking-tight">
-                {summary ? formatCurrency(summary.savings).split('.')[0] : '₹0'}
+                {summary ? formatCurrency(summary.totalBalance).split('.')[0] : '₹0'}
               </h2>
               <span className="text-lg md:text-xl font-bold text-slate-450 dark:text-dark-text-muted">
-                .{summary ? formatCurrency(summary.savings).split('.')[1] || '00' : '00'}
+                .{summary ? formatCurrency(summary.totalBalance).split('.')[1] || '00' : '00'}
               </span>
               <span className="ml-2.5 inline-flex items-center gap-1 rounded-lg bg-slate-100 dark:bg-slate-900 border border-slate-200/40 dark:border-slate-800 px-2 py-0.5 text-xs font-bold text-slate-500 dark:text-slate-400">
                 🇮🇳 INR
@@ -798,164 +833,36 @@ function Dashboard() {
                     className="rounded text-secondary focus:ring-secondary w-4 h-4 cursor-pointer"
                   />
                   <label htmlFor="isLoan" className="text-xs font-extrabold text-slate-700 dark:text-slate-200 uppercase cursor-pointer">
-                    {t('isLoanTx')}
+                    Link to Loan / EMI Payment
                   </label>
                 </div>
 
                 {form.isLoan && (
                   <div className="space-y-3 pt-2 border-t border-slate-200/50 dark:border-dark-border">
-                    
-                    {/* Loan Action selection */}
                     <div className="flex flex-col gap-1">
-                      <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">{t('loanAction')}</label>
-                      <div className="flex gap-4 mt-0.5">
-                        <label className="flex items-center gap-1.5 text-xs font-semibold cursor-pointer">
-                          <input
-                            type="radio"
-                            name="loanAction"
-                            value="link"
-                            checked={form.loanAction === 'link'}
-                            onChange={handleFormChange}
-                            className="text-secondary w-3.5 h-3.5 focus:ring-transparent cursor-pointer"
-                          />
-                          {t('repayExisting')}
-                        </label>
-                        <label className="flex items-center gap-1.5 text-xs font-semibold cursor-pointer">
-                          <input
-                            type="radio"
-                            name="loanAction"
-                            value="create"
-                            checked={form.loanAction === 'create'}
-                            onChange={handleFormChange}
-                            className="text-secondary w-3.5 h-3.5 focus:ring-transparent cursor-pointer"
-                          />
-                          {t('createNewLedger')}
-                        </label>
-                      </div>
+                      <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">{t('selectActiveLoan')}</label>
+                      {loans.length === 0 ? (
+                        <span className="text-xs text-rose-500 font-semibold block mt-1">No active loan ledgers found.</span>
+                      ) : (
+                        <select
+                          name="loanId"
+                          value={form.loanId}
+                          onChange={handleFormChange}
+                          className="rounded-xl border border-slate-200 dark:border-dark-border px-3 py-2 text-sm bg-white dark:bg-dark-card text-slate-800 dark:text-slate-200 focus:outline-none cursor-pointer"
+                          required
+                        >
+                          <option value="">-- Choose active loan --</option>
+                          {loans.filter(l => l.status === 'active').map((loan) => (
+                            <option key={loan._id} value={loan._id}>
+                              {loan.title} ({loan.type === 'borrowed' ? 'Owed' : 'Lent'}: {formatCurrency(loan.remainingAmount)})
+                            </option>
+                          ))}
+                        </select>
+                      )}
+                      <span className="text-[10px] text-slate-400 dark:text-dark-text-muted mt-1 leading-normal">
+                        * Selecting a loan will automatically log this as a repayment installment and update its remaining amount. Category is automatically set to &quot;Bills&quot;.
+                      </span>
                     </div>
-
-                    {/* ACTION A: LINK EXISTING */}
-                    {form.loanAction === 'link' && (
-                      <div className="flex flex-col gap-1">
-                        <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">{t('selectActiveLoan')}</label>
-                        {loans.length === 0 ? (
-                          <span className="text-xs text-rose-500 font-semibold block mt-1">No active loan ledgers found. Please create one.</span>
-                        ) : (
-                          <select
-                            name="loanId"
-                            value={form.loanId}
-                            onChange={handleFormChange}
-                            className="rounded-xl border border-slate-200 dark:border-dark-border px-3 py-2 text-sm bg-white dark:bg-dark-card text-slate-800 dark:text-slate-200 focus:outline-none cursor-pointer"
-                            required
-                          >
-                            <option value="">-- Choose active loan --</option>
-                            {loans.filter(l => l.status === 'active').map((loan) => (
-                              <option key={loan._id} value={loan._id}>
-                                {loan.title} ({loan.type === 'borrowed' ? 'Owed' : 'Lent'}: {formatCurrency(loan.remainingAmount)})
-                              </option>
-                            ))}
-                          </select>
-                        )}
-                        <span className="text-[10px] text-slate-400 dark:text-dark-text-muted mt-1 leading-normal">
-                          * Selecting a loan will automatically log this as a repayment installment and update its remaining amount. Category is automatically set to &quot;Bills&quot;.
-                        </span>
-                      </div>
-                    )}
-
-                    {/* ACTION B: CREATE NEW LEDGER */}
-                    {form.loanAction === 'create' && (
-                      <div className="space-y-3">
-                        <div className="grid grid-cols-2 gap-4">
-                          <div className="flex flex-col gap-1">
-                            <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">{t('mainOption')}</label>
-                            <select
-                              name="loanMainCategory"
-                              value={form.loanMainCategory}
-                              onChange={handleFormChange}
-                              className="rounded-xl border border-slate-200 dark:border-dark-border px-3 py-2 text-sm bg-white dark:bg-dark-card text-slate-800 dark:text-slate-200 focus:outline-none cursor-pointer"
-                            >
-                              <option value="bank">{t('bankLoan')}</option>
-                              <option value="personal">{t('personalDebt')}</option>
-                            </select>
-                          </div>
-                          <div className="flex flex-col gap-1">
-                            <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">{t('subOption')}</label>
-                            <select
-                              name="loanSubCategory"
-                              value={form.loanSubCategory}
-                              onChange={handleFormChange}
-                              className="rounded-xl border border-slate-200 dark:border-dark-border px-3 py-2 text-sm bg-white dark:bg-dark-card text-slate-800 dark:text-slate-200 focus:outline-none capitalize cursor-pointer"
-                            >
-                              {subCategoryOptions[form.loanMainCategory].map((opt) => (
-                                <option key={opt.value} value={opt.value}>{opt.label}</option>
-                              ))}
-                            </select>
-                          </div>
-                        </div>
-
-                        <div className="grid grid-cols-2 gap-4">
-                          <div className="flex flex-col gap-1">
-                            <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
-                              {form.loanMainCategory === 'bank' ? t('bankName') : t('personName')}
-                            </label>
-                            <input
-                              type="text"
-                              name="loanLenderName"
-                              value={form.loanLenderName}
-                              onChange={handleFormChange}
-                              placeholder={form.loanMainCategory === 'bank' ? 'e.g. HDFC Bank' : 'e.g. Uncle John, Friend Raj'}
-                              className="rounded-xl border border-slate-200 dark:border-dark-border px-3 py-2 text-sm bg-white dark:bg-dark-card text-slate-800 dark:text-slate-200 focus:outline-none"
-                              required
-                            />
-                          </div>
-                          <div className="flex flex-col gap-1">
-                            <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">{t('endDate')}</label>
-                            <div className="relative">
-                              <FiCalendar className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
-                              <input
-                                type="date"
-                                name="loanEndDate"
-                                value={form.loanEndDate}
-                                onChange={handleFormChange}
-                                className="w-full rounded-xl border border-slate-200 dark:border-dark-border pr-10 pl-3 py-2 text-sm bg-white dark:bg-dark-card text-slate-800 dark:text-slate-200 focus:outline-none"
-                              />
-                            </div>
-                          </div>
-                        </div>
-
-                        <div className="grid grid-cols-2 gap-4">
-                          <div className="flex flex-col gap-1">
-                            <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">{t('interestRate')}</label>
-                            <input
-                              type="number"
-                              name="loanInterestRate"
-                              step="0.01"
-                              value={form.loanInterestRate}
-                              onChange={handleFormChange}
-                              className="rounded-xl border border-slate-200 dark:border-dark-border px-3 py-2 text-sm bg-white dark:bg-dark-card text-slate-800 dark:text-slate-200 focus:outline-none"
-                            />
-                          </div>
-                          <div className="flex flex-col gap-1">
-                            <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">{t('emi')}</label>
-                            <input
-                              type="number"
-                              name="loanEmiAmount"
-                              value={form.loanEmiAmount}
-                              onChange={handleFormChange}
-                              className="rounded-xl border border-slate-200 dark:border-dark-border px-3 py-2 text-sm bg-white dark:bg-dark-card text-slate-800 dark:text-slate-200 focus:outline-none"
-                            />
-                          </div>
-                        </div>
-
-                        <div className="rounded-xl border border-indigo-100 dark:border-indigo-950/20 bg-indigo-50/50 dark:bg-indigo-950/5 p-3 text-[10px] text-indigo-700 dark:text-indigo-400 leading-normal">
-                          <strong>{t('amortizationNote')}:</strong> Submitting this will create a new Loan ledger with a principal balance equal to the transaction amount (₹{form.amount || 0}).
-                          <br />
-                          {form.type === 'income' 
-                            ? '• Since this transaction is an Inflow, it will create a borrowed loan (Liability) deposited to your account.' 
-                            : '• Since this transaction is an Outflow, it will create a lent loan (Asset) withdrawn from your account.'}
-                        </div>
-                      </div>
-                    )}
                   </div>
                 )}
               </div>
@@ -974,7 +881,10 @@ function Dashboard() {
               <footer className="pt-4 border-t border-slate-100 dark:border-dark-border flex justify-end gap-3 bg-slate-50/50 dark:bg-dark-card/50 -mx-6 -mb-6 px-6 py-4">
                 <button
                   type="button"
-                  onClick={() => setShowForm(false)}
+                  onClick={() => {
+                    setShowForm(false)
+                    setIsCustomBank(false)
+                  }}
                   className="rounded-xl border border-slate-200 dark:border-dark-border px-4 py-2.5 text-sm font-bold text-slate-650 dark:text-slate-350 hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer"
                 >
                   {t('cancel')}

@@ -17,6 +17,21 @@ import {
 } from 'react-icons/fi'
 import { useLanguage } from '../context/LanguageContext'
 
+const POPULAR_BANKS = [
+  'State Bank of India (SBI)',
+  'HDFC Bank',
+  'ICICI Bank',
+  'Axis Bank',
+  'Kotak Mahindra Bank',
+  'Bank of Baroda',
+  'Punjab National Bank (PNB)',
+  'Union Bank of India',
+  'Canara Bank',
+  'Bank of India',
+  'Bank of Maharashtra',
+  'Other (Type Below)'
+]
+
 const emptyForm = {
   title: '',
   type: 'borrowed',
@@ -46,6 +61,7 @@ function Loans() {
   
   // States
   const [loans, setLoans] = useState([])
+  const [isCustomBank, setIsCustomBank] = useState(false)
   const [accounts, setAccounts] = useState([])
   const [installments, setInstallments] = useState([]) // all active installments for calendar
   const [loading, setLoading] = useState(false)
@@ -131,6 +147,20 @@ function Loans() {
       
       if (!nextToPay) {
         alert('All installments are already paid for this loan!')
+        try {
+          const loanObj = loans.find(l => l._id === loanId)
+          if (loanObj) {
+            await updateLoan(loanId, {
+              status: 'completed',
+              installmentsPaid: loanObj.totalInstallments,
+              remainingAmount: 0,
+              nextDueDate: null
+            })
+            await loadData()
+          }
+        } catch (syncErr) {
+          console.error('Failed to sync loan completion state:', syncErr)
+        }
         return
       }
       
@@ -158,6 +188,8 @@ function Loans() {
   // Handle Edit Loan Modal
   const openEditModal = (loan) => {
     setEditingLoanId(loan._id)
+    const isCustom = loan.mainCategory === 'bank' && !POPULAR_BANKS.includes(loan.lenderName)
+    setIsCustomBank(isCustom)
     setForm({
       title: loan.title,
       type: loan.type,
@@ -379,10 +411,11 @@ function Loans() {
       {/* Page Title */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h2 className="text-2xl font-extrabold text-slate-800 dark:text-white tracking-tight">Loans & EMI Management</h2>
-          <p className="text-slate-400 dark:text-dark-text-muted text-sm mt-0.5">Track your loans, schedule automated payments, and monitor your debt-free progress.</p>
+          <h2 className="text-2xl font-extrabold text-slate-800 dark:text-white tracking-tight">Loans & EMIs</h2>
+          <p className="text-slate-400 dark:text-dark-text-muted text-sm mt-0.5">Track your loans, payments, and see when you will be debt free.</p>
         </div>
         <button
+          id="loans-add-btn-tour"
           onClick={() => {
             setForm({
               ...emptyForm,
@@ -410,13 +443,13 @@ function Loans() {
       )}
 
       {/* Statistics Cards Grid */}
-      <div className="grid gap-4 grid-cols-2 md:grid-cols-5">
+      <div className="grid gap-4 grid-cols-2 md:grid-cols-5" id="loans-stats-grid-tour">
         <div className="bg-white dark:bg-dark-card border border-slate-100 dark:border-dark-border p-4 rounded-2xl shadow-sm">
-          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Remaining Debt</p>
+          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Left to Pay</p>
           <p className="text-lg font-black text-slate-800 dark:text-white mt-1">{formatCurrency(stats.totalRemaining)}</p>
         </div>
         <div className="bg-white dark:bg-dark-card border border-slate-100 dark:border-dark-border p-4 rounded-2xl shadow-sm">
-          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Monthly EMI Total</p>
+          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Monthly EMI Amount</p>
           <p className="text-lg font-black text-slate-800 dark:text-white mt-1">{formatCurrency(stats.totalMonthlyEmi)}</p>
         </div>
         <div className="bg-white dark:bg-dark-card border border-slate-100 dark:border-dark-border p-4 rounded-2xl shadow-sm">
@@ -440,10 +473,10 @@ function Loans() {
         {/* Left Side: Search, Filters, and Loans Cards list */}
         <div className="lg:col-span-3 space-y-6">
           {/* Forecast & Projections Banner Card */}
-          <div className="bg-gradient-to-r from-[#8B5CF6]/5 via-[#4f46e5]/5 to-indigo-500/5 dark:from-[#8B5CF6]/10 dark:to-indigo-500/10 border border-[#8B5CF6]/10 rounded-2xl p-5 shadow-premium">
+          <div className="bg-gradient-to-r from-[#8B5CF6]/5 via-[#4f46e5]/5 to-indigo-500/5 dark:from-[#8B5CF6]/10 dark:to-indigo-500/10 border border-[#8B5CF6]/10 rounded-2xl p-5 shadow-premium" id="loans-payoff-date-tour">
             <h3 className="text-sm font-bold text-slate-800 dark:text-white mb-3 flex items-center gap-1.5">
               <FiPercent className="text-secondary dark:text-purple-400" />
-              Debt-Free Forecast Projections
+              Expected Payoff Date
             </h3>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-xs">
               <div>
@@ -451,22 +484,22 @@ function Loans() {
                 <p className="font-extrabold text-slate-700 dark:text-slate-200 mt-0.5">{formatCurrency(forecast.totalRemaining + forecast.totalPaid)}</p>
               </div>
               <div>
-                <p className="text-slate-400 font-semibold">Total Paid Till Date</p>
+                <p className="text-slate-400 font-semibold">Total Paid</p>
                 <p className="font-extrabold text-emerald-600 dark:text-emerald-400 mt-0.5">{formatCurrency(forecast.totalPaid)}</p>
               </div>
               <div>
-                <p className="text-slate-400 font-semibold">Remaining Balances</p>
+                <p className="text-slate-400 font-semibold">Left to Pay</p>
                 <p className="font-extrabold text-rose-500 mt-0.5">{formatCurrency(forecast.totalRemaining)}</p>
               </div>
               <div>
-                <p className="text-slate-400 font-semibold">Projected Debt-Free Date</p>
+                <p className="text-slate-400 font-semibold">Expected Date to be Debt Free</p>
                 <p className="font-extrabold text-indigo-600 dark:text-purple-400 mt-0.5">{forecast.debtFreeDate}</p>
               </div>
             </div>
           </div>
 
           {/* Filters Toolbar */}
-          <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between bg-white dark:bg-dark-card border border-slate-100 dark:border-dark-border p-3.5 rounded-2xl shadow-sm">
+          <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between bg-white dark:bg-dark-card border border-slate-100 dark:border-dark-border p-3.5 rounded-2xl shadow-sm" id="loans-filter-tour">
             <div className="flex bg-slate-150/40 dark:bg-slate-900/60 p-1 rounded-xl w-fit overflow-x-auto">
               {['all', 'active', 'overdue', 'completed', 'thisMonth'].map((tab) => (
                 <button
@@ -543,7 +576,7 @@ function Loans() {
                             {isCompleted ? 'Completed' : isOverdue ? 'Overdue' : 'Active'}
                           </span>
                         </div>
-                        <p className="text-xs text-slate-400 capitalize font-medium">{loan.lenderName} ({loan.mainCategory})</p>
+                        <p className="text-xs text-slate-400 capitalize font-medium">{loan.lenderName} ({loan.mainCategory === 'bank' ? 'Bank Loan' : 'Friend / Family Loan'})</p>
                       </div>
 
                       {/* EMI Details */}
@@ -559,7 +592,7 @@ function Loans() {
                           </p>
                         </div>
                         <div>
-                          <p className="text-slate-450 font-semibold uppercase tracking-wider text-[9px]">Remaining Bal</p>
+                          <p className="text-slate-450 font-semibold uppercase tracking-wider text-[9px]">Left to Pay</p>
                           <p className="font-black text-slate-800 dark:text-white mt-0.5">{formatCurrency(loan.remainingAmount)}</p>
                         </div>
                         <div>
@@ -605,8 +638,8 @@ function Loans() {
                     {/* Progress Bar */}
                     <div className="px-5 pb-4">
                       <div className="flex justify-between items-center text-[10px] text-slate-400 dark:text-dark-text-muted font-bold mb-1.5">
-                        <span>{pct}% Completed</span>
-                        <span>{loan.totalInstallments - loan.installmentsPaid} installments remaining</span>
+                        <span>{pct}% Paid</span>
+                        <span>{loan.totalInstallments - loan.installmentsPaid} installments left</span>
                       </div>
                       <div className="w-full h-2 bg-slate-100 dark:bg-dark-border rounded-full overflow-hidden">
                         <div
@@ -625,7 +658,7 @@ function Loans() {
                     {/* Expandable History Drawer */}
                     {isExpanded && (
                       <div className="border-t border-slate-100 dark:border-dark-border bg-slate-50/50 dark:bg-dark-card/30 p-5 space-y-3">
-                        <h5 className="text-xs font-bold uppercase tracking-wider text-slate-400">Installment Ledger & History</h5>
+                        <h5 className="text-xs font-bold uppercase tracking-wider text-slate-400">Installment Details & History</h5>
                         {historyLoading ? (
                           <div className="flex items-center gap-2 text-xs text-slate-450 justify-center py-4">
                             <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-secondary"></div>
@@ -820,7 +853,7 @@ function Loans() {
           <div className="bg-white dark:bg-dark-card rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden border border-slate-100 dark:border-dark-border max-h-[90vh] overflow-y-auto">
             <header className="px-6 py-4 border-b border-slate-100 dark:border-dark-border flex justify-between items-center bg-slate-50/50 dark:bg-dark-card/50">
               <h3 className="text-lg font-extrabold text-slate-800 dark:text-white">
-                {showEditModal ? 'Edit Loan Details' : 'Configure New Loan & EMI'}
+                {showEditModal ? 'Edit Loan Details' : 'Add New Loan'}
               </h3>
               <button
                 onClick={() => {
@@ -828,8 +861,9 @@ function Loans() {
                   setShowEditModal(false)
                   setForm(emptyForm)
                   setEditingLoanId(null)
+                  setIsCustomBank(false)
                 }}
-                className="text-slate-400 hover:text-slate-600 dark:hover:text-white cursor-pointer"
+                className="text-slate-400 hover:text-slate-655 dark:hover:text-white cursor-pointer"
               >
                 ✕
               </button>
@@ -843,21 +877,58 @@ function Loans() {
                     type="text"
                     value={form.title}
                     onChange={(e) => setForm({ ...form, title: e.target.value })}
-                    placeholder="e.g. Car Loan, iPhone EMI"
-                    className="rounded-xl border border-slate-200 dark:border-dark-border px-3 py-2 text-sm bg-white dark:bg-dark-card text-slate-800 dark:text-slate-200 focus:outline-none"
+                    placeholder="e.g. Car Loan, Home Loan"
+                    className="rounded-xl border border-slate-200 dark:border-dark-border px-3 py-2.5 text-sm bg-white dark:bg-dark-card text-slate-800 dark:text-slate-200 focus:outline-none"
                     required
                   />
                 </div>
                 <div className="flex flex-col gap-1">
-                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Lender / Bank Name</label>
-                  <input
-                    type="text"
-                    value={form.lenderName}
-                    onChange={(e) => setForm({ ...form, lenderName: e.target.value })}
-                    placeholder="e.g. HDFC Bank, Uncle John"
-                    className="rounded-xl border border-slate-200 dark:border-dark-border px-3 py-2 text-sm bg-white dark:bg-dark-card text-slate-800 dark:text-slate-200 focus:outline-none"
-                    required
-                  />
+                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                    {form.mainCategory === 'bank' ? 'Select Bank' : 'Lender Name'}
+                  </label>
+                  {form.mainCategory === 'bank' ? (
+                    <div className="space-y-2">
+                      <select
+                        value={isCustomBank ? 'Other (Type Below)' : form.lenderName}
+                        onChange={(e) => {
+                          const val = e.target.value
+                          if (val === 'Other (Type Below)') {
+                            setIsCustomBank(true)
+                            setForm({ ...form, lenderName: '' })
+                          } else {
+                            setIsCustomBank(false)
+                            setForm({ ...form, lenderName: val })
+                          }
+                        }}
+                        className="w-full rounded-xl border border-slate-200 dark:border-dark-border px-3 py-2.5 text-sm bg-white dark:bg-dark-card text-slate-800 dark:text-slate-200 focus:outline-none cursor-pointer"
+                        required
+                      >
+                        <option value="" disabled>Select a bank...</option>
+                        {POPULAR_BANKS.map(bank => (
+                          <option key={bank} value={bank}>{bank}</option>
+                        ))}
+                      </select>
+                      {isCustomBank && (
+                        <input
+                          type="text"
+                          value={form.lenderName}
+                          onChange={(e) => setForm({ ...form, lenderName: e.target.value })}
+                          placeholder="Type your bank name here..."
+                          className="w-full rounded-xl border border-slate-200 dark:border-dark-border px-3 py-2.5 text-sm bg-white dark:bg-dark-card text-slate-800 dark:text-slate-200 focus:outline-none"
+                          required
+                        />
+                      )}
+                    </div>
+                  ) : (
+                    <input
+                      type="text"
+                      value={form.lenderName}
+                      onChange={(e) => setForm({ ...form, lenderName: e.target.value })}
+                      placeholder="e.g. Uncle John, Friend Raj"
+                      className="rounded-xl border border-slate-200 dark:border-dark-border px-3 py-2.5 text-sm bg-white dark:bg-dark-card text-slate-800 dark:text-slate-200 focus:outline-none"
+                      required
+                    />
+                  )}
                 </div>
               </div>
 
@@ -1065,6 +1136,7 @@ function Loans() {
                     setShowEditModal(false)
                     setForm(emptyForm)
                     setEditingLoanId(null)
+                    setIsCustomBank(false)
                   }}
                   className="rounded-xl border border-slate-200 dark:border-dark-border px-4 py-2.5 text-sm font-bold text-slate-600 dark:text-slate-350 hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer"
                 >

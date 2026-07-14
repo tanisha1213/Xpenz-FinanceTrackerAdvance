@@ -4,8 +4,7 @@ import { logout } from '../../redux/slices/authSlice'
 import { FiLayout, FiDollarSign, FiPieChart, FiTrendingUp, FiUser, FiLogOut, FiCreditCard, FiPercent } from 'react-icons/fi'
 import { useTheme } from '../../context/ThemeContext'
 import { useLanguage } from '../../context/LanguageContext'
-import logoLight from '../../assets/logo-light.png'
-import logoDark from '../../assets/logo-dark.png'
+import Logo from '../common/Logo'
 
 function Sidebar() {
   const location = useLocation()
@@ -18,13 +17,20 @@ function Sidebar() {
     { labelKey: 'dashboard', path: '/dashboard', icon: FiLayout },
     { labelKey: 'accounts', path: '/balance', icon: FiCreditCard },
     { labelKey: 'transactions', path: '/transactions', icon: FiDollarSign },
-    { labelKey: 'loans', path: '/loans', icon: FiPercent },
     { labelKey: 'budget', path: '/budget', icon: FiPieChart },
     { labelKey: 'analytics', path: '/insights', icon: FiTrendingUp },
     { labelKey: 'profile', path: '/profile', icon: FiUser }
   ]
 
-  const isActive = (path) => location.pathname === path
+  const isActive = (path) => {
+    if (path.includes('?')) {
+      return location.pathname + location.search === path
+    }
+    if (path === '/transactions') {
+      return location.pathname === '/transactions' && !location.search.includes('tab=loans')
+    }
+    return location.pathname === path
+  }
 
   const handleLogout = () => {
     dispatch(logout())
@@ -37,7 +43,7 @@ function Sidebar() {
       <div className="p-6 border-b border-slate-800 dark:border-dark-border flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold tracking-tight text-white flex items-center gap-2">
-            <img src={theme === 'light' ? logoLight : logoDark} alt="Xpenz Logo" className="w-8 h-8 rounded-lg object-contain shadow-md" />
+            <Logo className="w-8 h-8 rounded-lg" />
             Xpenz
           </h1>
           <p className="text-[10px] text-slate-400 dark:text-dark-text-muted mt-1 font-bold uppercase tracking-wider">AI Personal Finance</p>
