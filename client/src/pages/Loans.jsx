@@ -500,7 +500,7 @@ function Loans() {
 
           {/* Filters Toolbar */}
           <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between bg-white dark:bg-dark-card border border-slate-100 dark:border-dark-border p-3.5 rounded-2xl shadow-sm" id="loans-filter-tour">
-            <div className="flex bg-slate-150/40 dark:bg-slate-900/60 p-1 rounded-xl w-fit overflow-x-auto">
+            <div className="flex bg-slate-150/40 dark:bg-slate-900/60 p-1 rounded-xl w-fit max-w-full overflow-x-auto scrollbar-none">
               {['all', 'active', 'overdue', 'completed', 'thisMonth'].map((tab) => (
                 <button
                   key={tab}
