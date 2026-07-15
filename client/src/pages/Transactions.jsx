@@ -452,23 +452,25 @@ function Transactions() {
         <div className="flex w-full md:w-auto">
           <button
             onClick={() => handleTabChange('transactions')}
-            className={`pb-3.5 px-8 text-base md:text-lg font-bold border-b-[3px] transition-all cursor-pointer flex-1 md:flex-initial text-center whitespace-nowrap ${
+            className={`pb-3.5 px-4 sm:px-8 text-sm sm:text-base md:text-lg font-bold border-b-[3px] transition-all cursor-pointer flex-1 md:flex-initial text-center whitespace-nowrap ${
               activeSubTab === 'transactions'
                 ? 'border-secondary text-secondary dark:border-purple-400 dark:text-purple-400 font-black'
                 : 'border-transparent text-slate-550 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200'
             }`}
           >
-            Transaction History
+            <span className="hidden sm:inline">Transaction History</span>
+            <span className="inline sm:hidden">Transactions</span>
           </button>
           <button
             onClick={() => handleTabChange('loans')}
-            className={`pb-3.5 px-8 text-base md:text-lg font-bold border-b-[3px] transition-all cursor-pointer flex-1 md:flex-initial text-center whitespace-nowrap ${
+            className={`pb-3.5 px-4 sm:px-8 text-sm sm:text-base md:text-lg font-bold border-b-[3px] transition-all cursor-pointer flex-1 md:flex-initial text-center whitespace-nowrap ${
               activeSubTab === 'loans'
                 ? 'border-secondary text-secondary dark:border-purple-400 dark:text-purple-400 font-black'
                 : 'border-transparent text-slate-550 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200'
             }`}
           >
-            Loans & EMIs
+            <span className="hidden sm:inline">Loans & EMIs</span>
+            <span className="inline sm:hidden">Loans / EMIs</span>
           </button>
         </div>
       </div>
@@ -1032,7 +1034,7 @@ function Transactions() {
             </header>
 
             <form onSubmit={submitForm} className="p-6 space-y-4">
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-xs font-bold text-slate-500 dark:text-dark-text-muted uppercase mb-1">{t('typeLabel')}</label>
                   <select
@@ -1073,7 +1075,7 @@ function Transactions() {
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-xs font-bold text-slate-500 dark:text-dark-text-muted uppercase mb-1">{t('accountLabel')}</label>
                   <select
@@ -1103,7 +1105,7 @@ function Transactions() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-xs font-bold text-slate-500 dark:text-dark-text-muted uppercase mb-1">{t('category')}</label>
                   <select

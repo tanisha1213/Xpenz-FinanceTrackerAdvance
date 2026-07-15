@@ -27,14 +27,16 @@ function BottomNavigation() {
             <Link
               key={item.path}
               to={item.path}
-              className={`flex flex-col items-center justify-center w-full h-full transition-all duration-200 ${
+              className={`flex flex-col items-center justify-center w-full h-full relative transition-all duration-200 ${
                 active 
-                  ? 'text-secondary dark:text-purple-400 font-extrabold scale-105' 
+                  ? 'text-secondary dark:text-purple-400 font-extrabold scale-110' 
                   : 'text-slate-400 hover:text-slate-600 dark:text-slate-500 dark:hover:text-slate-300'
               }`}
             >
-              <Icon className="w-5 h-5 mb-1" />
-              <span className="text-[10px] tracking-tight">{t(item.labelKey)}</span>
+              <Icon className="w-6 h-6" />
+              {active && (
+                <span className="absolute bottom-1.5 w-1 h-1 rounded-full bg-secondary dark:bg-purple-400 animate-pulse" />
+              )}
             </Link>
           )
         })}
