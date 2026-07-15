@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react'
 import { useSelector } from 'react-redux'
-import { useLocation } from 'react-router-dom'
 import { FiBell, FiSun, FiMoon } from 'react-icons/fi'
 import { useTheme } from '../../context/ThemeContext'
 import logoLight from '../../assets/logo-light.png'
@@ -12,26 +11,6 @@ function Navbar() {
   const { user } = useSelector(state => state.auth)
   const { theme, toggleTheme } = useTheme()
   const { language, setLanguage } = useLanguage()
-  const location = useLocation()
-
-  const getPageTitle = () => {
-    switch (location.pathname) {
-      case '/dashboard':
-        return 'Dashboard'
-      case '/balance':
-        return 'Accounts'
-      case '/transactions':
-        return 'Transactions'
-      case '/budget':
-        return 'Budget'
-      case '/insights':
-        return 'Insights & Reports'
-      case '/profile':
-        return 'Profile'
-      default:
-        return 'Xpenz'
-    }
-  }
   const [showNotifications, setShowNotifications] = useState(false)
   const [hasUnread, setHasUnread] = useState(true)
   const [notifications, setNotifications] = useState([
@@ -117,21 +96,11 @@ function Navbar() {
   return (
     <nav className="bg-white/80 dark:bg-dark-card/80 backdrop-blur-md border-b border-slate-100 dark:border-dark-border sticky top-0 z-30 transition-colors duration-200">
       <div className="px-4 md:px-6 py-4 flex justify-between items-center">
-        <div className="flex items-center gap-2.5">
-          {/* Desktop view: Logo & Brand Name */}
-          <div className="hidden md:flex items-center gap-2.5">
-            <img src={theme === 'light' ? logoLight : logoDark} alt="Xpenz Logo" className="w-6 h-6 rounded-md object-contain shadow-sm" />
-            <h2 className="text-lg md:text-xl font-bold text-slate-800 dark:text-white tracking-tight">
-              Xpenz
-            </h2>
-          </div>
-          {/* Mobile view: Logo & Dynamic Page Title */}
-          <div className="flex md:hidden items-center gap-2">
-            <img src={theme === 'light' ? logoLight : logoDark} alt="Xpenz Logo" className="w-5.5 h-5.5 rounded-md object-contain shadow-sm" />
-            <h2 className="text-sm font-extrabold text-slate-800 dark:text-white tracking-tight">
-              {getPageTitle()}
-            </h2>
-          </div>
+        <div className="flex items-center gap-2">
+          <img src={theme === 'light' ? logoLight : logoDark} alt="Xpenz Logo" className="w-6 h-6 rounded-md object-contain shadow-sm" />
+          <h2 className="text-base sm:text-lg md:text-xl font-bold text-slate-800 dark:text-white tracking-tight">
+            Xpenz
+          </h2>
         </div>
         
         <div className="flex items-center gap-4">
