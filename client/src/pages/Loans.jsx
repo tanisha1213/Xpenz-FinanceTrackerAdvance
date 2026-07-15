@@ -443,26 +443,26 @@ function Loans() {
       )}
 
       {/* Statistics Cards Grid */}
-      <div className="grid gap-4 grid-cols-2 sm:grid-cols-3 lg:grid-cols-5" id="loans-stats-grid-tour">
-        <div className="bg-white dark:bg-dark-card border border-slate-100 dark:border-dark-border p-4 rounded-2xl shadow-sm">
-          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Left to Pay</p>
-          <p className="text-lg font-black text-slate-800 dark:text-white mt-1">{formatCurrency(stats.totalRemaining)}</p>
+      <div className="grid gap-3 grid-cols-2 sm:grid-cols-3 lg:grid-cols-5" id="loans-stats-grid-tour">
+        <div className="bg-white dark:bg-dark-card border border-slate-100 dark:border-dark-border p-3 sm:p-4 rounded-2xl shadow-sm min-w-0">
+          <p className="text-[9px] sm:text-[10px] font-bold text-slate-400 uppercase tracking-wider truncate">Left to Pay</p>
+          <p className="text-base sm:text-lg font-black text-slate-800 dark:text-white mt-1 truncate">{formatCurrency(stats.totalRemaining)}</p>
         </div>
-        <div className="bg-white dark:bg-dark-card border border-slate-100 dark:border-dark-border p-4 rounded-2xl shadow-sm">
-          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Monthly EMI Amount</p>
-          <p className="text-lg font-black text-slate-800 dark:text-white mt-1">{formatCurrency(stats.totalMonthlyEmi)}</p>
+        <div className="bg-white dark:bg-dark-card border border-slate-100 dark:border-dark-border p-3 sm:p-4 rounded-2xl shadow-sm min-w-0">
+          <p className="text-[9px] sm:text-[10px] font-bold text-slate-400 uppercase tracking-wider truncate">Monthly EMI</p>
+          <p className="text-base sm:text-lg font-black text-slate-800 dark:text-white mt-1 truncate">{formatCurrency(stats.totalMonthlyEmi)}</p>
         </div>
-        <div className="bg-white dark:bg-dark-card border border-slate-100 dark:border-dark-border p-4 rounded-2xl shadow-sm">
-          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Active Loans</p>
-          <p className="text-lg font-black text-slate-800 dark:text-white mt-1">{stats.activeCount}</p>
+        <div className="bg-white dark:bg-dark-card border border-slate-100 dark:border-dark-border p-3 sm:p-4 rounded-2xl shadow-sm min-w-0">
+          <p className="text-[9px] sm:text-[10px] font-bold text-slate-400 uppercase tracking-wider truncate">Active Loans</p>
+          <p className="text-base sm:text-lg font-black text-slate-800 dark:text-white mt-1">{stats.activeCount}</p>
         </div>
-        <div className="bg-white dark:bg-dark-card border border-slate-100 dark:border-dark-border p-4 rounded-2xl shadow-sm">
-          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Completed Loans</p>
-          <p className="text-lg font-black text-emerald-600 dark:text-emerald-400 mt-1">{stats.completedCount}</p>
+        <div className="bg-white dark:bg-dark-card border border-slate-100 dark:border-dark-border p-3 sm:p-4 rounded-2xl shadow-sm min-w-0">
+          <p className="text-[9px] sm:text-[10px] font-bold text-slate-400 uppercase tracking-wider truncate">Completed</p>
+          <p className="text-base sm:text-lg font-black text-emerald-600 dark:text-emerald-400 mt-1">{stats.completedCount}</p>
         </div>
-        <div className="bg-white dark:bg-dark-card border border-slate-100 dark:border-dark-border p-4 rounded-2xl shadow-sm">
-          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Overdue EMIs</p>
-          <p className={`text-lg font-black mt-1 ${stats.overdueCount > 0 ? 'text-rose-500' : 'text-slate-450 dark:text-slate-300'}`}>
+        <div className="bg-white dark:bg-dark-card border border-slate-100 dark:border-dark-border p-3 sm:p-4 rounded-2xl shadow-sm min-w-0">
+          <p className="text-[9px] sm:text-[10px] font-bold text-slate-400 uppercase tracking-wider truncate">Overdue EMIs</p>
+          <p className={`text-base sm:text-lg font-black mt-1 ${stats.overdueCount > 0 ? 'text-rose-500' : 'text-slate-450 dark:text-slate-300'}`}>
             {stats.overdueCount}
           </p>
         </div>
@@ -473,34 +473,34 @@ function Loans() {
         {/* Left Side: Search, Filters, and Loans Cards list */}
         <div className="lg:col-span-3 space-y-6">
           {/* Forecast & Projections Banner Card */}
-          <div className="bg-gradient-to-r from-[#8B5CF6]/5 via-[#4f46e5]/5 to-indigo-500/5 dark:from-[#8B5CF6]/10 dark:to-indigo-500/10 border border-[#8B5CF6]/10 rounded-2xl p-5 shadow-premium" id="loans-payoff-date-tour">
+          <div className="bg-gradient-to-r from-[#8B5CF6]/5 via-[#4f46e5]/5 to-indigo-500/5 dark:from-[#8B5CF6]/10 dark:to-indigo-500/10 border border-[#8B5CF6]/10 rounded-2xl p-4 sm:p-5 shadow-premium" id="loans-payoff-date-tour">
             <h3 className="text-sm font-bold text-slate-800 dark:text-white mb-3 flex items-center gap-1.5">
               <FiPercent className="text-secondary dark:text-purple-400" />
               Expected Payoff Date
             </h3>
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-xs">
-              <div>
-                <p className="text-slate-400 font-semibold">Total Debt</p>
-                <p className="font-extrabold text-slate-700 dark:text-slate-200 mt-0.5">{formatCurrency(forecast.totalRemaining + forecast.totalPaid)}</p>
+            <div className="grid grid-cols-1 min-[400px]:grid-cols-2 sm:grid-cols-4 gap-3.5 text-xs">
+              <div className="min-w-0">
+                <p className="text-slate-400 font-semibold leading-tight truncate">Total Debt</p>
+                <p className="font-extrabold text-slate-700 dark:text-slate-200 mt-0.5 truncate">{formatCurrency(forecast.totalRemaining + forecast.totalPaid)}</p>
               </div>
-              <div>
-                <p className="text-slate-400 font-semibold">Total Paid</p>
-                <p className="font-extrabold text-emerald-600 dark:text-emerald-400 mt-0.5">{formatCurrency(forecast.totalPaid)}</p>
+              <div className="min-w-0">
+                <p className="text-slate-400 font-semibold leading-tight truncate">Total Paid</p>
+                <p className="font-extrabold text-emerald-600 dark:text-emerald-400 mt-0.5 truncate">{formatCurrency(forecast.totalPaid)}</p>
               </div>
-              <div>
-                <p className="text-slate-400 font-semibold">Left to Pay</p>
-                <p className="font-extrabold text-rose-500 mt-0.5">{formatCurrency(forecast.totalRemaining)}</p>
+              <div className="min-w-0">
+                <p className="text-slate-400 font-semibold leading-tight truncate">Left to Pay</p>
+                <p className="font-extrabold text-rose-500 mt-0.5 truncate">{formatCurrency(forecast.totalRemaining)}</p>
               </div>
-              <div>
-                <p className="text-slate-400 font-semibold">Expected Date to be Debt Free</p>
-                <p className="font-extrabold text-indigo-600 dark:text-purple-400 mt-0.5">{forecast.debtFreeDate}</p>
+              <div className="min-w-0">
+                <p className="text-slate-400 font-semibold leading-tight break-words">Expected Payoff Date</p>
+                <p className="font-extrabold text-indigo-600 dark:text-purple-400 mt-0.5 truncate">{forecast.debtFreeDate}</p>
               </div>
             </div>
           </div>
 
           {/* Filters Toolbar */}
           <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between bg-white dark:bg-dark-card border border-slate-100 dark:border-dark-border p-3.5 rounded-2xl shadow-sm" id="loans-filter-tour">
-            <div className="flex bg-slate-150/40 dark:bg-slate-900/60 p-1 rounded-xl w-fit max-w-full overflow-x-auto scrollbar-none">
+            <div className="flex bg-slate-150/40 dark:bg-slate-900/60 p-1 rounded-xl w-full max-w-full overflow-x-auto scrollbar-none">
               {['all', 'active', 'overdue', 'completed', 'thisMonth'].map((tab) => (
                 <button
                   key={tab}
@@ -560,7 +560,7 @@ function Loans() {
                         : 'border-slate-100 dark:border-dark-border'
                     }`}
                   >
-                    <div className="p-5 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                    <div className="p-4 sm:p-5 flex flex-col md:flex-row md:items-center justify-between gap-4">
                       
                       {/* Name & Lender */}
                       <div className="space-y-1">
