@@ -422,30 +422,30 @@ function Transactions() {
   const activeLentLoans = loans.filter(l => l.type === 'lent' && l.status === 'active')
 
   return (
-    <div className="space-y-6 text-slate-800 dark:text-slate-100">
+    <div className="space-y-6 text-slate-800 dark:text-slate-100 w-full max-w-full overflow-hidden">
       {/* Page Title */}
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h2 className="text-2xl font-extrabold text-slate-800 dark:text-white tracking-tight">
-            {activeSubTab === 'loans' ? 'Loans & EMIs' : t('transactions')}
-          </h2>
-          <p className="text-slate-400 dark:text-dark-text-muted text-sm mt-0.5">
-            {activeSubTab === 'loans'
-              ? 'Track loans, payments, and see when you will be debt free.'
-              : 'Manage details of your cash flows, repayments, and liabilities.'}
-          </p>
+      {activeSubTab !== 'loans' && (
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <h2 className="text-2xl font-extrabold text-slate-800 dark:text-white tracking-tight">
+              {t('transactions')}
+            </h2>
+            <p className="text-slate-400 dark:text-dark-text-muted text-sm mt-0.5">
+              Manage details of your cash flows, repayments, and liabilities.
+            </p>
+          </div>
+          {activeSubTab === 'transactions' && (
+            <button
+              id="add-transaction-btn-tour"
+              onClick={openCreate}
+              className="flex items-center justify-center gap-2 rounded-xl bg-secondary dark:bg-purple-650 px-4 py-2.5 font-bold text-white text-sm hover:bg-indigo-700 dark:hover:bg-purple-750 shadow-md transition-all w-fit cursor-pointer"
+            >
+              <FiPlus className="w-4 h-4" />
+              {t('addTransaction')}
+            </button>
+          )}
         </div>
-        {activeSubTab === 'transactions' && (
-          <button
-            id="add-transaction-btn-tour"
-            onClick={openCreate}
-            className="flex items-center justify-center gap-2 rounded-xl bg-secondary dark:bg-purple-650 px-4 py-2.5 font-bold text-white text-sm hover:bg-indigo-700 dark:hover:bg-purple-750 shadow-md transition-all w-fit cursor-pointer"
-          >
-            <FiPlus className="w-4 h-4" />
-            {t('addTransaction')}
-          </button>
-        )}
-      </div>
+      )}
 
       {/* Tabs Bar */}
       <div className="flex border-b border-slate-200 dark:border-dark-border w-full overflow-x-auto scrollbar-none">

@@ -391,7 +391,7 @@ function Loans() {
   }, [loans])
 
   return (
-    <div className="space-y-6 text-slate-800 dark:text-slate-100 relative">
+    <div className="space-y-6 text-slate-800 dark:text-slate-100 relative w-full max-w-full overflow-hidden">
       {/* Celebration overlay */}
       {celebrationLoan && (
         <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-slate-900/80 backdrop-blur-md animate-fade-in">
