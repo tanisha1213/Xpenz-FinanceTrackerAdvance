@@ -191,16 +191,16 @@ function Balance() {
             <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">{t('totalFunds')}</span>
             <h3 className="text-3xl sm:text-4xl font-black tracking-tight">{formatCurrency(totalBalance)}</h3>
           </div>
-          <div className="flex gap-4">
-            <div className="px-4 py-2 bg-white/5 backdrop-blur-md rounded-xl border border-white/10">
-              <span className="block text-[10px] text-slate-400 font-bold uppercase tracking-wider">{t('cashBalance')}</span>
-              <span className="text-base font-extrabold text-slate-200">
+          <div className="flex gap-3 sm:gap-4 w-full sm:w-auto">
+            <div className="px-2.5 py-1.5 sm:px-4 sm:py-2 bg-white/5 backdrop-blur-md rounded-xl border border-white/10 flex-1 sm:flex-initial min-w-0">
+              <span className="block text-[9px] sm:text-[10px] text-slate-400 font-bold uppercase tracking-wider truncate">{t('cashBalance')}</span>
+              <span className="text-sm sm:text-base font-extrabold text-slate-200 block truncate">
                 {formatCurrency(cashAccounts.reduce((acc, curr) => acc + curr.balance, 0))}
               </span>
             </div>
-            <div className="px-4 py-2 bg-white/5 backdrop-blur-md rounded-xl border border-white/10">
-              <span className="block text-[10px] text-slate-400 font-bold uppercase tracking-wider">{t('bankBalance')}</span>
-              <span className="text-base font-extrabold text-slate-200">
+            <div className="px-2.5 py-1.5 sm:px-4 sm:py-2 bg-white/5 backdrop-blur-md rounded-xl border border-white/10 flex-1 sm:flex-initial min-w-0">
+              <span className="block text-[9px] sm:text-[10px] text-slate-400 font-bold uppercase tracking-wider truncate">{t('bankBalance')}</span>
+              <span className="text-sm sm:text-base font-extrabold text-slate-200 block truncate">
                 {formatCurrency(bankAccounts.reduce((acc, curr) => acc + curr.balance, 0))}
               </span>
             </div>
