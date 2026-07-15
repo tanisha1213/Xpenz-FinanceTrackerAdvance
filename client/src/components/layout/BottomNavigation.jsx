@@ -33,8 +33,8 @@ function BottomNavigation() {
                   : 'text-slate-400 hover:text-slate-600 dark:text-slate-500 dark:hover:text-slate-300'
               }`}
             >
-              <Icon className="w-[22px] h-[22px] min-[480px]:w-5 min-[480px]:h-5 transition-all" />
-              <span className="hidden min-[480px]:inline text-[9px] font-bold tracking-tight mt-0.5 whitespace-nowrap">
+              <Icon className="w-[22px] h-[22px] min-[436px]:w-5 min-[436px]:h-5 transition-all" />
+              <span className="hidden min-[436px]:inline text-[9px] font-bold tracking-tight mt-0.5 whitespace-nowrap">
                 {t(item.labelKey)}
               </span>
               {active && (
