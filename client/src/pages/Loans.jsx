@@ -560,78 +560,88 @@ function Loans() {
                         : 'border-slate-100 dark:border-dark-border'
                     }`}
                   >
-                    <div className="p-4 sm:p-5 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                    <div className="p-5 flex flex-col gap-5">
                       
-                      {/* Name & Lender */}
-                      <div className="space-y-1">
-                        <div className="flex items-center gap-2">
-                          <h4 className="font-extrabold text-slate-800 dark:text-white text-base leading-snug">{loan.title}</h4>
-                          <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider ${
-                            isCompleted
-                              ? 'bg-emerald-50 dark:bg-emerald-950/20 text-emerald-600 dark:text-emerald-400'
-                              : isOverdue
-                                ? 'bg-rose-50 dark:bg-rose-950/20 text-rose-600 dark:text-rose-455'
-                                : 'bg-blue-50 dark:bg-blue-950/20 text-blue-600 dark:text-blue-400'
-                          }`}>
-                            {isCompleted ? 'Completed' : isOverdue ? 'Overdue' : 'Active'}
-                          </span>
+                      {/* Top Header: Title, Lender and Badge */}
+                      <div className="flex justify-between items-start gap-3">
+                        <div className="space-y-1 min-w-0 flex-1">
+                          <h4 className="font-extrabold text-slate-800 dark:text-white text-base sm:text-lg leading-snug break-words">{loan.title}</h4>
+                          <p className="text-xs sm:text-sm text-slate-450 dark:text-slate-400 capitalize font-medium break-words">
+                            {loan.lenderName} • {loan.mainCategory === 'bank' ? 'Bank Loan' : 'Friend / Family Loan'}
+                          </p>
                         </div>
-                        <p className="text-xs text-slate-400 capitalize font-medium">{loan.lenderName} ({loan.mainCategory === 'bank' ? 'Bank Loan' : 'Friend / Family Loan'})</p>
+                        <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-[9px] sm:text-[10px] font-bold uppercase tracking-wider shrink-0 ${
+                          isCompleted
+                            ? 'bg-emerald-50 dark:bg-emerald-950/20 text-emerald-600 dark:text-emerald-400'
+                            : isOverdue
+                              ? 'bg-rose-50 dark:bg-rose-950/20 text-rose-600 dark:text-rose-455'
+                              : 'bg-blue-50 dark:bg-blue-950/20 text-blue-600 dark:text-blue-400'
+                        }`}>
+                          {isCompleted ? 'Completed' : isOverdue ? 'Overdue' : 'Active'}
+                        </span>
                       </div>
 
-                      {/* EMI Details */}
-                      <div className="grid grid-cols-2 md:flex md:items-center gap-4 md:gap-8 text-xs text-left">
-                        <div>
-                          <p className="text-slate-450 font-semibold uppercase tracking-wider text-[9px]">EMI Amount</p>
-                          <p className="font-black text-slate-800 dark:text-white mt-0.5">{formatCurrency(loan.emiAmount)}/mo</p>
+                      {/* Divider */}
+                      <div className="border-t border-slate-100 dark:border-dark-border/40" />
+
+                      {/* Middle: EMI Details Grid (Spaced out for vertical height, fitting width perfectly) */}
+                      <div className="grid grid-cols-2 gap-y-4 gap-x-3 text-left">
+                        <div className="min-w-0">
+                          <p className="text-slate-450 font-bold uppercase tracking-wider text-[10px] sm:text-[11px]">EMI Amount</p>
+                          <p className="font-black text-sm sm:text-base text-slate-800 dark:text-white mt-1 truncate">{formatCurrency(loan.emiAmount)}/mo</p>
                         </div>
-                        <div>
-                          <p className="text-slate-450 font-semibold uppercase tracking-wider text-[9px]">Next Due</p>
-                          <p className={`font-black mt-0.5 ${isOverdue ? 'text-rose-500' : 'text-slate-800 dark:text-slate-200'}`}>
+                        <div className="min-w-0">
+                          <p className="text-slate-450 font-bold uppercase tracking-wider text-[10px] sm:text-[11px]">Next Due</p>
+                          <p className={`font-black text-sm sm:text-base mt-1 truncate ${isOverdue ? 'text-rose-500' : 'text-slate-800 dark:text-slate-200'}`}>
                             {dueText}
                           </p>
                         </div>
-                        <div>
-                          <p className="text-slate-450 font-semibold uppercase tracking-wider text-[9px]">Left to Pay</p>
-                          <p className="font-black text-slate-800 dark:text-white mt-0.5">{formatCurrency(loan.remainingAmount)}</p>
+                        <div className="min-w-0">
+                          <p className="text-slate-450 font-bold uppercase tracking-wider text-[10px] sm:text-[11px]">Left to Pay</p>
+                          <p className="font-black text-sm sm:text-base text-slate-800 dark:text-white mt-1 truncate">{formatCurrency(loan.remainingAmount)}</p>
                         </div>
-                        <div>
-                          <p className="text-slate-450 font-semibold uppercase tracking-wider text-[9px]">Installments</p>
-                          <p className="font-bold text-slate-700 dark:text-slate-300 mt-0.5">{loan.installmentsPaid} / {loan.totalInstallments}</p>
+                        <div className="min-w-0">
+                          <p className="text-slate-450 font-bold uppercase tracking-wider text-[10px] sm:text-[11px]">Installments</p>
+                          <p className="font-bold text-sm sm:text-base text-slate-700 dark:text-slate-300 mt-1 truncate">{loan.installmentsPaid} / {loan.totalInstallments}</p>
                         </div>
                       </div>
 
-                      {/* Actions */}
-                      <div className="flex items-center flex-wrap gap-2 w-full md:w-auto justify-end md:justify-start mt-2 md:mt-0">
+                      {/* Divider */}
+                      <div className="border-t border-slate-100 dark:border-dark-border/40" />
+
+                      {/* Bottom: Action Buttons */}
+                      <div className="flex items-center flex-wrap gap-2.5 w-full justify-between sm:justify-start">
                         {!isCompleted && (
                           <button
                             onClick={() => handleMarkPaid(loan._id)}
-                            className="bg-secondary dark:bg-purple-650 hover:bg-indigo-700 dark:hover:bg-purple-750 text-white font-bold text-xs px-3.5 py-2 rounded-xl transition-all shadow-sm cursor-pointer"
+                            className="bg-secondary dark:bg-purple-650 hover:bg-indigo-700 dark:hover:bg-purple-750 text-white font-bold text-xs sm:text-sm px-4 py-2.5 rounded-xl transition-all shadow-sm flex-1 sm:flex-none cursor-pointer text-center"
                           >
                             Mark Paid
                           </button>
                         )}
-                        <button
-                          onClick={() => handleToggleHistory(loan._id)}
-                          className="p-2 border border-slate-200 dark:border-dark-border text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-xl transition-colors cursor-pointer"
-                          title="View Payment History"
-                        >
-                          <FiBookOpen className="w-3.5 h-3.5" />
-                        </button>
-                        <button
-                          onClick={() => openEditModal(loan)}
-                          className="p-2 border border-slate-200 dark:border-dark-border text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-xl transition-colors cursor-pointer"
-                          title="Edit Settings"
-                        >
-                          <FiEdit2 className="w-3.5 h-3.5" />
-                        </button>
-                        <button
-                          onClick={() => handleDeleteLoan(loan._id)}
-                          className="p-2 border border-slate-200 dark:border-dark-border text-slate-400 hover:text-red-500 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-xl transition-colors cursor-pointer"
-                          title="Delete Loan"
-                        >
-                          <FiTrash2 className="w-3.5 h-3.5" />
-                        </button>
+                        <div className="flex items-center gap-2">
+                          <button
+                            onClick={() => handleToggleHistory(loan._id)}
+                            className="p-2.5 border border-slate-200 dark:border-dark-border text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-xl transition-colors cursor-pointer"
+                            title="View Payment History"
+                          >
+                            <FiBookOpen className="w-4 h-4" />
+                          </button>
+                          <button
+                            onClick={() => openEditModal(loan)}
+                            className="p-2.5 border border-slate-200 dark:border-dark-border text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-xl transition-colors cursor-pointer"
+                            title="Edit Settings"
+                          >
+                            <FiEdit2 className="w-4 h-4" />
+                          </button>
+                          <button
+                            onClick={() => handleDeleteLoan(loan._id)}
+                            className="p-2.5 border border-slate-200 dark:border-dark-border text-slate-400 hover:text-red-500 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-xl transition-colors cursor-pointer"
+                            title="Delete Loan"
+                          >
+                            <FiTrash2 className="w-4 h-4" />
+                          </button>
+                        </div>
                       </div>
                     </div>
 
