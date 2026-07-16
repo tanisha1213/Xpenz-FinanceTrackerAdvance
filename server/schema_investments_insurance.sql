@@ -37,3 +37,7 @@ CREATE TABLE IF NOT EXISTS insurances (
 -- Indices for performance
 CREATE INDEX IF NOT EXISTS idx_investments_user ON investments("userId");
 CREATE INDEX IF NOT EXISTS idx_insurances_user ON insurances("userId");
+
+-- Disable RLS to allow backend queries (consistent with other tables in this dev/test database setup)
+ALTER TABLE investments DISABLE ROW LEVEL SECURITY;
+ALTER TABLE insurances DISABLE ROW LEVEL SECURITY;
