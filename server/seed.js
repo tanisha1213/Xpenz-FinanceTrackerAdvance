@@ -6,6 +6,8 @@ import Account from './models/Account.js';
 import Transaction from './models/Transaction.js';
 import Budget from './models/Budget.js';
 import Loan from './models/Loan.js';
+import Investment from './models/Investment.js';
+import Insurance from './models/Insurance.js';
 
 dotenv.config();
 
@@ -30,6 +32,8 @@ const seedData = async () => {
       await Account.deleteMany({ userId: existingUser._id });
       await Budget.deleteMany({ userId: existingUser._id });
       await Loan.deleteMany({ userId: existingUser._id });
+      await Investment.deleteMany({ userId: existingUser._id });
+      await Insurance.deleteMany({ userId: existingUser._id });
       await User.deleteOne({ _id: existingUser._id });
     }
 
@@ -454,6 +458,71 @@ const seedData = async () => {
     await cashAccount.save();
     await sbiAccount.save();
     await hdfcAccount.save();
+
+    // 7. Create Dummy Investments
+    console.log('Creating dummy investments...');
+    await Investment.create([
+      {
+        userId: user._id,
+        type: 'mutual_fund',
+        title: 'SBI Bluechip Fund',
+        investedAmount: 120000,
+        currentValue: 145300,
+        monthlySipAmount: 5000,
+        sipDueDate: new Date(now.getFullYear(), now.getMonth(), 25),
+        notes: 'Monthly auto-debit SIP'
+      },
+      {
+        userId: user._id,
+        type: 'stock',
+        title: 'TCS Share',
+        investedAmount: 52000,
+        currentValue: 61800,
+        quantity: 15,
+        notes: 'Long-term equity investment'
+      },
+      {
+        userId: user._id,
+        type: 'fixed_deposit',
+        title: 'SBI FD',
+        investedAmount: 200000,
+        currentValue: 200000,
+        interestRate: 7.2,
+        maturityDate: new Date(2028, 0, 12),
+        notes: '5 Year Term Deposit'
+      }
+    ]);
+
+    // 8. Create Dummy Insurances
+    console.log('Creating dummy insurance policies...');
+    await Insurance.create([
+      {
+        userId: user._id,
+        type: 'health',
+        insurer: 'Star Health & Allied Insurance',
+        policyNumber: 'STAR-HLTH-8899',
+        title: 'Family Optima Health Plan',
+        coverageAmount: 1000000,
+        premiumAmount: 18000,
+        paymentFrequency: 'yearly',
+        renewalDate: new Date(2026, 9, 12), // Oct 12, 2026
+        nominee: 'Spouse',
+        status: 'active'
+      },
+      {
+        userId: user._id,
+        type: 'motor',
+        insurer: 'HDFC ERGO General Insurance',
+        policyNumber: 'HDFC-MTR-2234',
+        title: 'Bike Insurance',
+        coverageAmount: 100000,
+        premiumAmount: 2400,
+        paymentFrequency: 'yearly',
+        renewalDate: new Date(2026, 7, 22), // Aug 22, 2026
+        nominee: 'Father',
+        status: 'active'
+      }
+    ]);
 
     console.log('Database seeded successfully!');
     console.log('\n--- TEST USER ACCOUNT ---');
