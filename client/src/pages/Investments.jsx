@@ -7,7 +7,7 @@ import {
 } from '../services/investmentService'
 import { formatCurrency, formatDate } from '../utils/format'
 import {
-  FiPlus, FiEdit2, FiTrash2, FiSearch, FiRefreshCw, FiTrendingUp, FiBriefcase, FiDollarSign, FiInfo, FiCalendar
+  FiPlus, FiEdit2, FiTrash2, FiSearch, FiRefreshCw, FiTrendingUp, FiBriefcase, FiDollarSign, FiInfo, FiCalendar, FiChevronLeft, FiChevronRight
 } from 'react-icons/fi'
 import { useLanguage } from '../context/LanguageContext'
 
@@ -88,6 +88,53 @@ export default function Investments() {
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
   const [typeFilter, setTypeFilter] = useState('all')
+
+  // Calendar State
+  const [currentMonth, setCurrentMonth] = useState(new Date())
+  const [selectedCalendarDate, setSelectedCalendarDate] = useState(null)
+
+  // Calendar dates generation
+  const getDaysInMonth = (date) => {
+    const year = date.getFullYear()
+    const month = date.getMonth()
+    const startDay = new Date(year, month, 1).getDay()
+    const totalDays = new Date(year, month + 1, 0).getDate()
+    
+    const days = []
+    for (let i = 0; i < startDay; i++) {
+      days.push(null)
+    }
+    for (let i = 1; i <= totalDays; i++) {
+      days.push(new Date(year, month, i))
+    }
+    return days
+  }
+
+  // Get calendar reminders for date
+  const getInvestmentsForDate = (date) => {
+    if (!date) return []
+    const dayNum = date.getDate()
+    
+    return investments.filter(inv => {
+      // 1. SIP check:
+      if (inv.monthlySipAmount > 0 && inv.sipDueDate) {
+        const sipDate = new Date(inv.sipDueDate)
+        if (sipDate.getDate() === dayNum) {
+          return true
+        }
+      }
+      // 2. Maturity check:
+      if (inv.maturityDate) {
+        const matDate = new Date(inv.maturityDate)
+        return (
+          matDate.getDate() === date.getDate() &&
+          matDate.getMonth() === date.getMonth() &&
+          matDate.getFullYear() === date.getFullYear()
+        )
+      }
+      return false
+    })
+  }
 
   // Modal State
   const [isOpen, setIsOpen] = useState(false)
@@ -301,180 +348,299 @@ export default function Investments() {
         </div>
       </div>
 
-      {/* Grid of Cards */}
-      {loading ? (
-        <div className="flex flex-col items-center justify-center py-12">
-          <FiRefreshCw className="w-8 h-8 text-secondary dark:text-purple-400 animate-spin" />
-          <p className="text-slate-400 text-sm mt-3">Loading portfolio...</p>
-        </div>
-      ) : filteredInvestments.length === 0 ? (
-        <div className="text-center py-16 bg-white dark:bg-dark-card border border-slate-100 dark:border-dark-border rounded-2xl">
-          <FiBriefcase className="w-12 h-12 text-slate-350 dark:text-slate-600 mx-auto" />
-          <h3 className="text-base font-extrabold text-slate-700 dark:text-slate-200 mt-4">No Investments Logged</h3>
-          <p className="text-slate-400 dark:text-dark-text-muted text-xs mt-1 max-w-xs mx-auto">Click "Add Investment" to start building your visual wealth portfolio.</p>
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-          {filteredInvestments.map((inv) => {
-            const profit = Number(inv.currentValue || 0) - Number(inv.investedAmount || 0)
-            const profitPct = Number(inv.investedAmount || 0) > 0 ? (profit / Number(inv.investedAmount)) * 100 : 0
-            const typeLabel = INVESTMENT_TYPES.find((t) => t.value === inv.type)?.label || inv.type
+      {/* 2-Column Main Layout: Investments Grid (2 cols) & Calendar (1 col) */}
+      <div className="grid gap-6 lg:grid-cols-3">
+        <div className="lg:col-span-2 space-y-6">
+          {loading ? (
+            <div className="flex flex-col items-center justify-center py-12">
+              <FiRefreshCw className="w-8 h-8 text-secondary dark:text-purple-400 animate-spin" />
+              <p className="text-slate-400 text-sm mt-3">Loading portfolio...</p>
+            </div>
+          ) : filteredInvestments.length === 0 ? (
+            <div className="text-center py-16 bg-white dark:bg-dark-card border border-slate-100 dark:border-dark-border rounded-2xl">
+              <FiBriefcase className="w-12 h-12 text-slate-350 dark:text-slate-600 mx-auto" />
+              <h3 className="text-base font-extrabold text-slate-700 dark:text-slate-200 mt-4">No Investments Logged</h3>
+              <p className="text-slate-400 dark:text-dark-text-muted text-xs mt-1 max-w-xs mx-auto">Click "Add Investment" to start building your visual wealth portfolio.</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+              {filteredInvestments.map((inv) => {
+                const profit = Number(inv.currentValue || 0) - Number(inv.investedAmount || 0)
+                const profitPct = Number(inv.investedAmount || 0) > 0 ? (profit / Number(inv.investedAmount)) * 100 : 0
+                const typeLabel = INVESTMENT_TYPES.find((t) => t.value === inv.type)?.label || inv.type
 
-            return (
-              <div
-                key={inv._id}
-                className="bg-white dark:bg-dark-card border border-slate-100 dark:border-dark-border rounded-2xl shadow-sm overflow-hidden flex flex-col justify-between"
-              >
-                <div className="p-5 space-y-4">
-                  {/* Top: Title & Badge */}
-                  <div className="flex justify-between items-start gap-2">
-                    <div className="min-w-0">
-                      <h4 className="font-extrabold text-slate-800 dark:text-white text-base truncate">{inv.title}</h4>
-                      <span className="inline-block mt-1 px-2.5 py-0.5 bg-secondary/10 dark:bg-purple-450/10 text-secondary dark:text-purple-400 rounded-full text-[10px] font-extrabold uppercase">
-                        {typeLabel}
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <button
-                        onClick={() => handleOpenEdit(inv)}
-                        className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400 dark:text-slate-500 hover:text-secondary dark:hover:text-purple-400 rounded-xl transition-all cursor-pointer"
-                      >
-                        <FiEdit2 className="w-3.5 h-3.5" />
-                      </button>
-                      <button
-                        onClick={() => handleDelete(inv._id)}
-                        className="p-2 hover:bg-rose-50 dark:hover:bg-rose-950/20 text-slate-400 dark:text-slate-500 hover:text-rose-500 dark:hover:text-rose-400 rounded-xl transition-all cursor-pointer"
-                      >
-                        <FiTrash2 className="w-3.5 h-3.5" />
-                      </button>
-                    </div>
-                  </div>
-
-                  <hr className="border-slate-100 dark:border-dark-border/40" />
-
-                  {/* Middle Section: Display statistics by type */}
-                  {inv.type === 'mutual_fund' && (
-                    <div className="space-y-3.5">
-                      <div className="grid grid-cols-2 gap-4">
-                        <div>
-                          <p className="text-[10px] font-bold text-slate-400 uppercase">Invested</p>
-                          <p className="text-sm font-black text-slate-700 dark:text-slate-200 mt-0.5">{formatCurrency(inv.investedAmount)}</p>
+                return (
+                  <div
+                    key={inv._id}
+                    className="bg-white dark:bg-dark-card border border-slate-100 dark:border-dark-border rounded-2xl shadow-sm overflow-hidden flex flex-col justify-between"
+                  >
+                    <div className="p-5 space-y-4">
+                      {/* Top: Title & Badge */}
+                      <div className="flex justify-between items-start gap-2">
+                        <div className="min-w-0">
+                          <h4 className="font-extrabold text-slate-800 dark:text-white text-base truncate">{inv.title}</h4>
+                          <span className="inline-block mt-1 px-2.5 py-0.5 bg-secondary/10 dark:bg-purple-450/10 text-secondary dark:text-purple-400 rounded-full text-[10px] font-extrabold uppercase">
+                            {typeLabel}
+                          </span>
                         </div>
-                        <div>
-                          <p className="text-[10px] font-bold text-slate-400 uppercase">Current</p>
-                          <p className="text-sm font-black text-slate-700 dark:text-slate-200 mt-0.5">{formatCurrency(inv.currentValue)}</p>
+                        <div className="flex items-center gap-1">
+                          <button
+                            onClick={() => handleOpenEdit(inv)}
+                            className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400 dark:text-slate-500 hover:text-secondary dark:hover:text-purple-400 rounded-xl transition-all cursor-pointer"
+                          >
+                            <FiEdit2 className="w-3.5 h-3.5" />
+                          </button>
+                          <button
+                            onClick={() => handleDelete(inv._id)}
+                            className="p-2 hover:bg-rose-50 dark:hover:bg-rose-950/20 text-slate-400 dark:text-slate-500 hover:text-rose-500 dark:hover:text-rose-400 rounded-xl transition-all cursor-pointer"
+                          >
+                            <FiTrash2 className="w-3.5 h-3.5" />
+                          </button>
                         </div>
                       </div>
-                      <div className="flex justify-between items-center bg-slate-50 dark:bg-slate-900/40 p-2.5 rounded-xl border border-slate-100 dark:border-slate-800 text-xs">
-                        <span className="font-bold text-slate-400">Profit/Loss</span>
-                        <span className={`font-black ${profit >= 0 ? 'text-emerald-500' : 'text-rose-500'}`}>
-                          {profit >= 0 ? '+' : ''}{formatCurrency(profit)} ({profit >= 0 ? '+' : ''}{profitPct.toFixed(1)}%)
-                        </span>
-                      </div>
-                      {inv.monthlySipAmount > 0 && (
-                        <div className="space-y-2 border-t border-dashed border-slate-200 dark:border-dark-border/30 pt-2.5">
-                          <div className="flex justify-between items-center text-xs text-slate-550 dark:text-slate-400">
-                            <span className="font-bold">Monthly SIP</span>
-                            <span className="font-black text-secondary dark:text-purple-400">{formatCurrency(inv.monthlySipAmount)}/mo</span>
+
+                      <hr className="border-slate-100 dark:border-dark-border/40" />
+
+                      {/* Middle Section: Display statistics by type */}
+                      {inv.type === 'mutual_fund' && (
+                        <div className="space-y-3.5">
+                          <div className="grid grid-cols-2 gap-4">
+                            <div>
+                              <p className="text-[10px] font-bold text-slate-400 uppercase">Invested</p>
+                              <p className="text-sm font-black text-slate-700 dark:text-slate-200 mt-0.5">{formatCurrency(inv.investedAmount)}</p>
+                            </div>
+                            <div>
+                              <p className="text-[10px] font-bold text-slate-400 uppercase">Current</p>
+                              <p className="text-sm font-black text-slate-700 dark:text-slate-200 mt-0.5">{formatCurrency(inv.currentValue)}</p>
+                            </div>
                           </div>
-                          {inv.sipDueDate && (
-                            <div className="flex justify-between items-center bg-slate-50 dark:bg-slate-900/40 p-2.5 rounded-xl border border-slate-100 dark:border-slate-800 text-xs mt-1">
-                              <span className="font-bold text-slate-400 flex items-center gap-1.5">
-                                <FiCalendar className="w-3.5 h-3.5 text-indigo-500" />
-                                Next SIP Due
-                              </span>
-                              <span className="font-black text-slate-700 dark:text-slate-200">{formatDate(inv.sipDueDate)}</span>
+                          <div className="flex justify-between items-center bg-slate-50 dark:bg-slate-900/40 p-2.5 rounded-xl border border-slate-100 dark:border-slate-800 text-xs">
+                            <span className="font-bold text-slate-400">Profit/Loss</span>
+                            <span className={`font-black ${profit >= 0 ? 'text-emerald-500' : 'text-rose-500'}`}>
+                              {profit >= 0 ? '+' : ''}{formatCurrency(profit)} ({profit >= 0 ? '+' : ''}{profitPct.toFixed(1)}%)
+                            </span>
+                          </div>
+                          {inv.monthlySipAmount > 0 && (
+                            <div className="space-y-2 border-t border-dashed border-slate-200 dark:border-dark-border/30 pt-2.5">
+                              <div className="flex justify-between items-center text-xs text-slate-550 dark:text-slate-400">
+                                <span className="font-bold">Monthly SIP</span>
+                                <span className="font-black text-secondary dark:text-purple-400">{formatCurrency(inv.monthlySipAmount)}/mo</span>
+                              </div>
+                              {inv.sipDueDate && (
+                                <div className="flex justify-between items-center bg-slate-50 dark:bg-slate-900/40 p-2.5 rounded-xl border border-slate-100 dark:border-slate-800 text-xs mt-1">
+                                  <span className="font-bold text-slate-400 flex items-center gap-1.5">
+                                    <FiCalendar className="w-3.5 h-3.5 text-indigo-500" />
+                                    Next SIP Due
+                                  </span>
+                                  <span className="font-black text-slate-700 dark:text-slate-200">{formatDate(inv.sipDueDate)}</span>
+                                </div>
+                              )}
                             </div>
                           )}
                         </div>
                       )}
-                    </div>
-                  )}
 
-                  {inv.type === 'stock' && (
-                    <div className="space-y-3.5">
-                      <div className="grid grid-cols-3 gap-2">
-                        <div>
-                          <p className="text-[10px] font-bold text-slate-400 uppercase">Qty</p>
-                          <p className="text-sm font-black text-slate-700 dark:text-slate-200 mt-0.5">{inv.quantity || 1}</p>
+                      {inv.type === 'stock' && (
+                        <div className="space-y-3.5">
+                          <div className="grid grid-cols-3 gap-2">
+                            <div>
+                              <p className="text-[10px] font-bold text-slate-400 uppercase">Qty</p>
+                              <p className="text-sm font-black text-slate-700 dark:text-slate-200 mt-0.5">{inv.quantity || 1}</p>
+                            </div>
+                            <div>
+                              <p className="text-[10px] font-bold text-slate-400 uppercase">Invested</p>
+                              <p className="text-sm font-black text-slate-700 dark:text-slate-200 mt-0.5">{formatCurrency(inv.investedAmount)}</p>
+                            </div>
+                            <div>
+                              <p className="text-[10px] font-bold text-slate-400 uppercase">Current</p>
+                              <p className="text-sm font-black text-slate-700 dark:text-slate-200 mt-0.5">{formatCurrency(inv.currentValue)}</p>
+                            </div>
+                          </div>
+                          <div className="flex justify-between items-center bg-slate-50 dark:bg-slate-900/40 p-2.5 rounded-xl border border-slate-100 dark:border-slate-800 text-xs">
+                            <span className="font-bold text-slate-400">Gain / Loss</span>
+                            <span className={`font-black ${profit >= 0 ? 'text-emerald-500' : 'text-rose-500'}`}>
+                              {profit >= 0 ? '+' : ''}{profitPct.toFixed(1)}%
+                            </span>
+                          </div>
                         </div>
-                        <div>
-                          <p className="text-[10px] font-bold text-slate-400 uppercase">Invested</p>
-                          <p className="text-sm font-black text-slate-700 dark:text-slate-200 mt-0.5">{formatCurrency(inv.investedAmount)}</p>
-                        </div>
-                        <div>
-                          <p className="text-[10px] font-bold text-slate-400 uppercase">Current</p>
-                          <p className="text-sm font-black text-slate-700 dark:text-slate-200 mt-0.5">{formatCurrency(inv.currentValue)}</p>
-                        </div>
-                      </div>
-                      <div className="flex justify-between items-center bg-slate-50 dark:bg-slate-900/40 p-2.5 rounded-xl border border-slate-100 dark:border-slate-800 text-xs">
-                        <span className="font-bold text-slate-400">Gain / Loss</span>
-                        <span className={`font-black ${profit >= 0 ? 'text-emerald-500' : 'text-rose-500'}`}>
-                          {profit >= 0 ? '+' : ''}{profitPct.toFixed(1)}%
-                        </span>
-                      </div>
-                    </div>
-                  )}
+                      )}
 
-                  {(inv.type === 'fixed_deposit' || inv.type === 'recurring_deposit') && (
-                    <div className="space-y-3.5">
-                      <div className="grid grid-cols-2 gap-4">
-                        <div>
-                          <p className="text-[10px] font-bold text-slate-400 uppercase">Principal</p>
-                          <p className="text-sm font-black text-slate-700 dark:text-slate-200 mt-0.5">{formatCurrency(inv.investedAmount)}</p>
+                      {(inv.type === 'fixed_deposit' || inv.type === 'recurring_deposit') && (
+                        <div className="space-y-3.5">
+                          <div className="grid grid-cols-2 gap-4">
+                            <div>
+                              <p className="text-[10px] font-bold text-slate-400 uppercase">Principal</p>
+                              <p className="text-sm font-black text-slate-700 dark:text-slate-200 mt-0.5">{formatCurrency(inv.investedAmount)}</p>
+                            </div>
+                            <div>
+                              <p className="text-[10px] font-bold text-slate-400 uppercase">Interest Rate</p>
+                              <p className="text-sm font-black text-slate-700 dark:text-slate-200 mt-0.5">{inv.interestRate || 0}%</p>
+                            </div>
+                          </div>
+                          {inv.maturityDate && (
+                            <div className="flex justify-between items-center bg-slate-50 dark:bg-slate-900/40 p-2.5 rounded-xl border border-slate-100 dark:border-slate-800 text-xs">
+                              <span className="font-bold text-slate-400 flex items-center gap-1.5">
+                                <FiCalendar className="w-3.5 h-3.5 text-indigo-500" />
+                                Maturity Date
+                              </span>
+                              <span className="font-black text-slate-700 dark:text-slate-200">{formatDate(inv.maturityDate)}</span>
+                            </div>
+                          )}
                         </div>
-                        <div>
-                          <p className="text-[10px] font-bold text-slate-400 uppercase">Interest Rate</p>
-                          <p className="text-sm font-black text-slate-700 dark:text-slate-200 mt-0.5">{inv.interestRate || 0}%</p>
-                        </div>
-                      </div>
-                      {inv.maturityDate && (
-                        <div className="flex justify-between items-center bg-slate-50 dark:bg-slate-900/40 p-2.5 rounded-xl border border-slate-100 dark:border-slate-800 text-xs">
-                          <span className="font-bold text-slate-400 flex items-center gap-1.5">
-                            <FiCalendar className="w-3.5 h-3.5 text-indigo-500" />
-                            Maturity Date
-                          </span>
-                          <span className="font-black text-slate-700 dark:text-slate-200">{formatDate(inv.maturityDate)}</span>
+                      )}
+
+                      {/* General investment details layout */}
+                      {inv.type !== 'mutual_fund' && inv.type !== 'stock' && inv.type !== 'fixed_deposit' && inv.type !== 'recurring_deposit' && (
+                        <div className="space-y-3.5">
+                          <div className="grid grid-cols-2 gap-4">
+                            <div>
+                              <p className="text-[10px] font-bold text-slate-400 uppercase">Invested</p>
+                              <p className="text-sm font-black text-slate-700 dark:text-slate-200 mt-0.5">{formatCurrency(inv.investedAmount)}</p>
+                            </div>
+                            <div>
+                              <p className="text-[10px] font-bold text-slate-400 uppercase">Current</p>
+                              <p className="text-sm font-black text-slate-700 dark:text-slate-200 mt-0.5">{formatCurrency(inv.currentValue)}</p>
+                            </div>
+                          </div>
+                          <div className="flex justify-between items-center bg-slate-50 dark:bg-slate-900/40 p-2.5 rounded-xl border border-slate-100 dark:border-slate-800 text-xs">
+                            <span className="font-bold text-slate-400">Net Returns</span>
+                            <span className={`font-black ${profit >= 0 ? 'text-emerald-500' : 'text-rose-500'}`}>
+                              {profit >= 0 ? '+' : ''}{formatCurrency(profit)}
+                            </span>
+                          </div>
                         </div>
                       )}
                     </div>
-                  )}
 
-                  {/* General investment details layout */}
-                  {inv.type !== 'mutual_fund' && inv.type !== 'stock' && inv.type !== 'fixed_deposit' && inv.type !== 'recurring_deposit' && (
-                    <div className="space-y-3.5">
-                      <div className="grid grid-cols-2 gap-4">
-                        <div>
-                          <p className="text-[10px] font-bold text-slate-400 uppercase">Invested</p>
-                          <p className="text-sm font-black text-slate-700 dark:text-slate-200 mt-0.5">{formatCurrency(inv.investedAmount)}</p>
-                        </div>
-                        <div>
-                          <p className="text-[10px] font-bold text-slate-400 uppercase">Current</p>
-                          <p className="text-sm font-black text-slate-700 dark:text-slate-200 mt-0.5">{formatCurrency(inv.currentValue)}</p>
-                        </div>
+                    {inv.notes && (
+                      <div className="px-5 pb-5 pt-0">
+                        <p className="text-[10px] text-slate-455 dark:text-dark-text-muted italic bg-slate-50 dark:bg-slate-800/40 px-3 py-2 rounded-lg border border-dashed border-slate-100 dark:border-slate-800">
+                          Note: {inv.notes}
+                        </p>
                       </div>
-                      <div className="flex justify-between items-center bg-slate-50 dark:bg-slate-900/40 p-2.5 rounded-xl border border-slate-100 dark:border-slate-800 text-xs">
-                        <span className="font-bold text-slate-400">Net Returns</span>
-                        <span className={`font-black ${profit >= 0 ? 'text-emerald-500' : 'text-rose-500'}`}>
-                          {profit >= 0 ? '+' : ''}{formatCurrency(profit)}
+                    )}
+                  </div>
+                )
+              })}
+            </div>
+          )}
+        </div>
+
+        {/* Right Side: Investment Calendar */}
+        <div className="lg:col-span-1 space-y-6 text-left">
+          <div className="bg-white dark:bg-dark-card border border-slate-100 dark:border-dark-border rounded-2xl p-4 shadow-premium space-y-4">
+            {/* Calendar Header */}
+            <div className="flex justify-between items-center">
+              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Investment Calendar</span>
+              <div className="flex gap-1">
+                <button
+                  onClick={() => {
+                    const prev = new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1, 1)
+                    setCurrentMonth(prev)
+                  }}
+                  className="p-1 hover:bg-slate-50 dark:hover:bg-slate-800 rounded text-slate-500 cursor-pointer"
+                >
+                  <FiChevronLeft className="w-3.5 h-3.5" />
+                </button>
+                <span className="text-xs font-bold text-slate-700 dark:text-slate-200 min-w-[70px] text-center capitalize">
+                  {currentMonth.toLocaleDateString('default', { month: 'short', year: 'numeric' })}
+                </span>
+                <button
+                  onClick={() => {
+                    const next = new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 1)
+                    setCurrentMonth(next)
+                  }}
+                  className="p-1 hover:bg-slate-50 dark:hover:bg-slate-800 rounded text-slate-550 cursor-pointer"
+                >
+                  <FiChevronRight className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            </div>
+
+            {/* Weekdays */}
+            <div className="grid grid-cols-7 gap-1 text-center text-[10px] font-bold text-slate-400">
+              <div>S</div><div>M</div><div>T</div><div>W</div><div>T</div><div>F</div><div>S</div>
+            </div>
+
+            {/* Days Grid */}
+            <div className="grid grid-cols-7 gap-1 text-center">
+              {getDaysInMonth(currentMonth).map((day, idx) => {
+                if (!day) return <div key={`empty-${idx}`} className="h-6" />
+
+                const dateInsts = getInvestmentsForDate(day)
+                const hasMaturity = dateInsts.some(i => i.maturityDate)
+                const hasSip = dateInsts.some(i => i.monthlySipAmount > 0)
+
+                let bgClass = 'hover:bg-slate-50 dark:hover:bg-slate-800/40 rounded-full'
+                let textClass = 'text-slate-700 dark:text-slate-300'
+                
+                if (dateInsts.length > 0) {
+                  if (hasMaturity) {
+                    bgClass = 'bg-purple-650 text-white rounded-full font-black shadow-sm'
+                    textClass = 'text-white'
+                  } else if (hasSip) {
+                    bgClass = 'bg-indigo-500 text-white rounded-full font-black shadow-sm'
+                    textClass = 'text-white'
+                  }
+                }
+
+                const isToday = new Date().toDateString() === day.toDateString()
+                const todayClass = isToday && dateInsts.length === 0 ? 'border border-indigo-505 rounded-full font-bold' : ''
+
+                return (
+                  <div
+                    key={`day-${day.getDate()}`}
+                    onClick={() => {
+                      if (dateInsts.length > 0) {
+                        setSelectedCalendarDate(day)
+                      }
+                    }}
+                    className={`h-6 flex items-center justify-center text-[10px] font-semibold transition-all cursor-pointer ${bgClass} ${textClass} ${todayClass}`}
+                  >
+                    {day.getDate()}
+                  </div>
+                )
+              })}
+            </div>
+
+            {/* Legend */}
+            <div className="flex gap-2.5 justify-center text-[9px] text-slate-400 font-bold pt-1 border-t border-slate-50 dark:border-dark-border/40">
+              <span className="flex items-center gap-1">
+                <span className="w-1.5 h-1.5 bg-indigo-500 rounded-full" />
+                SIP Due
+              </span>
+              <span className="flex items-center gap-1">
+                <span className="w-1.5 h-1.5 bg-purple-650 rounded-full" />
+                Maturity
+              </span>
+            </div>
+
+            {/* Selected Date Details */}
+            {selectedCalendarDate && (
+              <div className="bg-slate-50 dark:bg-dark-border/20 p-3 rounded-xl space-y-2.5 animate-fadeIn">
+                <div className="flex justify-between items-center text-[10px] font-bold text-slate-400">
+                  <span>ON {selectedCalendarDate.toLocaleDateString('en-IN', { day: '2-digit', month: 'short' })}</span>
+                  <button onClick={() => setSelectedCalendarDate(null)} className="hover:text-slate-600 cursor-pointer">✕</button>
+                </div>
+                {getInvestmentsForDate(selectedCalendarDate).map((inv) => {
+                  const isMaturity = inv.maturityDate && new Date(inv.maturityDate).getDate() === selectedCalendarDate.getDate()
+                  return (
+                    <div key={inv._id} className="text-xs space-y-1">
+                      <p className="font-bold text-slate-800 dark:text-white truncate">{inv.title}</p>
+                      <div className="flex justify-between items-center text-[10px]">
+                        <span className="text-slate-455">{isMaturity ? 'Maturity' : 'SIP Amount'}</span>
+                        <span className="font-extrabold text-secondary dark:text-purple-400">
+                          {isMaturity ? formatCurrency(inv.investedAmount) : formatCurrency(inv.monthlySipAmount)}
                         </span>
                       </div>
                     </div>
-                  )}
-                </div>
-
-                {inv.notes && (
-                  <div className="px-5 pb-5 pt-0">
-                    <p className="text-[10px] text-slate-450 dark:text-dark-text-muted italic bg-slate-50 dark:bg-slate-800/40 px-3 py-2 rounded-lg border border-dashed border-slate-100 dark:border-slate-800">
-                      Note: {inv.notes}
-                    </p>
-                  </div>
-                )}
+                  )
+                })}
               </div>
-            )
-          })}
+            )}
+          </div>
         </div>
-      )}
+      </div>
 
       {/* Add/Edit Modal */}
       {isOpen && (

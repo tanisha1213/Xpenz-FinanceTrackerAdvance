@@ -7,7 +7,7 @@ import {
 } from '../services/insuranceService'
 import { formatCurrency, formatDate } from '../utils/format'
 import {
-  FiPlus, FiEdit2, FiTrash2, FiSearch, FiRefreshCw, FiShield, FiCalendar, FiUser, FiFileText
+  FiPlus, FiEdit2, FiTrash2, FiSearch, FiRefreshCw, FiShield, FiCalendar, FiUser, FiFileText, FiChevronLeft, FiChevronRight
 } from 'react-icons/fi'
 import { useLanguage } from '../context/LanguageContext'
 
@@ -89,6 +89,41 @@ export default function Insurance() {
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState('all')
+
+  // Calendar State
+  const [currentMonth, setCurrentMonth] = useState(new Date())
+  const [selectedCalendarDate, setSelectedCalendarDate] = useState(null)
+
+  // Calendar dates generation
+  const getDaysInMonth = (date) => {
+    const year = date.getFullYear()
+    const month = date.getMonth()
+    const startDay = new Date(year, month, 1).getDay()
+    const totalDays = new Date(year, month + 1, 0).getDate()
+    
+    const days = []
+    for (let i = 0; i < startDay; i++) {
+      days.push(null)
+    }
+    for (let i = 1; i <= totalDays; i++) {
+      days.push(new Date(year, month, i))
+    }
+    return days
+  }
+
+  // Get calendar reminders for date
+  const getInsurancesForDate = (date) => {
+    if (!date) return []
+    return insurances.filter(ins => {
+      if (!ins.renewalDate) return false
+      const renDate = new Date(ins.renewalDate)
+      return (
+        renDate.getDate() === date.getDate() &&
+        renDate.getMonth() === date.getMonth() &&
+        renDate.getFullYear() === date.getFullYear()
+      )
+    })
+  }
 
   // Modal State
   const [isOpen, setIsOpen] = useState(false)
@@ -306,121 +341,238 @@ export default function Insurance() {
         </div>
       </div>
 
-      {/* Grid of Cards */}
-      {loading ? (
-        <div className="flex flex-col items-center justify-center py-12">
-          <FiRefreshCw className="w-8 h-8 text-secondary dark:text-purple-400 animate-spin" />
-          <p className="text-slate-400 text-sm mt-3">Loading policies...</p>
-        </div>
-      ) : filteredInsurances.length === 0 ? (
-        <div className="text-center py-16 bg-white dark:bg-dark-card border border-slate-100 dark:border-dark-border rounded-2xl">
-          <FiShield className="w-12 h-12 text-slate-350 dark:text-slate-600 mx-auto" />
-          <h3 className="text-base font-extrabold text-slate-700 dark:text-slate-200 mt-4">No Policies Logged</h3>
-          <p className="text-slate-400 dark:text-dark-text-muted text-xs mt-1 max-w-xs mx-auto">Click "Add Insurance" to record your coverage limits and premium dates.</p>
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-          {filteredInsurances.map((ins) => {
-            const typeLabel = INSURANCE_TYPES.find((t) => t.value === ins.type)?.label || ins.type
-            const freqLabel = FREQUENCIES.find((f) => f.value === ins.paymentFrequency)?.label || ins.paymentFrequency
-            const isRenewalSoon = new Date(ins.renewalDate) - new Date() < 15 * 24 * 60 * 60 * 1000 // 15 days
+      {/* 2-Column Main Layout: Insurance Grid (2 cols) & Calendar (1 col) */}
+      <div className="grid gap-6 lg:grid-cols-3">
+        <div className="lg:col-span-2 space-y-6">
+          {loading ? (
+            <div className="flex flex-col items-center justify-center py-12">
+              <FiRefreshCw className="w-8 h-8 text-secondary dark:text-purple-400 animate-spin" />
+              <p className="text-slate-400 text-sm mt-3">Loading policies...</p>
+            </div>
+          ) : filteredInsurances.length === 0 ? (
+            <div className="text-center py-16 bg-white dark:bg-dark-card border border-slate-100 dark:border-dark-border rounded-2xl">
+              <FiShield className="w-12 h-12 text-slate-350 dark:text-slate-600 mx-auto" />
+              <h3 className="text-base font-extrabold text-slate-700 dark:text-slate-200 mt-4">No Policies Logged</h3>
+              <p className="text-slate-400 dark:text-dark-text-muted text-xs mt-1 max-w-xs mx-auto">Click "Add Insurance" to record your coverage limits and premium dates.</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+              {filteredInsurances.map((ins) => {
+                const typeLabel = INSURANCE_TYPES.find((t) => t.value === ins.type)?.label || ins.type
+                const freqLabel = FREQUENCIES.find((f) => f.value === ins.paymentFrequency)?.label || ins.paymentFrequency
+                const isRenewalSoon = new Date(ins.renewalDate) - new Date() < 15 * 24 * 60 * 60 * 1000 // 15 days
 
-            return (
-              <div
-                key={ins._id}
-                className="bg-white dark:bg-dark-card border border-slate-100 dark:border-dark-border rounded-2xl shadow-sm overflow-hidden flex flex-col justify-between"
-              >
-                <div className="p-5 space-y-4">
-                  {/* Top Header */}
-                  <div className="flex justify-between items-start gap-2">
-                    <div className="min-w-0">
-                      <h4 className="font-extrabold text-slate-800 dark:text-white text-base truncate">{ins.title}</h4>
-                      <p className="text-[10px] text-slate-400 dark:text-dark-text-muted font-bold tracking-wider uppercase mt-0.5">{ins.insurer}</p>
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <button
-                        onClick={() => handleOpenEdit(ins)}
-                        className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400 dark:text-slate-500 hover:text-secondary dark:hover:text-purple-400 rounded-xl transition-all cursor-pointer"
-                      >
-                        <FiEdit2 className="w-3.5 h-3.5" />
-                      </button>
-                      <button
-                        onClick={() => handleDelete(ins._id)}
-                        className="p-2 hover:bg-rose-50 dark:hover:bg-rose-950/20 text-slate-400 dark:text-slate-500 hover:text-rose-500 dark:hover:text-rose-400 rounded-xl transition-all cursor-pointer"
-                      >
-                        <FiTrash2 className="w-3.5 h-3.5" />
-                      </button>
-                    </div>
-                  </div>
+                return (
+                  <div
+                    key={ins._id}
+                    className="bg-white dark:bg-dark-card border border-slate-100 dark:border-dark-border rounded-2xl shadow-sm overflow-hidden flex flex-col justify-between"
+                  >
+                    <div className="p-5 space-y-4">
+                      {/* Top Header */}
+                      <div className="flex justify-between items-start gap-2">
+                        <div className="min-w-0">
+                          <h4 className="font-extrabold text-slate-800 dark:text-white text-base truncate">{ins.title}</h4>
+                          <p className="text-[10px] text-slate-400 dark:text-dark-text-muted font-bold tracking-wider uppercase mt-0.5">{ins.insurer}</p>
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <button
+                            onClick={() => handleOpenEdit(ins)}
+                            className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400 dark:text-slate-500 hover:text-secondary dark:hover:text-purple-400 rounded-xl transition-all cursor-pointer"
+                          >
+                            <FiEdit2 className="w-3.5 h-3.5" />
+                          </button>
+                          <button
+                            onClick={() => handleDelete(ins._id)}
+                            className="p-2 hover:bg-rose-50 dark:hover:bg-rose-950/20 text-slate-400 dark:text-slate-500 hover:text-rose-500 dark:hover:text-rose-400 rounded-xl transition-all cursor-pointer"
+                          >
+                            <FiTrash2 className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                      </div>
 
-                  <div className="flex flex-wrap gap-2">
-                    <span className="px-2 py-0.5 bg-indigo-500/10 text-indigo-500 dark:text-indigo-400 rounded-full text-[9px] font-extrabold uppercase">
-                      {typeLabel}
-                    </span>
-                    <span className={`px-2 py-0.5 rounded-full text-[9px] font-extrabold uppercase ${
-                      ins.status === 'active'
-                        ? 'bg-emerald-500/10 text-emerald-500'
-                        : ins.status === 'expired'
-                        ? 'bg-rose-500/10 text-rose-500'
-                        : 'bg-slate-400/10 text-slate-500'
-                    }`}>
-                      {ins.status}
-                    </span>
-                  </div>
+                      <div className="flex flex-wrap gap-2">
+                        <span className="px-2 py-0.5 bg-indigo-500/10 text-indigo-500 dark:text-indigo-400 rounded-full text-[9px] font-extrabold uppercase">
+                          {typeLabel}
+                        </span>
+                        <span className={`px-2 py-0.5 rounded-full text-[9px] font-extrabold uppercase ${
+                          ins.status === 'active'
+                            ? 'bg-emerald-500/10 text-emerald-500'
+                            : ins.status === 'expired'
+                            ? 'bg-rose-500/10 text-rose-500'
+                            : 'bg-slate-400/10 text-slate-500'
+                        }`}>
+                          {ins.status}
+                        </span>
+                      </div>
 
-                  <hr className="border-slate-100 dark:border-dark-border/40" />
+                      <hr className="border-slate-100 dark:border-dark-border/40" />
 
-                  {/* Body Metrics */}
-                  <div className="grid grid-cols-2 gap-y-4 gap-x-3 text-left">
-                    <div>
-                      <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Coverage Amount</p>
-                      <p className="text-sm font-black text-slate-700 dark:text-slate-200 mt-0.5">{formatCurrency(ins.coverageAmount)}</p>
+                      {/* Body Metrics */}
+                      <div className="grid grid-cols-2 gap-y-4 gap-x-3 text-left">
+                        <div>
+                          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Coverage Amount</p>
+                          <p className="text-sm font-black text-slate-700 dark:text-slate-200 mt-0.5">{formatCurrency(ins.coverageAmount)}</p>
+                        </div>
+                        <div>
+                          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Premium Cost</p>
+                          <p className="text-sm font-black text-slate-700 dark:text-slate-200 mt-0.5">
+                            {formatCurrency(ins.premiumAmount)}/{freqLabel.toLowerCase()}
+                          </p>
+                        </div>
+                        <div className="col-span-2 mt-1 bg-slate-50 dark:bg-slate-900/40 p-2.5 rounded-xl border border-slate-100 dark:border-slate-800 flex items-center justify-between text-xs">
+                          <span className="font-bold text-slate-400 flex items-center gap-1.5">
+                            <FiCalendar className="w-3.5 h-3.5 text-indigo-500" />
+                            Next Renewal
+                          </span>
+                          <span className={`font-black ${isRenewalSoon && ins.status === 'active' ? 'text-amber-500' : 'text-slate-700 dark:text-slate-200'}`}>
+                            {formatDate(ins.renewalDate)}
+                          </span>
+                        </div>
+                      </div>
                     </div>
-                    <div>
-                      <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Premium Cost</p>
-                      <p className="text-sm font-black text-slate-700 dark:text-slate-200 mt-0.5">
-                        {formatCurrency(ins.premiumAmount)}/{freqLabel.toLowerCase()}
-                      </p>
-                    </div>
-                    <div className="col-span-2 mt-1 bg-slate-50 dark:bg-slate-900/40 p-2.5 rounded-xl border border-slate-100 dark:border-slate-800 flex items-center justify-between text-xs">
-                      <span className="font-bold text-slate-400 flex items-center gap-1.5">
-                        <FiCalendar className="w-3.5 h-3.5 text-indigo-500" />
-                        Next Renewal
-                      </span>
-                      <span className={`font-black ${isRenewalSoon && ins.status === 'active' ? 'text-amber-500' : 'text-slate-700 dark:text-slate-200'}`}>
-                        {formatDate(ins.renewalDate)}
-                      </span>
-                    </div>
-                  </div>
-                </div>
 
-                {/* Footer Details: Nominee or Policy Doc */}
-                {(ins.nominee || ins.policyDocumentUrl) && (
-                  <div className="px-5 pb-5 pt-0 flex flex-wrap items-center justify-between gap-3 border-t border-slate-50 dark:border-dark-border/20 pt-4">
-                    {ins.nominee && (
-                      <div className="flex items-center gap-1.5 text-[10px] text-slate-450 dark:text-dark-text-muted font-bold">
-                        <FiUser className="w-3.5 h-3.5 text-slate-400" />
-                        <span>Nominee: {ins.nominee}</span>
+                    {/* Footer Details: Nominee or Policy Doc */}
+                    {(ins.nominee || ins.policyDocumentUrl) && (
+                      <div className="px-5 pb-5 pt-0 flex flex-wrap items-center justify-between gap-3 border-t border-slate-50 dark:border-dark-border/20 pt-4">
+                        {ins.nominee && (
+                          <div className="flex items-center gap-1.5 text-[10px] text-slate-450 dark:text-dark-text-muted font-bold">
+                            <FiUser className="w-3.5 h-3.5 text-slate-400" />
+                            <span>Nominee: {ins.nominee}</span>
+                          </div>
+                        )}
+                        {ins.policyDocumentUrl && (
+                          <a
+                            href={ins.policyDocumentUrl}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="flex items-center gap-1.5 text-[10px] text-secondary dark:text-purple-400 font-extrabold hover:underline"
+                          >
+                            <FiFileText className="w-3.5 h-3.5" />
+                            <span>View Document</span>
+                          </a>
+                        )}
                       </div>
                     )}
-                    {ins.policyDocumentUrl && (
-                      <a
-                        href={ins.policyDocumentUrl}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="flex items-center gap-1.5 text-[10px] text-secondary dark:text-purple-400 font-extrabold hover:underline"
-                      >
-                        <FiFileText className="w-3.5 h-3.5" />
-                        <span>View Document</span>
-                      </a>
-                    )}
                   </div>
-                )}
-              </div>
-            )
-          })}
+                )
+              })}
+            </div>
+          )}
         </div>
-      )}
+
+        {/* Right Side: Insurance Calendar */}
+        <div className="lg:col-span-1 space-y-6 text-left">
+          <div className="bg-white dark:bg-dark-card border border-slate-100 dark:border-dark-border rounded-2xl p-4 shadow-premium space-y-4">
+            {/* Calendar Header */}
+            <div className="flex justify-between items-center">
+              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Insurance Calendar</span>
+              <div className="flex gap-1">
+                <button
+                  onClick={() => {
+                    const prev = new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1, 1)
+                    setCurrentMonth(prev)
+                  }}
+                  className="p-1 hover:bg-slate-50 dark:hover:bg-slate-800 rounded text-slate-500 cursor-pointer"
+                >
+                  <FiChevronLeft className="w-3.5 h-3.5" />
+                </button>
+                <span className="text-xs font-bold text-slate-700 dark:text-slate-200 min-w-[70px] text-center capitalize">
+                  {currentMonth.toLocaleDateString('default', { month: 'short', year: 'numeric' })}
+                </span>
+                <button
+                  onClick={() => {
+                    const next = new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 1)
+                    setCurrentMonth(next)
+                  }}
+                  className="p-1 hover:bg-slate-50 dark:hover:bg-slate-800 rounded text-slate-550 cursor-pointer"
+                >
+                  <FiChevronRight className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            </div>
+
+            {/* Weekdays */}
+            <div className="grid grid-cols-7 gap-1 text-center text-[10px] font-bold text-slate-400">
+              <div>S</div><div>M</div><div>T</div><div>W</div><div>T</div><div>F</div><div>S</div>
+            </div>
+
+            {/* Days Grid */}
+            <div className="grid grid-cols-7 gap-1 text-center">
+              {getDaysInMonth(currentMonth).map((day, idx) => {
+                if (!day) return <div key={`empty-${idx}`} className="h-6" />
+
+                const dateInsts = getInsurancesForDate(day)
+                const isRenewalSoon = dateInsts.some(i => i.status === 'active' && (new Date(i.renewalDate) - new Date() < 15 * 24 * 60 * 60 * 1000))
+
+                let bgClass = 'hover:bg-slate-50 dark:hover:bg-slate-800/40 rounded-full'
+                let textClass = 'text-slate-700 dark:text-slate-300'
+                
+                if (dateInsts.length > 0) {
+                  if (isRenewalSoon) {
+                    bgClass = 'bg-amber-500 text-white rounded-full font-black shadow-sm'
+                    textClass = 'text-white'
+                  } else {
+                    bgClass = 'bg-indigo-500 text-white rounded-full font-black shadow-sm'
+                    textClass = 'text-white'
+                  }
+                }
+
+                const isToday = new Date().toDateString() === day.toDateString()
+                const todayClass = isToday && dateInsts.length === 0 ? 'border border-indigo-505 rounded-full font-bold' : ''
+
+                return (
+                  <div
+                    key={`day-${day.getDate()}`}
+                    onClick={() => {
+                      if (dateInsts.length > 0) {
+                        setSelectedCalendarDate(day)
+                      }
+                    }}
+                    className={`h-6 flex items-center justify-center text-[10px] font-semibold transition-all cursor-pointer ${bgClass} ${textClass} ${todayClass}`}
+                  >
+                    {day.getDate()}
+                  </div>
+                )
+              })}
+            </div>
+
+            {/* Legend */}
+            <div className="flex gap-2.5 justify-center text-[9px] text-slate-400 font-bold pt-1 border-t border-slate-50 dark:border-dark-border/40">
+              <span className="flex items-center gap-1">
+                <span className="w-1.5 h-1.5 bg-indigo-500 rounded-full" />
+                Premium Due
+              </span>
+              <span className="flex items-center gap-1">
+                <span className="w-1.5 h-1.5 bg-amber-500 rounded-full" />
+                Renewal Soon
+              </span>
+            </div>
+
+            {/* Selected Date Details */}
+            {selectedCalendarDate && (
+              <div className="bg-slate-50 dark:bg-dark-border/20 p-3 rounded-xl space-y-2.5 animate-fadeIn">
+                <div className="flex justify-between items-center text-[10px] font-bold text-slate-400">
+                  <span>RENEWAL ON {selectedCalendarDate.toLocaleDateString('en-IN', { day: '2-digit', month: 'short' })}</span>
+                  <button onClick={() => setSelectedCalendarDate(null)} className="hover:text-slate-600 cursor-pointer">✕</button>
+                </div>
+                {getInsurancesForDate(selectedCalendarDate).map((ins) => {
+                  return (
+                    <div key={ins._id} className="text-xs space-y-1">
+                      <p className="font-bold text-slate-800 dark:text-white truncate">{ins.title}</p>
+                      <div className="flex justify-between items-center text-[10px]">
+                        <span className="text-slate-455">{ins.insurer}</span>
+                        <span className="font-extrabold text-secondary dark:text-purple-400">
+                          {formatCurrency(ins.premiumAmount)}
+                        </span>
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
 
       {/* Add/Edit Modal */}
       {isOpen && (
