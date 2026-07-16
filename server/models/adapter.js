@@ -220,12 +220,11 @@ export class SupabaseQueryBuilder {
         }
       }
 
-      if (this._single) {
-        const result = docs.length > 0 ? docs[0] : null;
-        return onfulfilled(result);
-      } else {
-        return onfulfilled(docs);
+      const finalResult = this._single ? (docs.length > 0 ? docs[0] : null) : docs;
+      if (typeof onfulfilled === 'function') {
+        return onfulfilled(finalResult);
       }
+      return finalResult;
     } catch (err) {
       if (onrejected) return onrejected(err);
       throw err;
