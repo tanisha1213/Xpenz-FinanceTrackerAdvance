@@ -13,6 +13,8 @@ import dashboardRoutes from './routes/dashboardRoutes.js';
 import reportRoutes from './routes/reportRoutes.js';
 import accountRoutes from './routes/accountRoutes.js';
 import loanRoutes from './routes/loanRoutes.js';
+import investmentRoutes from './routes/investmentRoutes.js';
+import insuranceRoutes from './routes/insuranceRoutes.js';
 
 dotenv.config();
 
@@ -85,6 +87,8 @@ app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/reports', reportRoutes);
 app.use('/api/accounts', accountRoutes);
 app.use('/api/loans', loanRoutes);
+app.use('/api/investments', investmentRoutes);
+app.use('/api/insurances', insuranceRoutes);
 
 // Health check
 app.get('/health', (req, res) => {

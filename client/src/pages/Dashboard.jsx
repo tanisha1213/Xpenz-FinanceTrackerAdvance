@@ -662,42 +662,90 @@ function Dashboard() {
           </div>
         </section>
 
-        {/* Recent Transactions List */}
-        <section id="recent-activity-tour" className="rounded-3xl border border-slate-100 dark:border-slate-800/80 bg-white dark:bg-gradient-to-b dark:from-[#131522] dark:to-[#0d0f17] p-6 shadow-premium flex flex-col justify-between">
-          <div>
-            <h3 className="font-bold text-slate-800 dark:text-white text-lg mb-4">{t('recentTransactions')}</h3>
-            <div className="space-y-4">
-              {summary?.recentTransactions?.length ? (
-                summary.recentTransactions.map((item) => (
-                  <div key={item._id} className="flex items-center justify-between p-3 rounded-2xl border border-slate-50 dark:border-slate-800/50 hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors">
-                    <div className="flex items-center gap-3">
-                      <div className={`p-2 rounded-xl text-xs font-semibold ${
-                        item.type === 'income' ? 'bg-emerald-50 dark:bg-emerald-950/20 text-emerald-600 dark:text-emerald-400' : 'bg-rose-50 dark:bg-rose-950/20 text-rose-600 dark:text-rose-450'
-                      }`}>
-                        {item.type === 'income' ? 'IN' : 'EX'}
+        {/* Right Side Stack: Upcoming Commitments & Recent Transactions */}
+        <div className="space-y-6 lg:col-span-1">
+          {/* Upcoming Payments Widget */}
+          <section className="rounded-3xl border border-slate-100 dark:border-slate-800/80 bg-white dark:bg-gradient-to-b dark:from-[#131522] dark:to-[#0d0f17] p-6 shadow-premium">
+            <h3 className="font-bold text-slate-800 dark:text-white text-lg mb-4 flex items-center gap-2">
+              <FiCalendar className="w-5 h-5 text-indigo-500" />
+              Upcoming Payments
+            </h3>
+            <div className="space-y-3.5 max-h-[300px] overflow-y-auto pr-1">
+              {summary?.upcomingPayments?.length ? (
+                summary.upcomingPayments.slice(0, 5).map((pay, index) => {
+                  const isLoan = pay.type === 'loan_emi'
+                  const isSIP = pay.type === 'investment_sip'
+                  
+                  return (
+                    <div key={`${pay.type}-${pay.id}-${index}`} className="flex items-center justify-between p-3 rounded-2xl border border-slate-50 dark:border-slate-800/50 hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors">
+                      <div className="flex items-center gap-3">
+                        <div className={`px-2.5 py-1 rounded-xl text-[10px] font-black uppercase tracking-wider ${
+                          isLoan 
+                            ? 'bg-rose-50 dark:bg-rose-950/20 text-rose-600 dark:text-rose-450' 
+                            : isSIP 
+                            ? 'bg-indigo-50 dark:bg-indigo-950/20 text-indigo-650 dark:text-indigo-400' 
+                            : 'bg-emerald-50 dark:bg-emerald-950/20 text-emerald-600 dark:text-emerald-400'
+                        }`}>
+                          {isLoan ? 'EMI' : isSIP ? 'SIP' : 'PRM'}
+                        </div>
+                        <div className="min-w-0">
+                          <p className="font-bold text-slate-800 dark:text-slate-200 text-sm truncate">{pay.title}</p>
+                          <p className="text-[10px] text-slate-400 dark:text-dark-text-muted font-bold mt-0.5">
+                            Due {formatDate(pay.dueDate)}
+                          </p>
+                        </div>
                       </div>
-                      <div>
-                        <p className="font-bold text-slate-800 dark:text-slate-200 text-sm">{item.title}</p>
-                        <p className="text-xs text-slate-400 dark:text-dark-text-muted font-medium">
-                          {item.category} • {formatDate(item.transactionDate)}
-                        </p>
-                      </div>
+                      <p className="font-black text-sm text-slate-700 dark:text-slate-250">
+                        {formatCurrency(pay.amount)}
+                      </p>
                     </div>
-                    <p className={`font-bold text-sm ${
-                      item.type === 'income' ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-450'
-                    }`}>
-                      {item.type === 'income' ? '+' : '-'}{formatCurrency(item.amount)}
-                    </p>
-                  </div>
-                ))
+                  )
+                })
               ) : (
-                <div className="py-12 text-center text-slate-400 dark:text-slate-500 text-sm">
-                  No transactions recorded yet.
+                <div className="py-8 text-center text-slate-400 dark:text-slate-555 text-xs">
+                  No upcoming payments.
                 </div>
               )}
             </div>
-          </div>
-        </section>
+          </section>
+
+          {/* Recent Transactions List */}
+          <section id="recent-activity-tour" className="rounded-3xl border border-slate-100 dark:border-slate-800/80 bg-white dark:bg-gradient-to-b dark:from-[#131522] dark:to-[#0d0f17] p-6 shadow-premium flex flex-col justify-between">
+            <div>
+              <h3 className="font-bold text-slate-800 dark:text-white text-lg mb-4">{t('recentTransactions')}</h3>
+              <div className="space-y-4">
+                {summary?.recentTransactions?.length ? (
+                  summary.recentTransactions.map((item) => (
+                    <div key={item._id} className="flex items-center justify-between p-3 rounded-2xl border border-slate-50 dark:border-slate-800/50 hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors">
+                      <div className="flex items-center gap-3">
+                        <div className={`p-2 rounded-xl text-xs font-semibold ${
+                          item.type === 'income' ? 'bg-emerald-50 dark:bg-emerald-950/20 text-emerald-600 dark:text-emerald-400' : 'bg-rose-50 dark:bg-rose-950/20 text-rose-600 dark:text-rose-450'
+                        }`}>
+                          {item.type === 'income' ? 'IN' : 'EX'}
+                        </div>
+                        <div>
+                          <p className="font-bold text-slate-800 dark:text-slate-200 text-sm">{item.title}</p>
+                          <p className="text-xs text-slate-400 dark:text-dark-text-muted font-medium">
+                            {item.category} • {formatDate(item.transactionDate)}
+                          </p>
+                        </div>
+                      </div>
+                      <p className={`font-bold text-sm ${
+                        item.type === 'income' ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-450'
+                      }`}>
+                        {item.type === 'income' ? '+' : '-'}{formatCurrency(item.amount)}
+                      </p>
+                    </div>
+                  ))
+                ) : (
+                  <div className="py-12 text-center text-slate-400 dark:text-slate-500 text-sm">
+                    No transactions recorded yet.
+                  </div>
+                )}
+              </div>
+            </div>
+          </section>
+        </div>
       </div>
 
       {/* Quick Add Overlay Form */}

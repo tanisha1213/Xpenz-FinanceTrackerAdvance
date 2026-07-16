@@ -1,6 +1,9 @@
 import Transaction from '../models/Transaction.js';
 import Budget from '../models/Budget.js';
 import Account from '../models/Account.js';
+import Loan from '../models/Loan.js';
+import Investment from '../models/Investment.js';
+import Insurance from '../models/Insurance.js';
 import { summarizeTransactions } from '../services/financeAnalyzer.js';
 
 export const getDashboardSummary = async (req, res) => {
@@ -45,7 +48,15 @@ export const getDashboardSummary = async (req, res) => {
     const currentMonthEnd = new Date(now.getFullYear(), now.getMonth() + 1, 1);
     const sixMonthsAgoStart = new Date(now.getFullYear(), now.getMonth() - 5, 1);
 
-    const [currentMonthTransactions, trendTransactions, recentTransactions, budget] = await Promise.all([
+    const [
+      currentMonthTransactions,
+      trendTransactions,
+      recentTransactions,
+      budget,
+      loans,
+      investments,
+      insurances
+    ] = await Promise.all([
       Transaction.find({
         userId: req.userId,
         transactionDate: { $gte: currentMonthStart, $lt: currentMonthEnd }
@@ -61,7 +72,11 @@ export const getDashboardSummary = async (req, res) => {
         .sort({ transactionDate: -1 })
         .limit(5),
         
-      Budget.findOne({ userId: req.userId })
+      Budget.findOne({ userId: req.userId }),
+
+      Loan.find({ userId: req.userId, status: 'active' }),
+      Investment.find({ userId: req.userId }),
+      Insurance.find({ userId: req.userId, status: 'active' })
     ]);
 
     // Summarize current month's spending
@@ -69,6 +84,54 @@ export const getDashboardSummary = async (req, res) => {
     
     // Summarize last 6 months for the trend chart
     const trendSummary = summarizeTransactions(trendTransactions, budget);
+
+    // 5. Compile Unified Upcoming Payments List
+    const upcomingPayments = [];
+
+    // Add Loan EMIs
+    loans.forEach(loan => {
+      if (loan.nextDueDate && Number(loan.emiAmount) > 0) {
+        upcomingPayments.push({
+          id: loan._id,
+          type: 'loan_emi',
+          title: `${loan.title} EMI`,
+          amount: Number(loan.emiAmount),
+          dueDate: loan.nextDueDate,
+          frequency: loan.paymentFrequency || 'monthly'
+        });
+      }
+    });
+
+    // Add Investment SIPs
+    investments.forEach(inv => {
+      if (inv.sipDueDate && Number(inv.monthlySipAmount) > 0) {
+        upcomingPayments.push({
+          id: inv._id,
+          type: 'investment_sip',
+          title: `${inv.title} SIP`,
+          amount: Number(inv.monthlySipAmount),
+          dueDate: inv.sipDueDate,
+          frequency: 'monthly'
+        });
+      }
+    });
+
+    // Add Insurance Premiums
+    insurances.forEach(ins => {
+      if (ins.renewalDate && Number(ins.premiumAmount) > 0) {
+        upcomingPayments.push({
+          id: ins._id,
+          type: 'insurance_premium',
+          title: `${ins.insurer} ${ins.title}`,
+          amount: Number(ins.premiumAmount),
+          dueDate: ins.renewalDate,
+          frequency: ins.paymentFrequency || 'yearly'
+        });
+      }
+    });
+
+    // Sort by due date ascending
+    upcomingPayments.sort((a, b) => new Date(a.dueDate) - new Date(b.dueDate));
 
     res.status(200).json({
       success: true,
@@ -83,7 +146,8 @@ export const getDashboardSummary = async (req, res) => {
         budgetRemaining: summary.budgetRemaining,
         monthlyTrend: trendSummary.monthlyTrend,
         categoryBreakdown: summary.categoryBreakdown,
-        recentTransactions
+        recentTransactions,
+        upcomingPayments
       }
     });
   } catch (error) {

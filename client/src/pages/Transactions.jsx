@@ -15,6 +15,8 @@ import { useLanguage } from '../context/LanguageContext'
 import { getLoans, addLoan, updateLoan, deleteLoan } from '../services/loanService'
 import { getAccounts } from '../services/accountService'
 import Loans from './Loans'
+import Investments from './Investments'
+import Insurance from './Insurance'
 
 const POPULAR_BANKS = [
   'State Bank of India (SBI)',
@@ -67,12 +69,16 @@ function Transactions() {
   const { t } = useLanguage()
   const { transactions, pagination, loading, error } = useSelector(state => state.transactions)
   const [searchParams, setSearchParams] = useSearchParams()
-  const [activeSubTab, setActiveSubTab] = useState(searchParams.get('tab') === 'loans' ? 'loans' : 'transactions')
+  const [activeSubTab, setActiveSubTab] = useState(
+    ['loans', 'investments', 'insurance'].includes(searchParams.get('tab'))
+      ? searchParams.get('tab')
+      : 'transactions'
+  )
 
   useEffect(() => {
     const tab = searchParams.get('tab')
-    if (tab === 'loans') {
-      setActiveSubTab('loans')
+    if (['loans', 'investments', 'insurance'].includes(tab)) {
+      setActiveSubTab(tab)
     } else {
       setActiveSubTab('transactions')
     }
@@ -424,7 +430,7 @@ function Transactions() {
   return (
     <div className="space-y-6 text-slate-800 dark:text-slate-100 w-full max-w-full overflow-hidden">
       {/* Page Title */}
-      {activeSubTab !== 'loans' && (
+      {activeSubTab === 'transactions' && (
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <h2 className="text-2xl font-extrabold text-slate-800 dark:text-white tracking-tight">
@@ -458,8 +464,7 @@ function Transactions() {
                 : 'border-transparent text-slate-550 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200'
             }`}
           >
-            <span className="hidden sm:inline">Transaction History</span>
-            <span className="inline sm:hidden">Transactions</span>
+            Transactions
           </button>
           <button
             onClick={() => handleTabChange('loans')}
@@ -469,14 +474,37 @@ function Transactions() {
                 : 'border-transparent text-slate-550 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200'
             }`}
           >
-            <span className="hidden sm:inline">Loans & EMIs</span>
-            <span className="inline sm:hidden">Loans / EMIs</span>
+            Loans / EMIs
+          </button>
+          <button
+            onClick={() => handleTabChange('investments')}
+            className={`pb-3.5 px-4 sm:px-8 text-sm sm:text-base md:text-lg font-bold border-b-[3px] transition-all cursor-pointer flex-1 md:flex-initial text-center whitespace-nowrap ${
+              activeSubTab === 'investments'
+                ? 'border-secondary text-secondary dark:border-purple-400 dark:text-purple-400 font-black'
+                : 'border-transparent text-slate-550 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200'
+            }`}
+          >
+            Investments
+          </button>
+          <button
+            onClick={() => handleTabChange('insurance')}
+            className={`pb-3.5 px-4 sm:px-8 text-sm sm:text-base md:text-lg font-bold border-b-[3px] transition-all cursor-pointer flex-1 md:flex-initial text-center whitespace-nowrap ${
+              activeSubTab === 'insurance'
+                ? 'border-secondary text-secondary dark:border-purple-400 dark:text-purple-400 font-black'
+                : 'border-transparent text-slate-550 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200'
+            }`}
+          >
+            Insurance
           </button>
         </div>
       </div>
 
       {activeSubTab === 'loans' ? (
         <Loans />
+      ) : activeSubTab === 'investments' ? (
+        <Investments />
+      ) : activeSubTab === 'insurance' ? (
+        <Insurance />
       ) : (
         /* Main Two-Column Layout */
         <div className="grid gap-6 lg:grid-cols-4">

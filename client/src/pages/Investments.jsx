@@ -1,0 +1,557 @@
+import { useEffect, useMemo, useState } from 'react'
+import {
+  getInvestments,
+  addInvestment,
+  updateInvestment,
+  deleteInvestment
+} from '../services/investmentService'
+import { formatCurrency, formatDate } from '../utils/format'
+import {
+  FiPlus, FiEdit2, FiTrash2, FiSearch, FiRefreshCw, FiTrendingUp, FiBriefcase, FiDollarSign, FiInfo
+} from 'react-icons/fi'
+import { useLanguage } from '../context/LanguageContext'
+
+const INVESTMENT_TYPES = [
+  { value: 'mutual_fund', label: 'Mutual Fund' },
+  { value: 'stock', label: 'Stock' },
+  { value: 'fixed_deposit', label: 'Fixed Deposit' },
+  { value: 'recurring_deposit', label: 'Recurring Deposit' },
+  { value: 'gold', label: 'Gold' },
+  { value: 'ppf', label: 'PPF' },
+  { value: 'epf', label: 'EPF' },
+  { value: 'nps', label: 'NPS' },
+  { value: 'crypto', label: 'Crypto' },
+  { value: 'other', label: 'Other' }
+]
+
+export default function Investments() {
+  const { language } = useLanguage()
+  const [investments, setInvestments] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [search, setSearch] = useState('')
+  const [typeFilter, setTypeFilter] = useState('all')
+
+  // Modal State
+  const [isOpen, setIsOpen] = useState(false)
+  const [editingItem, setEditingItem] = useState(null)
+  const [formData, setFormData] = useState({
+    type: 'mutual_fund',
+    title: '',
+    investedAmount: '',
+    currentValue: '',
+    monthlySipAmount: '',
+    sipDueDate: '',
+    quantity: '',
+    interestRate: '',
+    maturityDate: '',
+    notes: ''
+  })
+
+  const fetchInvestments = async () => {
+    try {
+      setLoading(true)
+      const res = await getInvestments()
+      if (res.data?.success) {
+        setInvestments(res.data.data)
+      }
+    } catch (err) {
+      console.error('Failed to load investments:', err)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    fetchInvestments()
+  }, [])
+
+  // Calculations
+  const stats = useMemo(() => {
+    let totalInvested = 0
+    let totalCurrent = 0
+
+    investments.forEach((inv) => {
+      totalInvested += Number(inv.investedAmount || 0)
+      totalCurrent += Number(inv.currentValue || 0)
+    });
+
+    const netProfit = totalCurrent - totalInvested
+    const profitPct = totalInvested > 0 ? (netProfit / totalInvested) * 100 : 0
+
+    return {
+      totalInvested,
+      totalCurrent,
+      netProfit,
+      profitPct
+    }
+  }, [investments])
+
+  const filteredInvestments = useMemo(() => {
+    return investments.filter((inv) => {
+      const matchesSearch = inv.title.toLowerCase().includes(search.toLowerCase())
+      const matchesType = typeFilter === 'all' || inv.type === typeFilter
+      return matchesSearch && matchesType
+    })
+  }, [investments, search, typeFilter])
+
+  const handleOpenAdd = () => {
+    setEditingItem(null)
+    setFormData({
+      type: 'mutual_fund',
+      title: '',
+      investedAmount: '',
+      currentValue: '',
+      monthlySipAmount: '',
+      sipDueDate: '',
+      quantity: '',
+      interestRate: '',
+      maturityDate: '',
+      notes: ''
+    })
+    setIsOpen(true)
+  }
+
+  const handleOpenEdit = (item) => {
+    setEditingItem(item)
+    setFormData({
+      type: item.type,
+      title: item.title,
+      investedAmount: item.investedAmount || '',
+      currentValue: item.currentValue || '',
+      monthlySipAmount: item.monthlySipAmount || '',
+      sipDueDate: item.sipDueDate ? item.sipDueDate.slice(0, 10) : '',
+      quantity: item.quantity || '',
+      interestRate: item.interestRate || '',
+      maturityDate: item.maturityDate ? item.maturityDate.slice(0, 10) : '',
+      notes: item.notes || ''
+    })
+    setIsOpen(true)
+  }
+
+  const handleDelete = async (id) => {
+    if (window.confirm('Are you sure you want to delete this investment?')) {
+      try {
+        await deleteInvestment(id)
+        fetchInvestments()
+      } catch (err) {
+        console.error('Delete failed:', err)
+      }
+    }
+  }
+
+  const handleSubmit = async (e) => {
+    e.preventDefault()
+    try {
+      const dataPayload = {
+        ...formData,
+        investedAmount: Number(formData.investedAmount || 0),
+        currentValue: Number(formData.currentValue || 0),
+        monthlySipAmount: formData.monthlySipAmount ? Number(formData.monthlySipAmount) : 0,
+        quantity: formData.quantity ? Number(formData.quantity) : 1,
+        interestRate: formData.interestRate ? Number(formData.interestRate) : 0,
+        sipDueDate: formData.sipDueDate ? new Date(formData.sipDueDate).toISOString() : null,
+        maturityDate: formData.maturityDate ? new Date(formData.maturityDate).toISOString() : null
+      }
+
+      if (editingItem) {
+        await updateInvestment(editingItem._id, dataPayload)
+      } else {
+        await addInvestment(dataPayload)
+      }
+      setIsOpen(false)
+      fetchInvestments()
+    } catch (err) {
+      console.error('Save failed:', err)
+    }
+  }
+
+  return (
+    <div className="space-y-6 text-slate-800 dark:text-slate-100 relative w-full max-w-full overflow-hidden">
+      {/* Top Title Bar */}
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <h2 className="text-2xl font-extrabold text-slate-800 dark:text-white tracking-tight">Investments</h2>
+          <p className="text-slate-400 dark:text-dark-text-muted text-sm mt-0.5">Track your portfolio performance, SIP commitments, and growth.</p>
+        </div>
+        <button
+          onClick={handleOpenAdd}
+          className="flex items-center justify-center gap-2 rounded-xl bg-secondary dark:bg-purple-650 px-4 py-2.5 font-bold text-white text-sm hover:bg-indigo-700 dark:hover:bg-purple-750 shadow-md transition-all w-fit cursor-pointer"
+        >
+          <FiPlus className="w-4 h-4" />
+          Add Investment
+        </button>
+      </div>
+
+      {/* Summary Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
+        <div className="bg-white dark:bg-dark-card border border-slate-100 dark:border-dark-border p-5 rounded-2xl shadow-sm">
+          <p className="text-xs font-bold text-slate-400 dark:text-dark-text-muted uppercase tracking-wider">Total Invested</p>
+          <p className="text-2xl font-black text-slate-800 dark:text-white mt-1">{formatCurrency(stats.totalInvested)}</p>
+        </div>
+        <div className="bg-white dark:bg-dark-card border border-slate-100 dark:border-dark-border p-5 rounded-2xl shadow-sm">
+          <p className="text-xs font-bold text-slate-400 dark:text-dark-text-muted uppercase tracking-wider">Current Value</p>
+          <p className="text-2xl font-black text-slate-800 dark:text-white mt-1">{formatCurrency(stats.totalCurrent)}</p>
+        </div>
+        <div className="bg-white dark:bg-dark-card border border-slate-100 dark:border-dark-border p-5 rounded-2xl shadow-sm">
+          <p className="text-xs font-bold text-slate-400 dark:text-dark-text-muted uppercase tracking-wider">Overall Return</p>
+          <div className="flex items-baseline gap-2 mt-1">
+            <p className={`text-2xl font-black ${stats.netProfit >= 0 ? 'text-emerald-500' : 'text-rose-500'}`}>
+              {stats.netProfit >= 0 ? '+' : ''}{formatCurrency(stats.netProfit)}
+            </p>
+            <span className={`text-xs font-bold ${stats.netProfit >= 0 ? 'text-emerald-500' : 'text-rose-500'}`}>
+              ({stats.netProfit >= 0 ? '+' : ''}{stats.profitPct.toFixed(2)}%)
+            </span>
+          </div>
+        </div>
+      </div>
+
+      {/* Search & Filters */}
+      <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between bg-white dark:bg-dark-card border border-slate-100 dark:border-dark-border p-3.5 rounded-2xl shadow-sm">
+        <div className="flex bg-slate-150/40 dark:bg-slate-900/60 p-1 rounded-xl w-full md:w-auto overflow-x-auto scrollbar-none">
+          {['all', 'mutual_fund', 'stock', 'fixed_deposit', 'recurring_deposit'].map((type) => (
+            <button
+              key={type}
+              onClick={() => setTypeFilter(type)}
+              className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
+                typeFilter === type
+                  ? 'bg-secondary dark:bg-purple-650 text-white shadow-sm'
+                  : 'text-slate-500 dark:text-dark-text hover:bg-slate-200/50 dark:hover:bg-slate-800'
+              }`}
+            >
+              {type === 'all' ? 'All' : INVESTMENT_TYPES.find((t) => t.value === type)?.label || type}
+            </button>
+          ))}
+        </div>
+
+        <div className="relative w-full md:w-60">
+          <FiSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500" />
+          <input
+            type="text"
+            placeholder="Search investment..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="w-full rounded-xl border border-slate-200 dark:border-dark-border bg-white dark:bg-dark-card text-slate-800 dark:text-slate-200 pl-9 pr-3 py-2 text-xs focus:outline-none"
+          />
+        </div>
+      </div>
+
+      {/* Grid of Cards */}
+      {loading ? (
+        <div className="flex flex-col items-center justify-center py-12">
+          <FiRefreshCw className="w-8 h-8 text-secondary dark:text-purple-400 animate-spin" />
+          <p className="text-slate-400 text-sm mt-3">Loading portfolio...</p>
+        </div>
+      ) : filteredInvestments.length === 0 ? (
+        <div className="text-center py-16 bg-white dark:bg-dark-card border border-slate-100 dark:border-dark-border rounded-2xl">
+          <FiBriefcase className="w-12 h-12 text-slate-350 dark:text-slate-600 mx-auto" />
+          <h3 className="text-base font-extrabold text-slate-700 dark:text-slate-200 mt-4">No Investments Logged</h3>
+          <p className="text-slate-400 dark:text-dark-text-muted text-xs mt-1 max-w-xs mx-auto">Click "Add Investment" to start building your visual wealth portfolio.</p>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+          {filteredInvestments.map((inv) => {
+            const profit = Number(inv.currentValue || 0) - Number(inv.investedAmount || 0)
+            const profitPct = Number(inv.investedAmount || 0) > 0 ? (profit / Number(inv.investedAmount)) * 100 : 0
+            const typeLabel = INVESTMENT_TYPES.find((t) => t.value === inv.type)?.label || inv.type
+
+            return (
+              <div
+                key={inv._id}
+                className="bg-white dark:bg-dark-card border border-slate-100 dark:border-dark-border rounded-2xl shadow-sm overflow-hidden flex flex-col justify-between"
+              >
+                <div className="p-5 space-y-4">
+                  {/* Top: Title & Badge */}
+                  <div className="flex justify-between items-start gap-2">
+                    <div className="min-w-0">
+                      <h4 className="font-extrabold text-slate-800 dark:text-white text-base truncate">{inv.title}</h4>
+                      <span className="inline-block mt-1 px-2.5 py-0.5 bg-secondary/10 dark:bg-purple-450/10 text-secondary dark:text-purple-400 rounded-full text-[10px] font-extrabold uppercase">
+                        {typeLabel}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <button
+                        onClick={() => handleOpenEdit(inv)}
+                        className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400 dark:text-slate-500 hover:text-secondary dark:hover:text-purple-400 rounded-xl transition-all cursor-pointer"
+                      >
+                        <FiEdit2 className="w-3.5 h-3.5" />
+                      </button>
+                      <button
+                        onClick={() => handleDelete(inv._id)}
+                        className="p-2 hover:bg-rose-50 dark:hover:bg-rose-950/20 text-slate-400 dark:text-slate-500 hover:text-rose-500 dark:hover:text-rose-400 rounded-xl transition-all cursor-pointer"
+                      >
+                        <FiTrash2 className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  </div>
+
+                  <hr className="border-slate-100 dark:border-dark-border/40" />
+
+                  {/* Middle Section: Display statistics by type */}
+                  {inv.type === 'mutual_fund' && (
+                    <div className="space-y-3.5">
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <p className="text-[10px] font-bold text-slate-400 uppercase">Invested</p>
+                          <p className="text-sm font-black text-slate-700 dark:text-slate-200 mt-0.5">{formatCurrency(inv.investedAmount)}</p>
+                        </div>
+                        <div>
+                          <p className="text-[10px] font-bold text-slate-400 uppercase">Current</p>
+                          <p className="text-sm font-black text-slate-700 dark:text-slate-200 mt-0.5">{formatCurrency(inv.currentValue)}</p>
+                        </div>
+                      </div>
+                      <div className="flex justify-between items-center bg-slate-50 dark:bg-slate-900/40 p-2.5 rounded-xl border border-slate-100 dark:border-slate-800 text-xs">
+                        <span className="font-bold text-slate-400">Profit/Loss</span>
+                        <span className={`font-black ${profit >= 0 ? 'text-emerald-500' : 'text-rose-500'}`}>
+                          {profit >= 0 ? '+' : ''}{formatCurrency(profit)} ({profit >= 0 ? '+' : ''}{profitPct.toFixed(1)}%)
+                        </span>
+                      </div>
+                      {inv.monthlySipAmount > 0 && (
+                        <div className="flex justify-between items-center text-xs border-t border-dashed border-slate-200 dark:border-dark-border/30 pt-2.5 text-slate-550 dark:text-slate-400">
+                          <span className="font-bold">Monthly SIP</span>
+                          <span className="font-black text-secondary dark:text-purple-400">{formatCurrency(inv.monthlySipAmount)}/mo</span>
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {inv.type === 'stock' && (
+                    <div className="space-y-3.5">
+                      <div className="grid grid-cols-3 gap-2">
+                        <div>
+                          <p className="text-[10px] font-bold text-slate-400 uppercase">Qty</p>
+                          <p className="text-sm font-black text-slate-700 dark:text-slate-200 mt-0.5">{inv.quantity || 1}</p>
+                        </div>
+                        <div>
+                          <p className="text-[10px] font-bold text-slate-400 uppercase">Invested</p>
+                          <p className="text-sm font-black text-slate-700 dark:text-slate-200 mt-0.5">{formatCurrency(inv.investedAmount)}</p>
+                        </div>
+                        <div>
+                          <p className="text-[10px] font-bold text-slate-400 uppercase">Current</p>
+                          <p className="text-sm font-black text-slate-700 dark:text-slate-200 mt-0.5">{formatCurrency(inv.currentValue)}</p>
+                        </div>
+                      </div>
+                      <div className="flex justify-between items-center bg-slate-50 dark:bg-slate-900/40 p-2.5 rounded-xl border border-slate-100 dark:border-slate-800 text-xs">
+                        <span className="font-bold text-slate-400">Gain / Loss</span>
+                        <span className={`font-black ${profit >= 0 ? 'text-emerald-500' : 'text-rose-500'}`}>
+                          {profit >= 0 ? '+' : ''}{profitPct.toFixed(1)}%
+                        </span>
+                      </div>
+                    </div>
+                  )}
+
+                  {(inv.type === 'fixed_deposit' || inv.type === 'recurring_deposit') && (
+                    <div className="space-y-3.5">
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <p className="text-[10px] font-bold text-slate-400 uppercase">Principal</p>
+                          <p className="text-sm font-black text-slate-700 dark:text-slate-200 mt-0.5">{formatCurrency(inv.investedAmount)}</p>
+                        </div>
+                        <div>
+                          <p className="text-[10px] font-bold text-slate-400 uppercase">Interest Rate</p>
+                          <p className="text-sm font-black text-slate-700 dark:text-slate-200 mt-0.5">{inv.interestRate || 0}%</p>
+                        </div>
+                      </div>
+                      {inv.maturityDate && (
+                        <div className="flex justify-between items-center bg-slate-50 dark:bg-slate-900/40 p-2.5 rounded-xl border border-slate-100 dark:border-slate-800 text-xs">
+                          <span className="font-bold text-slate-400">Maturity Date</span>
+                          <span className="font-black text-slate-700 dark:text-slate-200">{formatDate(inv.maturityDate)}</span>
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {/* General investment details layout */}
+                  {inv.type !== 'mutual_fund' && inv.type !== 'stock' && inv.type !== 'fixed_deposit' && inv.type !== 'recurring_deposit' && (
+                    <div className="space-y-3.5">
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <p className="text-[10px] font-bold text-slate-400 uppercase">Invested</p>
+                          <p className="text-sm font-black text-slate-700 dark:text-slate-200 mt-0.5">{formatCurrency(inv.investedAmount)}</p>
+                        </div>
+                        <div>
+                          <p className="text-[10px] font-bold text-slate-400 uppercase">Current</p>
+                          <p className="text-sm font-black text-slate-700 dark:text-slate-200 mt-0.5">{formatCurrency(inv.currentValue)}</p>
+                        </div>
+                      </div>
+                      <div className="flex justify-between items-center bg-slate-50 dark:bg-slate-900/40 p-2.5 rounded-xl border border-slate-100 dark:border-slate-800 text-xs">
+                        <span className="font-bold text-slate-400">Net Returns</span>
+                        <span className={`font-black ${profit >= 0 ? 'text-emerald-500' : 'text-rose-500'}`}>
+                          {profit >= 0 ? '+' : ''}{formatCurrency(profit)}
+                        </span>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {inv.notes && (
+                  <div className="px-5 pb-5 pt-0">
+                    <p className="text-[10px] text-slate-450 dark:text-dark-text-muted italic bg-slate-50 dark:bg-slate-800/40 px-3 py-2 rounded-lg border border-dashed border-slate-100 dark:border-slate-800">
+                      Note: {inv.notes}
+                    </p>
+                  </div>
+                )}
+              </div>
+            )
+          })}
+        </div>
+      )}
+
+      {/* Add/Edit Modal */}
+      {isOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm animate-fade-in p-4">
+          <div className="bg-white dark:bg-[#131522] border border-slate-100 dark:border-slate-800 rounded-3xl shadow-2xl w-full max-w-md overflow-hidden max-h-[90vh] flex flex-col">
+            <div className="p-6 border-b border-slate-100 dark:border-dark-border/40 flex justify-between items-center">
+              <h3 className="text-lg font-black text-slate-800 dark:text-white">
+                {editingItem ? 'Edit Investment' : 'Add Investment'}
+              </h3>
+              <button onClick={() => setIsOpen(false)} className="text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-white cursor-pointer font-bold">Close</button>
+            </div>
+
+            <form onSubmit={handleSubmit} className="p-6 space-y-4 overflow-y-auto flex-1 text-left">
+              {/* Type Select */}
+              <div>
+                <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1.5">Investment Type</label>
+                <select
+                  value={formData.type}
+                  onChange={(e) => setFormData({ ...formData, type: e.target.value })}
+                  className="w-full rounded-xl border border-slate-200 dark:border-dark-border bg-white dark:bg-[#0d0f17] text-slate-800 dark:text-slate-100 px-3.5 py-2.5 text-xs focus:outline-none focus:ring-1 focus:ring-secondary"
+                >
+                  {INVESTMENT_TYPES.map((t) => (
+                    <option key={t.value} value={t.value}>{t.label}</option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Title */}
+              <div>
+                <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1.5">Investment Name / Scheme</label>
+                <input
+                  type="text"
+                  required
+                  placeholder="e.g. SBI Bluechip, TCS Share, SBI FD"
+                  value={formData.title}
+                  onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                  className="w-full rounded-xl border border-slate-200 dark:border-dark-border bg-white dark:bg-[#0d0f17] text-slate-800 dark:text-slate-100 px-3.5 py-2.5 text-xs focus:outline-none focus:ring-1 focus:ring-secondary"
+                />
+              </div>
+
+              {/* Invested and Current Amount */}
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1.5">Invested Amount</label>
+                  <input
+                    type="number"
+                    required
+                    placeholder="₹ Invested"
+                    value={formData.investedAmount}
+                    onChange={(e) => setFormData({ ...formData, investedAmount: e.target.value })}
+                    className="w-full rounded-xl border border-slate-200 dark:border-dark-border bg-white dark:bg-[#0d0f17] text-slate-800 dark:text-slate-100 px-3.5 py-2.5 text-xs focus:outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1.5">Current Value</label>
+                  <input
+                    type="number"
+                    required
+                    placeholder="₹ Current Value"
+                    value={formData.currentValue}
+                    onChange={(e) => setFormData({ ...formData, currentValue: e.target.value })}
+                    className="w-full rounded-xl border border-slate-200 dark:border-dark-border bg-white dark:bg-[#0d0f17] text-slate-800 dark:text-slate-100 px-3.5 py-2.5 text-xs focus:outline-none"
+                  />
+                </div>
+              </div>
+
+              {/* Conditional Field: Quantity (Stocks, Gold, Crypto) */}
+              {(formData.type === 'stock' || formData.type === 'gold' || formData.type === 'crypto') && (
+                <div>
+                  <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1.5">Quantity / Units</label>
+                  <input
+                    type="number"
+                    step="any"
+                    placeholder="e.g. 15"
+                    value={formData.quantity}
+                    onChange={(e) => setFormData({ ...formData, quantity: e.target.value })}
+                    className="w-full rounded-xl border border-slate-200 dark:border-dark-border bg-white dark:bg-[#0d0f17] text-slate-800 dark:text-slate-100 px-3.5 py-2.5 text-xs focus:outline-none"
+                  />
+                </div>
+              )}
+
+              {/* Conditional Field: Interest Rate (FD, RD) */}
+              {(formData.type === 'fixed_deposit' || formData.type === 'recurring_deposit') && (
+                <div>
+                  <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1.5">Interest Rate (%)</label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    placeholder="e.g. 7.2"
+                    value={formData.interestRate}
+                    onChange={(e) => setFormData({ ...formData, interestRate: e.target.value })}
+                    className="w-full rounded-xl border border-slate-200 dark:border-dark-border bg-white dark:bg-[#0d0f17] text-slate-800 dark:text-slate-100 px-3.5 py-2.5 text-xs focus:outline-none"
+                  />
+                </div>
+              )}
+
+              {/* Conditional Fields: SIP Amount and SIP Due Date (Mutual Fund, Recurring Deposit) */}
+              {(formData.type === 'mutual_fund' || formData.type === 'recurring_deposit') && (
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1.5">Monthly SIP Amount</label>
+                    <input
+                      type="number"
+                      placeholder="₹ SIP Amount"
+                      value={formData.monthlySipAmount}
+                      onChange={(e) => setFormData({ ...formData, monthlySipAmount: e.target.value })}
+                      className="w-full rounded-xl border border-slate-200 dark:border-dark-border bg-white dark:bg-[#0d0f17] text-slate-800 dark:text-slate-100 px-3.5 py-2.5 text-xs focus:outline-none"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1.5">Next SIP Due Date</label>
+                    <input
+                      type="date"
+                      value={formData.sipDueDate}
+                      onChange={(e) => setFormData({ ...formData, sipDueDate: e.target.value })}
+                      className="w-full rounded-xl border border-slate-200 dark:border-dark-border bg-white dark:bg-[#0d0f17] text-slate-800 dark:text-slate-100 px-3.5 py-2.5 text-xs focus:outline-none"
+                    />
+                  </div>
+                </div>
+              )}
+
+              {/* Conditional Field: Maturity Date (FD, RD) */}
+              {(formData.type === 'fixed_deposit' || formData.type === 'recurring_deposit') && (
+                <div>
+                  <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1.5">Maturity Date</label>
+                  <input
+                    type="date"
+                    value={formData.maturityDate}
+                    onChange={(e) => setFormData({ ...formData, maturityDate: e.target.value })}
+                    className="w-full rounded-xl border border-slate-200 dark:border-dark-border bg-white dark:bg-[#0d0f17] text-slate-800 dark:text-slate-100 px-3.5 py-2.5 text-xs focus:outline-none"
+                  />
+                </div>
+              )}
+
+              {/* Notes */}
+              <div>
+                <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1.5">Notes</label>
+                <textarea
+                  placeholder="Optional details or folder reference..."
+                  rows="2"
+                  value={formData.notes}
+                  onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
+                  className="w-full rounded-xl border border-slate-200 dark:border-dark-border bg-white dark:bg-[#0d0f17] text-slate-800 dark:text-slate-100 px-3.5 py-2.5 text-xs focus:outline-none"
+                />
+              </div>
+
+              {/* Buttons */}
+              <button
+                type="submit"
+                className="w-full py-3 bg-secondary dark:bg-purple-650 hover:bg-indigo-700 dark:hover:bg-purple-750 text-white rounded-xl font-bold text-sm shadow-md transition-all mt-4 cursor-pointer text-center"
+              >
+                {editingItem ? 'Save Changes' : 'Confirm & Log'}
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
