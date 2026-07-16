@@ -28,6 +28,61 @@ const FREQUENCIES = [
   { value: 'one_time', label: 'One-Time' }
 ]
 
+const INSURANCE_COMPANY_SUGGESTIONS = [
+  'Life Insurance Corporation of India (LIC)',
+  'HDFC Life Insurance',
+  'SBI Life Insurance',
+  'ICICI Prudential Life Insurance',
+  'Max Life Insurance',
+  'Star Health & Allied Insurance',
+  'HDFC ERGO General Insurance',
+  'ICICI Lombard General Insurance',
+  'Care Health Insurance (Religare)',
+  'Niva Bupa Health Insurance',
+  'Bajaj Allianz General Insurance',
+  'Tata AIG General Insurance',
+  'SBI General Insurance',
+  'New India Assurance',
+  'United India Insurance'
+]
+
+const POLICY_NAME_SUGGESTIONS_BY_TYPE = {
+  health: [
+    'Family Optima Health Plan',
+    'Optima Secure Health Plan',
+    'Star Family Health Optima',
+    'Care Supreme Health Cover',
+    'ReAssure 2.0 Health Plan',
+    'Activ Health Platinum Plan',
+    'Corona Kavach Policy',
+    'Arogya Sanjeevani Policy'
+  ],
+  life: [
+    'LIC Tech Term Plan',
+    'LIC Jeevan Umang',
+    'HDFC Life Click 2 Protect',
+    'SBI Life eShield Next',
+    'ICICI Pru iProtect Smart',
+    'Max Life Smart Secure Plus'
+  ],
+  motor: [
+    'Two Wheeler Package Policy',
+    'Private Car Comprehensive Plan',
+    'Third Party Motor Liability Cover',
+    'Zero Depreciation Motor Policy'
+  ],
+  home: [
+    'Home Secure Policy',
+    'Bharat Griha Raksha Shield',
+    'Comprehensive Home Protection Cover'
+  ],
+  travel: [
+    'International Travel Insurance Plan',
+    'Student Travel Secure Cover',
+    'Schengen Travel Medical Plan'
+  ]
+}
+
 export default function Insurance() {
   const { language } = useLanguage()
   const [insurances, setInsurances] = useState([])
@@ -38,6 +93,8 @@ export default function Insurance() {
   // Modal State
   const [isOpen, setIsOpen] = useState(false)
   const [editingItem, setEditingItem] = useState(null)
+  const [showInsurerSuggestions, setShowInsurerSuggestions] = useState(false)
+  const [showTitleSuggestions, setShowTitleSuggestions] = useState(false)
   const [formData, setFormData] = useState({
     type: 'health',
     insurer: '',
@@ -51,6 +108,18 @@ export default function Insurance() {
     policyDocumentUrl: '',
     status: 'active'
   })
+
+  const filteredInsurers = useMemo(() => {
+    const list = INSURANCE_COMPANY_SUGGESTIONS
+    if (!formData.insurer) return list
+    return list.filter(item => item.toLowerCase().includes(formData.insurer.toLowerCase()))
+  }, [formData.insurer])
+
+  const currentTitles = useMemo(() => {
+    const list = POLICY_NAME_SUGGESTIONS_BY_TYPE[formData.type] || []
+    if (!formData.title) return list
+    return list.filter(item => item.toLowerCase().includes(formData.title.toLowerCase()))
+  }, [formData.type, formData.title])
 
   const fetchInsurances = async () => {
     try {
@@ -379,7 +448,7 @@ export default function Insurance() {
                     ))}
                   </select>
                 </div>
-                <div>
+                <div className="relative">
                   <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1.5">Insurer Company</label>
                   <input
                     type="text"
@@ -387,14 +456,33 @@ export default function Insurance() {
                     placeholder="e.g. LIC, Star Health"
                     value={formData.insurer}
                     onChange={(e) => setFormData({ ...formData, insurer: e.target.value })}
+                    onFocus={() => setShowInsurerSuggestions(true)}
+                    onBlur={() => setTimeout(() => setShowInsurerSuggestions(false), 200)}
                     className="w-full rounded-xl border border-slate-200 dark:border-dark-border bg-white dark:bg-[#0d0f17] text-slate-800 dark:text-slate-100 px-3.5 py-2.5 text-xs focus:outline-none"
                   />
+                  {showInsurerSuggestions && filteredInsurers.length > 0 && (
+                    <div className="absolute left-0 right-0 mt-1 bg-white dark:bg-[#131522] border border-slate-200 dark:border-dark-border rounded-xl shadow-xl max-h-48 overflow-y-auto z-20">
+                      {filteredInsurers.map((s) => (
+                        <button
+                          key={s}
+                          type="button"
+                          onClick={() => {
+                            setFormData({ ...formData, insurer: s })
+                            setShowInsurerSuggestions(false)
+                          }}
+                          className="w-full text-left px-4 py-2 hover:bg-slate-100 dark:hover:bg-slate-800 text-xs text-slate-700 dark:text-slate-200 transition-colors cursor-pointer"
+                        >
+                          {s}
+                        </button>
+                      ))}
+                    </div>
+                  )}
                 </div>
               </div>
 
               {/* Title & Policy Number */}
               <div className="grid grid-cols-2 gap-4">
-                <div className="col-span-2">
+                <div className="col-span-2 relative">
                   <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1.5">Policy Title / Name</label>
                   <input
                     type="text"
@@ -402,8 +490,27 @@ export default function Insurance() {
                     placeholder="e.g. Family Health Plan, Bike Insurance"
                     value={formData.title}
                     onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                    onFocus={() => setShowTitleSuggestions(true)}
+                    onBlur={() => setTimeout(() => setShowTitleSuggestions(false), 200)}
                     className="w-full rounded-xl border border-slate-200 dark:border-dark-border bg-white dark:bg-[#0d0f17] text-slate-800 dark:text-slate-100 px-3.5 py-2.5 text-xs focus:outline-none"
                   />
+                  {showTitleSuggestions && currentTitles.length > 0 && (
+                    <div className="absolute left-0 right-0 mt-1 bg-white dark:bg-[#131522] border border-slate-200 dark:border-dark-border rounded-xl shadow-xl max-h-48 overflow-y-auto z-20">
+                      {currentTitles.map((s) => (
+                        <button
+                          key={s}
+                          type="button"
+                          onClick={() => {
+                            setFormData({ ...formData, title: s })
+                            setShowTitleSuggestions(false)
+                          }}
+                          className="w-full text-left px-4 py-2 hover:bg-slate-100 dark:hover:bg-slate-800 text-xs text-slate-700 dark:text-slate-200 transition-colors cursor-pointer"
+                        >
+                          {s}
+                        </button>
+                      ))}
+                    </div>
+                  )}
                 </div>
                 <div className="col-span-2">
                   <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1.5">Policy Number</label>

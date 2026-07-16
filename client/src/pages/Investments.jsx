@@ -24,6 +24,64 @@ const INVESTMENT_TYPES = [
   { value: 'other', label: 'Other' }
 ]
 
+const SUGGESTIONS_BY_TYPE = {
+  mutual_fund: [
+    'SBI Bluechip Fund',
+    'HDFC Balanced Advantage Fund',
+    'ICICI Prudential Bluechip Fund',
+    'Parag Parikh Flexi Cap Fund',
+    'Axis Small Cap Fund',
+    'Nippon India Small Cap Fund',
+    'Mirae Asset Large Cap Fund',
+    'Quant Active Fund',
+    'UTI Nifty 55 Index Fund',
+    'Kotak Emerging Equity Fund',
+    'Tata Digital India Fund',
+    'DSP BlackRock Top 100 Fund'
+  ],
+  stock: [
+    'Reliance Industries (RELIANCE)',
+    'Tata Consultancy Services (TCS)',
+    'HDFC Bank (HDFCBANK)',
+    'ICICI Bank (ICICIBANK)',
+    'Infosys (INFY)',
+    'State Bank of India (SBIN)',
+    'Bharti Airtel (BHARTIALRT)',
+    'ITC Limited (ITC)',
+    'Larsen & Toubro (LT)',
+    'Tata Motors (TATAMOTORS)',
+    'Hindustan Unilever (HINDUNILVR)',
+    'Kotak Mahindra Bank (KOTAKBANK)',
+    'Axis Bank (AXISBANK)',
+    'Wipro (WIPRO)',
+    'Maruti Suzuki (MARUTI)'
+  ],
+  fixed_deposit: [
+    'State Bank of India (SBI) FD',
+    'HDFC Bank FD',
+    'ICICI Bank FD',
+    'Axis Bank FD',
+    'Kotak Mahindra Bank FD',
+    'Punjab National Bank (PNB) FD',
+    'Bank of Baroda FD',
+    'Post Office Term Deposit'
+  ],
+  recurring_deposit: [
+    'State Bank of India (SBI) RD',
+    'HDFC Bank RD',
+    'ICICI Bank RD',
+    'Axis Bank RD',
+    'Kotak Mahindra Bank RD',
+    'Post Office Recurring Deposit'
+  ],
+  ppf: [
+    'State Bank of India (SBI) PPF',
+    'HDFC Bank PPF',
+    'ICICI Bank PPF',
+    'Post Office PPF'
+  ]
+}
+
 export default function Investments() {
   const { language } = useLanguage()
   const [investments, setInvestments] = useState([])
@@ -34,6 +92,8 @@ export default function Investments() {
   // Modal State
   const [isOpen, setIsOpen] = useState(false)
   const [editingItem, setEditingItem] = useState(null)
+  const [showSuggestions, setShowSuggestions] = useState(false)
+  
   const [formData, setFormData] = useState({
     type: 'mutual_fund',
     title: '',
@@ -46,6 +106,12 @@ export default function Investments() {
     maturityDate: '',
     notes: ''
   })
+
+  const currentSuggestions = useMemo(() => {
+    const list = SUGGESTIONS_BY_TYPE[formData.type] || []
+    if (!formData.title) return list
+    return list.filter(item => item.toLowerCase().includes(formData.title.toLowerCase()))
+  }, [formData.type, formData.title])
 
   const fetchInvestments = async () => {
     try {
@@ -423,7 +489,7 @@ export default function Investments() {
               </div>
 
               {/* Title */}
-              <div>
+              <div className="relative">
                 <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1.5">Investment Name / Scheme</label>
                 <input
                   type="text"
@@ -431,8 +497,27 @@ export default function Investments() {
                   placeholder="e.g. SBI Bluechip, TCS Share, SBI FD"
                   value={formData.title}
                   onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                  onFocus={() => setShowSuggestions(true)}
+                  onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
                   className="w-full rounded-xl border border-slate-200 dark:border-dark-border bg-white dark:bg-[#0d0f17] text-slate-800 dark:text-slate-100 px-3.5 py-2.5 text-xs focus:outline-none focus:ring-1 focus:ring-secondary"
                 />
+                {showSuggestions && currentSuggestions.length > 0 && (
+                  <div className="absolute left-0 right-0 mt-1 bg-white dark:bg-[#131522] border border-slate-200 dark:border-dark-border rounded-xl shadow-xl max-h-48 overflow-y-auto z-20">
+                    {currentSuggestions.map((s) => (
+                      <button
+                        key={s}
+                        type="button"
+                        onClick={() => {
+                          setFormData({ ...formData, title: s })
+                          setShowSuggestions(false)
+                        }}
+                        className="w-full text-left px-4 py-2 hover:bg-slate-100 dark:hover:bg-slate-800 text-xs text-slate-705 dark:text-slate-200 transition-colors cursor-pointer"
+                      >
+                        {s}
+                      </button>
+                    ))}
+                  </div>
+                )}
               </div>
 
               {/* Invested and Current Amount */}
