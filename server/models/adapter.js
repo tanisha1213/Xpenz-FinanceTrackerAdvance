@@ -231,6 +231,10 @@ export class SupabaseQueryBuilder {
       throw err;
     }
   }
+
+  catch(onrejected) {
+    return this.then(null, onrejected);
+  }
 }
 
 // Supabase DB Model Adapter class
