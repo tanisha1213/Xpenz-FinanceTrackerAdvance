@@ -74,9 +74,18 @@ export const getDashboardSummary = async (req, res) => {
         
       Budget.findOne({ userId: req.userId }),
 
-      Loan.find({ userId: req.userId, status: 'active' }),
-      Investment.find({ userId: req.userId }),
-      Insurance.find({ userId: req.userId, status: 'active' })
+      Loan.find({ userId: req.userId, status: 'active' }).catch(err => {
+        console.warn('Dashboard: loans table query failed, using empty array. Error:', err.message);
+        return [];
+      }),
+      Investment.find({ userId: req.userId }).catch(err => {
+        console.warn('Dashboard: investments table query failed, using empty array. Error:', err.message);
+        return [];
+      }),
+      Insurance.find({ userId: req.userId, status: 'active' }).catch(err => {
+        console.warn('Dashboard: insurances table query failed, using empty array. Error:', err.message);
+        return [];
+      })
     ]);
 
     // Summarize current month's spending
