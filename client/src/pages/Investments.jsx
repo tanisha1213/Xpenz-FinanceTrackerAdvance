@@ -7,7 +7,7 @@ import {
 } from '../services/investmentService'
 import { formatCurrency, formatDate } from '../utils/format'
 import {
-  FiPlus, FiEdit2, FiTrash2, FiSearch, FiRefreshCw, FiTrendingUp, FiBriefcase, FiDollarSign, FiInfo
+  FiPlus, FiEdit2, FiTrash2, FiSearch, FiRefreshCw, FiTrendingUp, FiBriefcase, FiDollarSign, FiInfo, FiCalendar
 } from 'react-icons/fi'
 import { useLanguage } from '../context/LanguageContext'
 
@@ -372,9 +372,20 @@ export default function Investments() {
                         </span>
                       </div>
                       {inv.monthlySipAmount > 0 && (
-                        <div className="flex justify-between items-center text-xs border-t border-dashed border-slate-200 dark:border-dark-border/30 pt-2.5 text-slate-550 dark:text-slate-400">
-                          <span className="font-bold">Monthly SIP</span>
-                          <span className="font-black text-secondary dark:text-purple-400">{formatCurrency(inv.monthlySipAmount)}/mo</span>
+                        <div className="space-y-2 border-t border-dashed border-slate-200 dark:border-dark-border/30 pt-2.5">
+                          <div className="flex justify-between items-center text-xs text-slate-550 dark:text-slate-400">
+                            <span className="font-bold">Monthly SIP</span>
+                            <span className="font-black text-secondary dark:text-purple-400">{formatCurrency(inv.monthlySipAmount)}/mo</span>
+                          </div>
+                          {inv.sipDueDate && (
+                            <div className="flex justify-between items-center bg-slate-50 dark:bg-slate-900/40 p-2.5 rounded-xl border border-slate-100 dark:border-slate-800 text-xs mt-1">
+                              <span className="font-bold text-slate-400 flex items-center gap-1.5">
+                                <FiCalendar className="w-3.5 h-3.5 text-indigo-500" />
+                                Next SIP Due
+                              </span>
+                              <span className="font-black text-slate-700 dark:text-slate-200">{formatDate(inv.sipDueDate)}</span>
+                            </div>
+                          )}
                         </div>
                       )}
                     </div>
@@ -419,7 +430,10 @@ export default function Investments() {
                       </div>
                       {inv.maturityDate && (
                         <div className="flex justify-between items-center bg-slate-50 dark:bg-slate-900/40 p-2.5 rounded-xl border border-slate-100 dark:border-slate-800 text-xs">
-                          <span className="font-bold text-slate-400">Maturity Date</span>
+                          <span className="font-bold text-slate-400 flex items-center gap-1.5">
+                            <FiCalendar className="w-3.5 h-3.5 text-indigo-500" />
+                            Maturity Date
+                          </span>
                           <span className="font-black text-slate-700 dark:text-slate-200">{formatDate(inv.maturityDate)}</span>
                         </div>
                       )}

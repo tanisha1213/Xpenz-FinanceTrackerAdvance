@@ -382,14 +382,14 @@ export default function Insurance() {
                         {formatCurrency(ins.premiumAmount)}/{freqLabel.toLowerCase()}
                       </p>
                     </div>
-                    <div className="col-span-2">
-                      <div className="flex items-center gap-1.5 text-xs text-slate-550 dark:text-slate-400">
-                        <FiCalendar className="w-3.5 h-3.5 text-slate-400" />
-                        <span className="font-bold">Next Renewal:</span>
-                        <span className={`font-black ${isRenewalSoon && ins.status === 'active' ? 'text-amber-500' : 'text-slate-700 dark:text-slate-200'}`}>
-                          {formatDate(ins.renewalDate)}
-                        </span>
-                      </div>
+                    <div className="col-span-2 mt-1 bg-slate-50 dark:bg-slate-900/40 p-2.5 rounded-xl border border-slate-100 dark:border-slate-800 flex items-center justify-between text-xs">
+                      <span className="font-bold text-slate-400 flex items-center gap-1.5">
+                        <FiCalendar className="w-3.5 h-3.5 text-indigo-500" />
+                        Next Renewal
+                      </span>
+                      <span className={`font-black ${isRenewalSoon && ins.status === 'active' ? 'text-amber-500' : 'text-slate-700 dark:text-slate-200'}`}>
+                        {formatDate(ins.renewalDate)}
+                      </span>
                     </div>
                   </div>
                 </div>
