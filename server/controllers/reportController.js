@@ -8,15 +8,22 @@ const formatCurrency = (value) => `INR ${Math.round(value || 0).toLocaleString('
 export const getMonthlyReport = async (req, res) => {
   try {
     const now = new Date();
-    const year = Number(req.query.year) || now.getFullYear();
-    const isYearly = req.query.type === 'yearly';
-
     let start, end, periodStr;
-    if (isYearly) {
+
+    if (req.query.startDate && req.query.endDate) {
+      start = new Date(req.query.startDate);
+      const tempEnd = new Date(req.query.endDate);
+      end = new Date(tempEnd.getFullYear(), tempEnd.getMonth(), tempEnd.getDate() + 1);
+      
+      const formatOption = { day: '2-digit', month: 'short', year: 'numeric', timeZone: 'UTC' };
+      periodStr = `${start.toLocaleDateString('en-IN', formatOption)} to ${tempEnd.toLocaleDateString('en-IN', formatOption)}`;
+    } else if (req.query.type === 'yearly') {
+      const year = Number(req.query.year) || now.getFullYear();
       start = new Date(year, 0, 1);
       end = new Date(year + 1, 0, 1);
       periodStr = `${year} (Yearly)`;
     } else {
+      const year = Number(req.query.year) || now.getFullYear();
       const month = Number(req.query.month) || now.getMonth() + 1;
       start = new Date(year, month - 1, 1);
       end = new Date(year, month, 1);
@@ -41,6 +48,7 @@ export const getMonthlyReport = async (req, res) => {
       savings: summary.savings,
       budgetRemaining: summary.budgetRemaining,
       categoryBreakdown: summary.categoryBreakdown,
+      fullCategoryBreakdown: summary.fullCategoryBreakdown,
       monthlyTrend: summary.monthlyTrend,
       transactions
     };
@@ -98,19 +106,49 @@ export const getMonthlyReport = async (req, res) => {
       doc.y = startY + cardH + 25;
       doc.x = 48;
 
-      // 3. Category Breakdown Section
-      doc.fillColor('#1e293b').fontSize(14).font('Helvetica-Bold').text('Spending Breakdown by Category', 48, doc.y);
+      // 3. Tabular Report Section: Categorical Breakdown
+      doc.fillColor('#1e293b').fontSize(13).font('Helvetica-Bold').text('Categorical Breakdown Statement', 48, doc.y);
       doc.moveDown(0.5);
-      
-      if (report.categoryBreakdown && report.categoryBreakdown.length > 0) {
-        report.categoryBreakdown.forEach((item) => {
-          doc.fillColor('#475569').fontSize(10).font('Helvetica').text(`• ${item.category}: `, { continued: true });
-          doc.fillColor('#1e293b').font('Helvetica-Bold').text(formatCurrency(item.amount));
+
+      // Draw table header
+      const tableTop = doc.y;
+      doc.rect(48, tableTop, 514, 20).fill('#f8fafc');
+      doc.fillColor('#475569').fontSize(9).font('Helvetica-Bold').text('Category', 58, tableTop + 5);
+      doc.text('Type', 280, tableTop + 5);
+      doc.text('Total Amount', 450, tableTop + 5, { align: 'right', width: 100 });
+      doc.y = tableTop + 20;
+
+      // Draw rows
+      if (report.fullCategoryBreakdown && report.fullCategoryBreakdown.length > 0) {
+        report.fullCategoryBreakdown.forEach((item) => {
+          doc.strokeColor('#f1f5f9').lineWidth(1).moveTo(48, doc.y).lineTo(562, doc.y).stroke();
+          doc.moveDown(0.3);
+          
+          const rowY = doc.y;
+          doc.fillColor('#1e293b').fontSize(9.5).font('Helvetica-Bold').text(item.category, 58, rowY);
+          
+          const typeColor = item.type === 'income' ? '#059669' : '#b91c1c';
+          doc.fillColor(typeColor).font('Helvetica').text(item.type === 'income' ? 'Income' : 'Expense', 280, rowY);
+          
+          const amountColor = item.type === 'income' ? '#059669' : '#b91c1c';
+          doc.fillColor(amountColor).font('Helvetica-Bold').text(formatCurrency(item.amount), 450, rowY, { align: 'right', width: 100 });
+          
+          doc.y = rowY + 16;
         });
       } else {
-        doc.fillColor('#94a3b8').fontSize(10).font('Helvetica').text('No expense categories registered this period.');
+        doc.fillColor('#94a3b8').fontSize(9.5).font('Helvetica').text('No transaction logs recorded in this period.', 58, doc.y + 5);
+        doc.y += 20;
       }
-      doc.moveDown(1.5);
+
+      // Draw final balance summary at the bottom of the table
+      doc.strokeColor('#cbd5e1').lineWidth(1.5).moveTo(48, doc.y).lineTo(562, doc.y).stroke();
+      doc.moveDown(0.4);
+      const balanceY = doc.y;
+      doc.fillColor('#1e293b').fontSize(10.5).font('Helvetica-Bold').text('FINAL NET BALANCE', 58, balanceY);
+      const balanceColor = report.savings >= 0 ? '#059669' : '#dc2626';
+      doc.fillColor(balanceColor).text(formatCurrency(report.savings), 450, balanceY, { align: 'right', width: 100 });
+      
+      doc.y = balanceY + 25;
 
       // 4. Detailed Ledger Section
       doc.fillColor('#1e293b').fontSize(14).font('Helvetica-Bold').text('Detailed Ledger Statement', 48, doc.y);

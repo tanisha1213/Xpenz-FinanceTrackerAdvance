@@ -30,11 +30,27 @@ function InsightsReports() {
   // Reports State
   const now = new Date()
   const [period, setPeriod] = useState({ month: now.getMonth() + 1, year: now.getFullYear() })
+  const [periodType, setPeriodType] = useState('monthly') // 'monthly', 'yearly', 'custom'
+  const [startDate, setStartDate] = useState(() => {
+    return new Date(now.getFullYear(), now.getMonth(), 1).toISOString().slice(0, 10)
+  })
+  const [endDate, setEndDate] = useState(() => {
+    return new Date(now.getFullYear(), now.getMonth() + 1, 0).toISOString().slice(0, 10)
+  })
+
   const [report, setReport] = useState(null)
   const [reportLoading, setReportLoading] = useState(true)
   const [reportError, setReportError] = useState('')
 
-  const reportParams = useMemo(() => period, [period])
+  const reportParams = useMemo(() => {
+    if (periodType === 'custom') {
+      return { startDate, endDate }
+    } else if (periodType === 'yearly') {
+      return { type: 'yearly', year: period.year }
+    } else {
+      return { month: period.month, year: period.year }
+    }
+  }, [periodType, period, startDate, endDate])
 
   // Fetch AI insights
   useEffect(() => {
@@ -61,7 +77,13 @@ function InsightsReports() {
       const url = window.URL.createObjectURL(new Blob([response.data], { type: 'application/pdf' }))
       const link = document.createElement('a')
       link.href = url
-      link.setAttribute('download', `finance-report-${period.year}-${String(period.month).padStart(2, '0')}.pdf`)
+      let filename = `finance-report-${period.year}-${String(period.month).padStart(2, '0')}.pdf`
+      if (periodType === 'custom') {
+        filename = `finance-report-custom-${startDate}-to-${endDate}.pdf`
+      } else if (periodType === 'yearly') {
+        filename = `finance-report-${period.year}-yearly.pdf`
+      }
+      link.setAttribute('download', filename)
       document.body.appendChild(link)
       link.click()
       link.remove()
@@ -200,28 +222,69 @@ function InsightsReports() {
 
           {/* Period Filter Card */}
           <section className="rounded-2xl border border-slate-100 dark:border-dark-border bg-white dark:bg-dark-card p-5 shadow-premium flex flex-col md:flex-row gap-4 justify-between items-center">
-            <div className="flex items-center gap-3 w-full md:w-auto">
+            <div className="flex flex-wrap items-center gap-3 w-full md:w-auto">
               <FiCalendar className="text-secondary dark:text-purple-400 w-5 h-5 flex-shrink-0" />
-              <div className="grid gap-3 grid-cols-2 flex-1 md:w-72">
-                <select
-                  value={period.month}
-                  onChange={(e) => setPeriod({ ...period, month: Number(e.target.value) })}
-                  className="rounded-xl border border-slate-200 dark:border-dark-border px-3 py-2 text-sm bg-white dark:bg-dark-card text-slate-800 dark:text-slate-200 focus:outline-none cursor-pointer"
-                >
-                  {Array.from({ length: 12 }, (_, index) => (
-                    <option key={index + 1} value={index + 1}>
-                      {new Date(2024, index, 1).toLocaleString('en-IN', { month: 'long' })}
-                    </option>
-                  ))}
-                </select>
+              
+              <select
+                value={periodType}
+                onChange={(e) => setPeriodType(e.target.value)}
+                className="rounded-xl border border-slate-200 dark:border-dark-border px-3 py-2 text-sm bg-white dark:bg-dark-card text-slate-800 dark:text-slate-200 focus:outline-none cursor-pointer"
+              >
+                <option value="monthly">Monthly</option>
+                <option value="yearly">Yearly</option>
+                <option value="custom">Custom Range</option>
+              </select>
+
+              {periodType === 'monthly' && (
+                <div className="flex gap-2">
+                  <select
+                    value={period.month}
+                    onChange={(e) => setPeriod({ ...period, month: Number(e.target.value) })}
+                    className="rounded-xl border border-slate-200 dark:border-dark-border px-3 py-2 text-sm bg-white dark:bg-dark-card text-slate-800 dark:text-slate-200 focus:outline-none cursor-pointer"
+                  >
+                    {Array.from({ length: 12 }, (_, index) => (
+                      <option key={index + 1} value={index + 1}>
+                        {new Date(2024, index, 1).toLocaleString('en-IN', { month: 'long' })}
+                      </option>
+                    ))}
+                  </select>
+                  <input
+                    type="number"
+                    value={period.year}
+                    onChange={(e) => setPeriod({ ...period, year: Number(e.target.value) })}
+                    className="w-24 rounded-xl border border-slate-200 dark:border-dark-border px-3 py-2 text-sm bg-white dark:bg-dark-card text-slate-800 dark:text-slate-200 focus:outline-none"
+                    placeholder="Year"
+                  />
+                </div>
+              )}
+
+              {periodType === 'yearly' && (
                 <input
                   type="number"
                   value={period.year}
                   onChange={(e) => setPeriod({ ...period, year: Number(e.target.value) })}
-                  className="rounded-xl border border-slate-200 dark:border-dark-border px-3 py-2 text-sm bg-white dark:bg-dark-card text-slate-800 dark:text-slate-200 focus:outline-none"
+                  className="w-28 rounded-xl border border-slate-200 dark:border-dark-border px-3 py-2 text-sm bg-white dark:bg-dark-card text-slate-800 dark:text-slate-200 focus:outline-none"
                   placeholder="Year"
                 />
-              </div>
+              )}
+
+              {periodType === 'custom' && (
+                <div className="flex flex-wrap gap-2 items-center">
+                  <input
+                    type="date"
+                    value={startDate}
+                    onChange={(e) => setStartDate(e.target.value)}
+                    className="rounded-xl border border-slate-200 dark:border-dark-border px-3 py-2 text-sm bg-white dark:bg-dark-card text-slate-800 dark:text-slate-200 focus:outline-none cursor-pointer"
+                  />
+                  <span className="text-slate-400 text-xs">to</span>
+                  <input
+                    type="date"
+                    value={endDate}
+                    onChange={(e) => setEndDate(e.target.value)}
+                    className="rounded-xl border border-slate-200 dark:border-dark-border px-3 py-2 text-sm bg-white dark:bg-dark-card text-slate-800 dark:text-slate-200 focus:outline-none cursor-pointer"
+                  />
+                </div>
+              )}
             </div>
             
             <button
@@ -246,20 +309,20 @@ function InsightsReports() {
               {/* Summary Metric Counters */}
               <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
                 <div className="rounded-2xl border border-slate-100 dark:border-dark-border bg-white dark:bg-dark-card p-5 shadow-premium flex flex-col justify-between">
-                  <span className="text-xs font-bold text-slate-400 dark:text-dark-text-muted uppercase tracking-wider">Statement Income</span>
+                  <span className="text-xs font-bold text-slate-400 dark:text-dark-text-muted uppercase tracking-wider">Income</span>
                   <span className="text-2xl font-extrabold text-emerald-600 dark:text-emerald-400 mt-2">{formatCurrency(report.totalIncome)}</span>
                 </div>
                 <div className="rounded-2xl border border-slate-100 dark:border-dark-border bg-white dark:bg-dark-card p-5 shadow-premium flex flex-col justify-between">
-                  <span className="text-xs font-bold text-slate-400 dark:text-dark-text-muted uppercase tracking-wider">Statement Expenses</span>
+                  <span className="text-xs font-bold text-slate-400 dark:text-dark-text-muted uppercase tracking-wider">Expense</span>
                   <span className="text-2xl font-extrabold text-rose-600 dark:text-rose-455 mt-2">{formatCurrency(report.totalExpense)}</span>
                 </div>
                 <div className="rounded-2xl border border-slate-100 dark:border-dark-border bg-white dark:bg-dark-card p-5 shadow-premium flex flex-col justify-between">
-                  <span className="text-xs font-bold text-slate-400 dark:text-dark-text-muted uppercase tracking-wider">Period Savings</span>
+                  <span className="text-xs font-bold text-slate-400 dark:text-dark-text-muted uppercase tracking-wider">Savings</span>
                   <span className="text-2xl font-extrabold text-slate-800 dark:text-white mt-2">{formatCurrency(report.savings)}</span>
                 </div>
                 <div className="rounded-2xl border border-slate-100 dark:border-dark-border bg-white dark:bg-dark-card p-5 shadow-premium flex flex-col justify-between">
-                  <span className="text-xs font-bold text-slate-400 dark:text-dark-text-muted uppercase tracking-wider">Remaining Budget</span>
-                  <span className="text-2xl font-extrabold text-indigo-650 dark:text-purple-400 mt-2">{formatCurrency(report.budgetRemaining)}</span>
+                  <span className="text-xs font-bold text-slate-400 dark:text-dark-text-muted uppercase tracking-wider">Balance Left</span>
+                  <span className={`text-2xl font-extrabold mt-2 ${report.savings >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-450'}`}>{formatCurrency(report.savings)}</span>
                 </div>
               </div>
 
@@ -288,26 +351,57 @@ function InsightsReports() {
                   </div>
                 </section>
 
-                {/* List of Statement Transactions */}
+                {/* Categorical Breakdown Table */}
                 <section className="rounded-2xl border border-slate-100 dark:border-dark-border bg-white dark:bg-dark-card p-6 shadow-premium flex flex-col justify-between">
-                  <div>
-                    <h3 className="font-bold text-slate-800 dark:text-white text-lg mb-4">Period Logs</h3>
-                    <div className="space-y-3 max-h-72 overflow-y-auto pr-1">
-                      {report.transactions.length ? report.transactions.map((item) => (
-                        <div key={item._id} className="flex justify-between items-center p-3 rounded-xl border border-slate-50 dark:border-dark-border hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors">
-                          <div>
-                            <p className="font-bold text-slate-800 dark:text-slate-200 text-sm truncate max-w-[150px]">{item.title}</p>
-                            <p className="text-xs text-slate-400 dark:text-dark-text-muted font-medium">{item.category} • {formatDate(item.transactionDate)}</p>
-                          </div>
-                          <p className={`font-bold text-sm ${item.type === 'income' ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-450'}`}>
-                            {item.type === 'income' ? '+' : '-'}{formatCurrency(item.amount)}
-                          </p>
-                        </div>
-                      )) : (
-                        <p className="text-sm text-slate-400 dark:text-slate-500 py-12 text-center">
-                          No records exist for this period.
-                        </p>
-                      )}
+                  <div className="space-y-4">
+                    <h3 className="font-bold text-slate-800 dark:text-white text-lg">Categorical Statement</h3>
+                    <div className="max-h-72 overflow-y-auto pr-1">
+                      <table className="w-full text-xs text-left">
+                        <thead>
+                          <tr className="text-slate-400 dark:text-dark-text-muted text-[10px] font-bold uppercase border-b border-slate-100 dark:border-dark-border/40">
+                            <th className="pb-2">Category</th>
+                            <th className="pb-2">Type</th>
+                            <th className="pb-2 text-right">Amount</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-slate-50 dark:divide-dark-border/40">
+                          {report.fullCategoryBreakdown && report.fullCategoryBreakdown.length > 0 ? (
+                            report.fullCategoryBreakdown.map((item, idx) => (
+                              <tr key={`${item.category}-${item.type}-${idx}`} className="text-slate-700 dark:text-slate-200">
+                                <td className="py-2.5 font-bold text-slate-800 dark:text-white truncate max-w-[100px]">{item.category}</td>
+                                <td className="py-2.5 capitalize">
+                                  <span className={`px-1.5 py-0.5 rounded-full text-[8px] font-extrabold uppercase ${
+                                    item.type === 'income' ? 'bg-emerald-500/10 text-emerald-500' : 'bg-rose-500/10 text-rose-500'
+                                  }`}>
+                                    {item.type}
+                                  </span>
+                                </td>
+                                <td className={`py-2.5 text-right font-black ${
+                                  item.type === 'income' ? 'text-emerald-500' : 'text-rose-505'
+                                }`}>
+                                  {item.type === 'income' ? '+' : '-'}{formatCurrency(item.amount)}
+                                </td>
+                              </tr>
+                            ))
+                          ) : (
+                            <tr>
+                              <td colSpan="3" className="py-12 text-center text-slate-400 dark:text-slate-500">
+                                No categories found.
+                              </td>
+                            </tr>
+                          )}
+                        </tbody>
+                        <tfoot>
+                          <tr className="border-t border-slate-200 dark:border-dark-border font-extrabold text-slate-800 dark:text-white text-xs bg-slate-50/50 dark:bg-slate-900/40">
+                            <td className="py-3" colSpan="2">Net Balance</td>
+                            <td className={`py-3 text-right font-black ${
+                              report.savings >= 0 ? 'text-emerald-500' : 'text-rose-505'
+                            }`}>
+                              {report.savings >= 0 ? '+' : ''}{formatCurrency(report.savings)}
+                            </td>
+                          </tr>
+                        </tfoot>
+                      </table>
                     </div>
                   </div>
                 </section>

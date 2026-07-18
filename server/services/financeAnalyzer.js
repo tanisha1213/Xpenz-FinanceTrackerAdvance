@@ -16,12 +16,32 @@ export const summarizeTransactions = (transactions = [], budget = null) => {
   const budgetRemaining = monthlyBudget ? monthlyBudget - totalExpense : savings;
 
   const categoryTotals = expenses.reduce((acc, item) => {
-    acc[item.category] = (acc[item.category] || 0) + item.amount;
+    const categoryName = item.loanId ? 'Loans & EMIs' : item.category;
+    acc[categoryName] = (acc[categoryName] || 0) + item.amount;
     return acc;
   }, {});
 
   const categoryBreakdown = Object.entries(categoryTotals)
     .map(([category, amount]) => ({ category, amount }))
+    .sort((a, b) => b.amount - a.amount);
+
+  // Unified breakdown (both Income and Expense categories)
+  const fullCategoryTotals = transactions.reduce((acc, item) => {
+    if (item.type !== 'income' && item.type !== 'expense') return acc;
+    const categoryName = item.loanId ? 'Loans & EMIs' : item.category;
+    const key = `${item.type}_${categoryName}`;
+    if (!acc[key]) {
+      acc[key] = {
+        category: categoryName,
+        type: item.type,
+        amount: 0
+      };
+    }
+    acc[key].amount += item.amount;
+    return acc;
+  }, {});
+
+  const fullCategoryBreakdown = Object.values(fullCategoryTotals)
     .sort((a, b) => b.amount - a.amount);
 
   const monthlyBuckets = new Map();
@@ -43,6 +63,7 @@ export const summarizeTransactions = (transactions = [], budget = null) => {
     budgetRemaining,
     monthlyBudget,
     categoryBreakdown,
+    fullCategoryBreakdown,
     monthlyTrend
   };
 };
