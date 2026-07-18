@@ -138,6 +138,75 @@ export const predictExpense = async ({ transactions, budget, investments = [], i
     advice.push("Outstanding! You maintain an exceptionally healthy, well-diversified financial profile.");
   }
 
+  // Calculate Cashflow Run-out status
+  const totalCashBalance = accounts.reduce((sum, acc) => sum + (acc.balance || 0), 0);
+  const now = new Date();
+  const currentDay = now.getDate();
+  const totalDaysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+  const daysRemaining = Math.max(1, totalDaysInMonth - currentDay);
+  const dailySpendRate = currentDay > 0 ? (totalExpense / currentDay) : 0;
+  
+  let daysOfCashRemaining = 999;
+  if (dailySpendRate > 0) {
+    daysOfCashRemaining = Math.max(0, Math.round(totalCashBalance / dailySpendRate));
+  }
+  const willRunOut = dailySpendRate > 0 && (totalCashBalance < (dailySpendRate * daysRemaining));
+
+  // Cheaper Alternatives & Spend Reduction suggestions
+  const cheaperAlternatives = [];
+  const spendMap = {};
+  transactions.forEach(t => {
+    if (t.type === 'expense' && t.category) {
+      spendMap[t.category] = (spendMap[t.category] || 0) + (t.amount || 0);
+    }
+  });
+
+  const sortedCategories = Object.entries(spendMap).sort((a, b) => b[1] - a[1]);
+  if (sortedCategories.length > 0) {
+    sortedCategories.slice(0, 3).forEach(([cat, amt]) => {
+      const lowerCat = cat.toLowerCase();
+      if (lowerCat.includes('food') || lowerCat.includes('dining') || lowerCat.includes('restaurant')) {
+        cheaperAlternatives.push({
+          category: cat,
+          amount: amt,
+          suggestion: "Reduce dining out/orders. Prep meals at home to cut costs by ~60%."
+        });
+      } else if (lowerCat.includes('entertainment') || lowerCat.includes('leisure') || lowerCat.includes('movie')) {
+        cheaperAlternatives.push({
+          category: cat,
+          amount: amt,
+          suggestion: "Audit active streaming apps. Keep one, cancel the rest to save ~80%."
+        });
+      } else if (lowerCat.includes('shopping') || lowerCat.includes('clothes') || lowerCat.includes('apparel')) {
+        cheaperAlternatives.push({
+          category: cat,
+          amount: amt,
+          suggestion: "Apply a 48-hour cool-off rule before buying non-essentials to save ~40%."
+        });
+      } else if (lowerCat.includes('commute') || lowerCat.includes('fuel') || lowerCat.includes('travel') || lowerCat.includes('cab')) {
+        cheaperAlternatives.push({
+          category: cat,
+          amount: amt,
+          suggestion: "Consolidate travel routes or switch to public transit to save ~30%."
+        });
+      } else {
+        cheaperAlternatives.push({
+          category: cat,
+          amount: amt,
+          suggestion: `Curb discretionary outlays in ${cat}. Set a category budget to save ~20%.`
+        });
+      }
+    });
+  }
+
+  if (cheaperAlternatives.length === 0) {
+    cheaperAlternatives.push({
+      category: 'General',
+      amount: 0,
+      suggestion: "Create category budgets to begin optimizing your monthly cash outflows."
+    });
+  }
+
   return {
     predictedExpense: analysis.predictedExpense,
     confidence: analysis.confidence,
@@ -147,6 +216,14 @@ export const predictExpense = async ({ transactions, budget, investments = [], i
       score,
       tier,
       advice
+    },
+    cashflowForecast: {
+      totalCashBalance,
+      dailySpendRate: Math.round(dailySpendRate),
+      daysRemaining,
+      daysOfCashRemaining,
+      willRunOut,
+      cheaperAlternatives
     }
   };
 };
