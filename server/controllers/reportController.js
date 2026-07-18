@@ -5,18 +5,35 @@ import { summarizeTransactions } from '../services/financeAnalyzer.js';
 
 const formatCurrency = (value) => `INR ${Math.round(value || 0).toLocaleString('en-IN')}`;
 
+const safeFormatDate = (dateVal) => {
+  if (!dateVal) return '-';
+  try {
+    const d = new Date(dateVal);
+    if (isNaN(d.getTime())) return '-';
+    return d.toLocaleDateString('en-IN', { timeZone: 'UTC', day: '2-digit', month: 'short' });
+  } catch (err) {
+    return '-';
+  }
+};
+
 export const getMonthlyReport = async (req, res) => {
   try {
     const now = new Date();
+    const isYearly = req.query.type === 'yearly';
+    const isCustom = !!(req.query.startDate && req.query.endDate);
     let start, end, periodStr;
 
-    if (req.query.startDate && req.query.endDate) {
+    if (isCustom) {
       start = new Date(req.query.startDate);
       const tempEnd = new Date(req.query.endDate);
+      if (isNaN(start.getTime()) || isNaN(tempEnd.getTime())) {
+        return res.status(400).json({
+          success: false,
+          message: 'Invalid startDate or endDate parameters'
+        });
+      }
       end = new Date(tempEnd.getFullYear(), tempEnd.getMonth(), tempEnd.getDate() + 1);
-      
-      const formatOption = { day: '2-digit', month: 'short', year: 'numeric', timeZone: 'UTC' };
-      periodStr = `${start.toLocaleDateString('en-IN', formatOption)} to ${tempEnd.toLocaleDateString('en-IN', formatOption)}`;
+      periodStr = `${safeFormatDate(start)} to ${safeFormatDate(tempEnd)}`;
     } else if (req.query.type === 'yearly') {
       const year = Number(req.query.year) || now.getFullYear();
       start = new Date(year, 0, 1);
@@ -163,7 +180,7 @@ export const getMonthlyReport = async (req, res) => {
             doc.addPage();
           }
           
-          const dateStr = new Date(item.transactionDate).toLocaleDateString('en-IN', { timeZone: 'UTC', day: '2-digit', month: 'short' });
+          const dateStr = safeFormatDate(item.transactionDate);
           const typeStr = item.type === 'income' ? 'Income' : item.type === 'expense' ? 'Expense' : 'Transfer';
           
           let accountInfo = item.accountId?.name || 'Cash';
