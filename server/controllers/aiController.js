@@ -1,5 +1,8 @@
 import Transaction from '../models/Transaction.js';
 import Budget from '../models/Budget.js';
+import Investment from '../models/Investment.js';
+import Insurance from '../models/Insurance.js';
+import Loan from '../models/Loan.js';
 import { generateAIInsights, predictExpense } from '../services/aiService.js';
 
 export const generateInsights = async (req, res) => {
@@ -23,9 +26,14 @@ export const generateInsights = async (req, res) => {
 
 export const predictSpending = async (req, res) => {
   try {
-    const transactions = await Transaction.find({ userId: req.userId });
-    const budget = await Budget.findOne({ userId: req.userId });
-    const prediction = await predictExpense({ transactions, budget });
+    const [transactions, budget, investments, insurances, loans] = await Promise.all([
+      Transaction.find({ userId: req.userId }),
+      Budget.findOne({ userId: req.userId }),
+      Investment.find({ userId: req.userId }).catch(() => []),
+      Insurance.find({ userId: req.userId }).catch(() => []),
+      Loan.find({ userId: req.userId }).catch(() => [])
+    ]);
+    const prediction = await predictExpense({ transactions, budget, investments, insurances, loans });
 
     res.status(200).json({
       success: true,

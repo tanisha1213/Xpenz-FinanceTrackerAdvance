@@ -209,6 +209,38 @@ function InsightsReports() {
                     Warning: Projected month outflows exceed your global monthly limit. Consider restricting discretionary categories immediately.
                   </div>
                 )}
+
+                {predictions.financialInclusion && (
+                  <div className="border-t border-slate-100 dark:border-dark-border/40 pt-4 space-y-3">
+                    <div>
+                      <p className="text-xs font-bold text-slate-400 dark:text-dark-text-muted uppercase tracking-wider">Financial Inclusion Score</p>
+                      <div className="flex justify-between items-baseline mt-1">
+                        <span className="text-2xl font-black text-slate-800 dark:text-white">
+                          {predictions.financialInclusion.score}/100
+                        </span>
+                        <span className={`text-[10px] font-extrabold uppercase px-2.5 py-0.5 rounded-full ${
+                          predictions.financialInclusion.tier === 'Excellent'
+                            ? 'bg-emerald-500/10 text-emerald-500'
+                            : predictions.financialInclusion.tier === 'Good'
+                            ? 'bg-blue-500/10 text-blue-500'
+                            : predictions.financialInclusion.tier === 'Fair'
+                            ? 'bg-amber-500/10 text-amber-500'
+                            : 'bg-rose-500/10 text-rose-500'
+                        }`}>
+                          {predictions.financialInclusion.tier} Tier
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="space-y-1.5 max-h-36 overflow-y-auto pr-1">
+                      {predictions.financialInclusion.advice.map((item, idx) => (
+                        <p key={idx} className="text-[10px] leading-relaxed text-slate-500 dark:text-dark-text-muted font-medium bg-slate-50/40 dark:bg-slate-900/30 p-2 rounded-lg border border-slate-50 dark:border-dark-border/20">
+                          • {item}
+                        </p>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
             </section>
           </div>
