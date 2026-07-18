@@ -159,6 +159,10 @@ export const getMonthlyReport = async (req, res) => {
 
       if (report.transactions && report.transactions.length > 0) {
         report.transactions.slice(0, 150).forEach((item) => {
+          if (doc.y > 720) {
+            doc.addPage();
+          }
+          
           const dateStr = new Date(item.transactionDate).toLocaleDateString('en-IN', { timeZone: 'UTC', day: '2-digit', month: 'short' });
           const typeStr = item.type === 'income' ? 'Income' : item.type === 'expense' ? 'Expense' : 'Transfer';
           
@@ -167,15 +171,16 @@ export const getMonthlyReport = async (req, res) => {
             accountInfo = `${item.accountId?.name || 'Cash'} -> ${item.toAccountId?.name || 'Cash'}`;
           }
 
-          const txDesc = `${dateStr}  |  ${item.title}  [${typeStr} - ${accountInfo}]`;
+          const txDesc = `${dateStr}  |  ${item.title || 'Untitled'}  [${typeStr} - ${accountInfo}]`;
           const txAmount = formatCurrency(item.amount);
 
-          // Render transaction line
-          doc.fillColor('#334155').fontSize(9.5).font('Helvetica').text(txDesc, 48, doc.y, { continued: true });
+          const rowY = doc.y;
+          doc.fillColor('#334155').fontSize(9.5).font('Helvetica').text(txDesc, 48, rowY, { width: 380 });
           
           const amountColor = item.type === 'income' ? '#059669' : item.type === 'expense' ? '#dc2626' : '#475569';
-          doc.fillColor(amountColor).font('Helvetica-Bold').text(`   ${txAmount}`, { align: 'right' });
-          doc.moveDown(0.1);
+          doc.fillColor(amountColor).font('Helvetica-Bold').text(txAmount, 430, rowY, { align: 'right', width: 132 });
+          
+          doc.y = rowY + 16;
         });
       } else {
         doc.fillColor('#94a3b8').fontSize(10).font('Helvetica').text('No transaction logs recorded in this period.');
