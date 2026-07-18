@@ -16,6 +16,14 @@ export const categories = [
   'Healthcare',
   'Education',
   'Investments',
+  'Grocery',
+  'Home Appliance',
+  'EMI',
+  'Insurance',
+  'Municipal Tax and Other',
+  'Income Tax and Other',
+  'Electricity',
+  'Telephone (Wifi, Recharge)',
   'Other'
 ]
 

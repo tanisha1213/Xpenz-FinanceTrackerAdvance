@@ -155,6 +155,9 @@ export default function Investments() {
   })
 
   const currentSuggestions = useMemo(() => {
+    if (formData.type !== 'mutual_fund' && formData.type !== 'fixed_deposit') {
+      return []
+    }
     const list = SUGGESTIONS_BY_TYPE[formData.type] || []
     if (!formData.title) return list
     return list.filter(item => item.toLowerCase().includes(formData.title.toLowerCase()))

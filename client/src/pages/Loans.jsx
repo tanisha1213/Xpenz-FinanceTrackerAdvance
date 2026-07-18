@@ -961,8 +961,8 @@ function Loans() {
                     onChange={(e) => setForm({ ...form, type: e.target.value })}
                     className="rounded-xl border border-slate-200 dark:border-dark-border px-3 py-2 text-sm bg-white dark:bg-dark-card text-slate-800 dark:text-slate-200 focus:outline-none cursor-pointer"
                   >
-                    <option value="borrowed">Borrowed (Liability)</option>
-                    <option value="lent">Lent Out (Receivable)</option>
+                    <option value="borrowed">Borrowed (Money Taken - I Owe)</option>
+                    <option value="lent">Lent (Money Given - They Owe Me)</option>
                   </select>
                 </div>
               </div>

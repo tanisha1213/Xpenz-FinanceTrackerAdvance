@@ -102,6 +102,25 @@ function Transactions() {
   })
 
   const [form, setForm] = useState(emptyForm)
+  const [customCategories, setCustomCategories] = useState(() => {
+    try {
+      const saved = localStorage.getItem('xpenz_custom_categories')
+      return saved ? JSON.parse(saved) : []
+    } catch {
+      return []
+    }
+  })
+  const [isCustomCategory, setIsCustomCategory] = useState(false)
+  const [newCategoryInput, setNewCategoryInput] = useState('')
+
+  const allCategories = useMemo(() => {
+    const base = categories.filter(c => c !== 'Other')
+    const combined = [...base, ...customCategories]
+    if (form.category && !combined.includes(form.category) && form.category !== 'Add Custom Category...') {
+      combined.push(form.category)
+    }
+    return [...combined, 'Other', 'Add Custom Category...']
+  }, [customCategories, form.category])
   const [isCustomBank, setIsCustomBank] = useState(false)
   const [editingId, setEditingId] = useState(null)
   const [showForm, setShowForm] = useState(false)
@@ -243,9 +262,16 @@ function Transactions() {
 
   const openCreate = () => {
     setEditingId(null)
+    setIsCustomCategory(false)
+    setNewCategoryInput('')
+    const initialAccId = accounts[0]?._id || ''
+    const initialAcc = accounts.find(acc => acc._id === initialAccId)
+    const isCashAcc = initialAcc && (initialAcc.type === 'cash' || initialAcc.name.toLowerCase().includes('cash'))
+    
     setForm({
       ...emptyForm,
-      accountId: accounts[0]?._id || ''
+      accountId: initialAccId,
+      paymentMethod: isCashAcc ? 'cash' : emptyForm.paymentMethod
     })
     setShowForm(true)
     setMessage('')
@@ -253,6 +279,8 @@ function Transactions() {
 
   const openEdit = (item) => {
     setEditingId(item._id)
+    setIsCustomCategory(false)
+    setNewCategoryInput('')
     setForm({
       type: item.type,
       title: item.title,
@@ -281,6 +309,13 @@ function Transactions() {
     const val = type === 'checkbox' ? checked : value
     
     let extraChanges = {}
+
+    if (name === 'accountId') {
+      const selectedAcc = accounts.find(acc => acc._id === val)
+      if (selectedAcc && (selectedAcc.type === 'cash' || selectedAcc.name.toLowerCase().includes('cash'))) {
+        extraChanges.paymentMethod = 'cash'
+      }
+    }
 
     // Compute preview values including this input change
     const currentIsLoan = name === 'isLoan' ? !!val : !!form.isLoan
@@ -543,7 +578,7 @@ function Transactions() {
                 className="w-full rounded-xl border border-slate-200 dark:border-dark-border bg-white dark:bg-dark-card text-slate-800 dark:text-slate-200 px-3 py-2 text-sm focus:outline-none cursor-pointer"
               >
                 <option value="">{t('allCategories')}</option>
-                {categories.map((c) => (
+                {allCategories.filter(c => c !== 'Add Custom Category...').map((c) => (
                   <option key={c} value={c}>{c}</option>
                 ))}
               </select>
@@ -1138,15 +1173,60 @@ function Transactions() {
                   <label className="block text-xs font-bold text-slate-500 dark:text-dark-text-muted uppercase mb-1">{t('category')}</label>
                   <select
                     name="category"
-                    value={form.category}
-                    onChange={handleFormChange}
+                    value={isCustomCategory ? 'Add Custom Category...' : form.category}
+                    onChange={(e) => {
+                      const val = e.target.value
+                      if (val === 'Add Custom Category...') {
+                        setIsCustomCategory(true)
+                        setNewCategoryInput('')
+                        setForm(prev => ({ ...prev, category: '' }))
+                      } else {
+                        setIsCustomCategory(false)
+                        setForm(prev => ({ ...prev, category: val }))
+                      }
+                    }}
                     disabled={form.isLoan}
                     className="w-full rounded-xl border border-slate-200 dark:border-dark-border px-3 py-2.5 text-sm bg-white dark:bg-dark-card text-slate-800 dark:text-slate-200 focus:outline-none disabled:opacity-60 cursor-pointer"
                   >
-                    {categories.map((c) => (
+                    {allCategories.map((c) => (
                       <option key={c} value={c}>{c}</option>
                     ))}
                   </select>
+
+                  {isCustomCategory && (
+                    <div className="mt-2.5 flex gap-2">
+                      <input
+                        type="text"
+                        placeholder="New category name"
+                        value={newCategoryInput}
+                        onChange={(e) => setNewCategoryInput(e.target.value)}
+                        className="w-full rounded-xl border border-slate-200 dark:border-dark-border px-3 py-2 text-sm bg-white dark:bg-dark-card text-slate-800 dark:text-slate-200 focus:outline-none"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const cleanVal = newCategoryInput.trim()
+                          if (!cleanVal) return
+                          
+                          // Capitalize first letter
+                          const formattedVal = cleanVal.charAt(0).toUpperCase() + cleanVal.slice(1)
+                          
+                          if (!allCategories.includes(formattedVal)) {
+                            const updated = [...customCategories, formattedVal]
+                            setCustomCategories(updated)
+                            localStorage.setItem('xpenz_custom_categories', JSON.stringify(updated))
+                          }
+                          
+                          setForm(prev => ({ ...prev, category: formattedVal }))
+                          setIsCustomCategory(false)
+                          setNewCategoryInput('')
+                        }}
+                        className="rounded-xl bg-secondary dark:bg-purple-650 px-4 py-2 text-xs font-bold text-white hover:opacity-90 cursor-pointer"
+                      >
+                        Add
+                      </button>
+                    </div>
+                  )}
                 </div>
                 <div>
                   <label className="block text-xs font-bold text-slate-500 dark:text-dark-text-muted uppercase mb-1">{t('transactionDate')}</label>
