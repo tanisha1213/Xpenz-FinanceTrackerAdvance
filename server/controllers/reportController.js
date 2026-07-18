@@ -79,7 +79,7 @@ export const getMonthlyReport = async (req, res) => {
 
       // 1. App Header Block
       doc.fillColor('#4f46e5').fontSize(24).font('Helvetica-Bold').text('Xpenz', 48, 48);
-      doc.fillColor('#475569').fontSize(10).font('Helvetica').text('Smart Personal Finance Companion', 48, 76);
+      doc.fillColor('#475569').fontSize(10).font('Helvetica').text('Personal Finance Tracker Statement', 48, 76);
       
       // Period Right-Aligned
       doc.fillColor('#1e293b').fontSize(11).font('Helvetica-Bold').text(`Statement Period: ${report.period}`, 350, 48, { align: 'right', width: 212 });

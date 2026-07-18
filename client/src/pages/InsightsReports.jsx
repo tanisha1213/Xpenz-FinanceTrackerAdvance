@@ -297,7 +297,7 @@ ${alts.map(a => `• ${a.category}: ${a.suggestion}`).join('\n')}
                     </div>
                     <div className="flex justify-between text-xs font-bold text-slate-500 mt-1">
                       <span>{predictions.confidence || 0}% Accuracy</span>
-                      <span className="text-slate-400 dark:text-dark-text-muted">Dynamic model</span>
+                      <span className="text-slate-400 dark:text-dark-text-muted">Confidence rate</span>
                     </div>
                   </div>
                 </div>
