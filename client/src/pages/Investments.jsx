@@ -352,8 +352,8 @@ export default function Investments() {
       </div>
 
       {/* 2-Column Main Layout: Investments Grid (2 cols) & Calendar (1 col) */}
-      <div className="grid gap-6 lg:grid-cols-3">
-        <div className="lg:col-span-2 space-y-6">
+      <div className="grid gap-6 lg:grid-cols-3 w-full overflow-hidden">
+        <div className="lg:col-span-2 space-y-6 min-w-0">
           {loading ? (
             <div className="flex flex-col items-center justify-center py-12">
               <FiRefreshCw className="w-8 h-8 text-secondary dark:text-purple-400 animate-spin" />
@@ -366,7 +366,7 @@ export default function Investments() {
               <p className="text-slate-400 dark:text-dark-text-muted text-xs mt-1 max-w-xs mx-auto">Click "Add Investment" to start building your visual wealth portfolio.</p>
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-5 w-full min-w-0 overflow-hidden">
               {filteredInvestments.map((inv) => {
                 const profit = Number(inv.currentValue || 0) - Number(inv.investedAmount || 0)
                 const profitPct = Number(inv.investedAmount || 0) > 0 ? (profit / Number(inv.investedAmount)) * 100 : 0

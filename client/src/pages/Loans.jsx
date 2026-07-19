@@ -443,7 +443,7 @@ function Loans() {
       )}
 
       {/* Statistics Cards Grid */}
-      <div className="grid gap-3 grid-cols-2 sm:grid-cols-3 lg:grid-cols-5" id="loans-stats-grid-tour">
+      <div className="grid gap-3 grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 w-full overflow-hidden" id="loans-stats-grid-tour">
         <div className="bg-white dark:bg-dark-card border border-slate-100 dark:border-dark-border p-3 sm:p-4 rounded-2xl shadow-sm min-w-0">
           <p className="text-[9px] sm:text-[10px] font-bold text-slate-400 uppercase tracking-wider truncate">Left to Pay</p>
           <p className="text-base sm:text-lg font-black text-slate-800 dark:text-white mt-1 truncate">{formatCurrency(stats.totalRemaining)}</p>
@@ -469,11 +469,11 @@ function Loans() {
       </div>
 
       {/* Main Two-Column Layout */}
-      <div className="grid gap-6 lg:grid-cols-4">
+      <div className="grid gap-6 lg:grid-cols-4 w-full overflow-hidden">
         {/* Left Side: Search, Filters, and Loans Cards list */}
-        <div className="lg:col-span-3 space-y-6">
+        <div className="lg:col-span-3 space-y-6 min-w-0">
           {/* Forecast & Projections Banner Card */}
-          <div className="bg-gradient-to-r from-[#8B5CF6]/5 via-[#4f46e5]/5 to-indigo-500/5 dark:from-[#8B5CF6]/10 dark:to-indigo-500/10 border border-[#8B5CF6]/10 rounded-2xl p-4 sm:p-5 shadow-premium" id="loans-payoff-date-tour">
+          <div className="bg-gradient-to-r from-[#8B5CF6]/5 via-[#4f46e5]/5 to-indigo-500/5 dark:from-[#8B5CF6]/10 dark:to-indigo-500/10 border border-[#8B5CF6]/10 rounded-2xl p-4 sm:p-5 shadow-premium min-w-0 overflow-hidden" id="loans-payoff-date-tour">
             <h3 className="text-sm font-bold text-slate-800 dark:text-white mb-3 flex items-center gap-1.5">
               <FiPercent className="text-secondary dark:text-purple-400" />
               Expected Payoff Date
@@ -499,7 +499,7 @@ function Loans() {
           </div>
 
           {/* Filters Toolbar */}
-          <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between bg-white dark:bg-dark-card border border-slate-100 dark:border-dark-border p-3.5 rounded-2xl shadow-sm" id="loans-filter-tour">
+          <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between bg-white dark:bg-dark-card border border-slate-100 dark:border-dark-border p-3.5 rounded-2xl shadow-sm w-full min-w-0 overflow-hidden" id="loans-filter-tour">
             <div className="flex bg-slate-150/40 dark:bg-slate-900/60 p-1 rounded-xl w-full max-w-full overflow-x-auto scrollbar-none">
               {['all', 'active', 'overdue', 'completed', 'thisMonth'].map((tab) => (
                 <button
@@ -554,13 +554,13 @@ function Loans() {
                 return (
                   <div
                     key={loan._id}
-                    className={`bg-white dark:bg-dark-card border rounded-2xl shadow-premium overflow-hidden transition-all duration-200 ${
+                    className={`bg-white dark:bg-dark-card border rounded-2xl shadow-premium overflow-hidden transition-all duration-200 min-w-0 w-full ${
                       isOverdue 
                         ? 'border-rose-500 ring-1 ring-rose-500/20' 
                         : 'border-slate-100 dark:border-dark-border'
                     }`}
                   >
-                    <div className="p-5 flex flex-col gap-5">
+                    <div className="p-4 sm:p-5 flex flex-col gap-5 min-w-0">
                       
                       {/* Top Header: Title, Lender and Badge */}
                       <div className="flex justify-between items-start gap-3">
@@ -646,7 +646,7 @@ function Loans() {
                     </div>
 
                     {/* Progress Bar */}
-                    <div className="px-5 pb-4">
+                    <div className="px-4 sm:px-5 pb-4">
                       <div className="flex justify-between items-center text-[10px] text-slate-400 dark:text-dark-text-muted font-bold mb-1.5">
                         <span>{pct}% Paid</span>
                         <span>{loan.totalInstallments - loan.installmentsPaid} installments left</span>
@@ -735,8 +735,8 @@ function Loans() {
         </div>
 
         {/* Right Side: EMI Calendar and Selected Date Reminders */}
-        <div className="lg:col-span-1 space-y-6">
-          <div className="bg-white dark:bg-dark-card border border-slate-100 dark:border-dark-border rounded-2xl p-4 shadow-premium space-y-4">
+        <div className="lg:col-span-1 space-y-6 min-w-0">
+          <div className="bg-white dark:bg-dark-card border border-slate-100 dark:border-dark-border rounded-2xl p-4 shadow-premium space-y-4 overflow-hidden w-full">
             
             {/* Calendar Header */}
             <div className="flex justify-between items-center">

@@ -342,8 +342,8 @@ export default function Insurance() {
       </div>
 
       {/* 2-Column Main Layout: Insurance Grid (2 cols) & Calendar (1 col) */}
-      <div className="grid gap-6 lg:grid-cols-3">
-        <div className="lg:col-span-2 space-y-6">
+      <div className="grid gap-6 lg:grid-cols-3 w-full overflow-hidden">
+        <div className="lg:col-span-2 space-y-6 min-w-0">
           {loading ? (
             <div className="flex flex-col items-center justify-center py-12">
               <FiRefreshCw className="w-8 h-8 text-secondary dark:text-purple-400 animate-spin" />
@@ -356,7 +356,7 @@ export default function Insurance() {
               <p className="text-slate-400 dark:text-dark-text-muted text-xs mt-1 max-w-xs mx-auto">Click "Add Insurance" to record your coverage limits and premium dates.</p>
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-5 w-full min-w-0 overflow-hidden">
               {filteredInsurances.map((ins) => {
                 const typeLabel = INSURANCE_TYPES.find((t) => t.value === ins.type)?.label || ins.type
                 const freqLabel = FREQUENCIES.find((f) => f.value === ins.paymentFrequency)?.label || ins.paymentFrequency
