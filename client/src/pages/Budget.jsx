@@ -62,9 +62,9 @@ function Budget() {
       {message && <div className="rounded-xl border border-emerald-100 dark:border-emerald-950/20 bg-emerald-50/50 dark:bg-emerald-950/5 p-4 text-sm text-emerald-700 dark:text-emerald-400">{message}</div>}
       {budget.error && <div className="rounded-xl border border-rose-100 dark:border-rose-950/20 bg-rose-50/50 dark:bg-rose-950/5 p-4 text-sm text-rose-700 dark:text-rose-400">{budget.error}</div>}
 
-      <div className="grid gap-6 lg:grid-cols-3">
+      <div className="grid gap-6 lg:grid-cols-3 w-full overflow-hidden">
         {/* Budget Editor Panel */}
-        <section className="rounded-2xl border border-slate-100 dark:border-dark-border bg-white dark:bg-dark-card p-6 shadow-premium lg:col-span-2">
+        <section className="rounded-2xl border border-slate-100 dark:border-dark-border bg-white dark:bg-dark-card p-4 sm:p-6 shadow-premium lg:col-span-2 min-w-0 overflow-hidden">
           <form onSubmit={save} className="space-y-6">
             <div>
               <label className="block text-xs font-bold text-slate-500 dark:text-dark-text-muted uppercase mb-2">{t('monthlyBudgetLimit')}</label>
@@ -161,7 +161,7 @@ function Budget() {
         </section>
 
         {/* Budget Status Sidebar Info */}
-        <section id="budget-progress-sidebar-tour" className="rounded-2xl border border-slate-100 dark:border-dark-border bg-white dark:bg-dark-card p-6 shadow-premium h-fit space-y-6">
+        <section id="budget-progress-sidebar-tour" className="rounded-2xl border border-slate-100 dark:border-dark-border bg-white dark:bg-dark-card p-4 sm:p-6 shadow-premium h-fit space-y-6 min-w-0 overflow-hidden">
           <div className="flex items-center gap-2 pb-4 border-b border-slate-100 dark:border-dark-border">
             <FiActivity className="w-5 h-5 text-secondary dark:text-purple-400" />
             <h3 className="font-bold text-slate-800 dark:text-white text-lg">Overall Progress</h3>

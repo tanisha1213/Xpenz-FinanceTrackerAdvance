@@ -578,9 +578,9 @@ function Dashboard() {
       )}
 
       {/* Analytics Charts Grid */}
-      <div className="grid gap-6 lg:grid-cols-3">
+      <div className="grid gap-6 lg:grid-cols-3 w-full overflow-hidden">
         {/* Monthly Trend Chart */}
-        <section className="rounded-3xl border border-slate-100 dark:border-slate-800/80 bg-white dark:bg-gradient-to-b dark:from-[#131522] dark:to-[#0d0f17] p-6 shadow-premium lg:col-span-2">
+        <section className="rounded-3xl border border-slate-100 dark:border-slate-800/80 bg-white dark:bg-gradient-to-b dark:from-[#131522] dark:to-[#0d0f17] p-4 sm:p-6 shadow-premium lg:col-span-2 min-w-0 overflow-hidden">
           <div className="flex items-center gap-2 mb-4">
             <FiTrendingUp className="w-5 h-5 text-secondary dark:text-purple-400" />
             <h3 className="font-bold text-slate-800 dark:text-white text-lg">{t('monthlyTrend')}</h3>
@@ -610,7 +610,7 @@ function Dashboard() {
         </section>
 
         {/* Category Share Donut Chart */}
-        <section id="category-distribution-chart-tour" className="rounded-3xl border border-slate-100 dark:border-slate-800/80 bg-white dark:bg-gradient-to-b dark:from-[#131522] dark:to-[#0d0f17] p-6 shadow-premium">
+        <section id="category-distribution-chart-tour" className="rounded-3xl border border-slate-100 dark:border-slate-800/80 bg-white dark:bg-gradient-to-b dark:from-[#131522] dark:to-[#0d0f17] p-4 sm:p-6 shadow-premium min-w-0 overflow-hidden">
           <h3 className="font-bold text-slate-800 dark:text-white text-lg mb-4">{t('spendingByCat')}</h3>
           <div className="h-72 flex items-center justify-center relative">
             <ResponsiveContainer width="100%" height="100%">
@@ -638,9 +638,9 @@ function Dashboard() {
       </div>
 
       {/* Comparisons & Recent Listings Grid */}
-      <div className="grid gap-6 lg:grid-cols-3">
+      <div className="grid gap-6 lg:grid-cols-3 w-full overflow-hidden">
         {/* Income vs Expenses Bar Chart */}
-        <section id="income-expense-chart-tour" className="rounded-3xl border border-slate-100 dark:border-slate-800/80 bg-white dark:bg-gradient-to-b dark:from-[#131522] dark:to-[#0d0f17] p-6 shadow-premium lg:col-span-2">
+        <section id="income-expense-chart-tour" className="rounded-3xl border border-slate-100 dark:border-slate-800/80 bg-white dark:bg-gradient-to-b dark:from-[#131522] dark:to-[#0d0f17] p-4 sm:p-6 shadow-premium lg:col-span-2 min-w-0 overflow-hidden">
           <h3 className="font-bold text-slate-800 dark:text-white text-lg mb-4">{t('incomeVsExpense')}</h3>
           <div className="h-72">
             <ResponsiveContainer width="100%" height="100%">
@@ -663,9 +663,9 @@ function Dashboard() {
         </section>
 
         {/* Right Side Stack: Upcoming Commitments & Recent Transactions */}
-        <div className="space-y-6 lg:col-span-1">
+        <div className="space-y-6 lg:col-span-1 min-w-0">
           {/* Upcoming Payments Widget */}
-          <section className="rounded-3xl border border-slate-100 dark:border-slate-800/80 bg-white dark:bg-gradient-to-b dark:from-[#131522] dark:to-[#0d0f17] p-6 shadow-premium">
+          <section className="rounded-3xl border border-slate-100 dark:border-slate-800/80 bg-white dark:bg-gradient-to-b dark:from-[#131522] dark:to-[#0d0f17] p-4 sm:p-6 shadow-premium overflow-hidden">
             <h3 className="font-bold text-slate-800 dark:text-white text-lg mb-4 flex items-center gap-2">
               <FiCalendar className="w-5 h-5 text-indigo-500" />
               Upcoming Payments
@@ -677,9 +677,9 @@ function Dashboard() {
                   const isSIP = pay.type === 'investment_sip'
                   
                   return (
-                    <div key={`${pay.type}-${pay.id}-${index}`} className="flex items-center justify-between p-3 rounded-2xl border border-slate-50 dark:border-slate-800/50 hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors">
-                      <div className="flex items-center gap-3">
-                        <div className={`px-2.5 py-1 rounded-xl text-[10px] font-black uppercase tracking-wider ${
+                    <div key={`${pay.type}-${pay.id}-${index}`} className="flex items-center justify-between p-3 rounded-2xl border border-slate-50 dark:border-slate-800/50 hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors w-full min-w-0 gap-2">
+                      <div className="flex items-center gap-3 min-w-0">
+                        <div className={`px-2.5 py-1 rounded-xl text-[10px] font-black uppercase tracking-wider flex-shrink-0 ${
                           isLoan 
                             ? 'bg-rose-50 dark:bg-rose-950/20 text-rose-600 dark:text-rose-450' 
                             : isSIP 
@@ -695,7 +695,7 @@ function Dashboard() {
                           </p>
                         </div>
                       </div>
-                      <p className="font-black text-sm text-slate-700 dark:text-slate-250">
+                      <p className="font-black text-sm text-slate-700 dark:text-slate-250 flex-shrink-0 ml-1">
                         {formatCurrency(pay.amount)}
                       </p>
                     </div>
@@ -710,27 +710,27 @@ function Dashboard() {
           </section>
 
           {/* Recent Transactions List */}
-          <section id="recent-activity-tour" className="rounded-3xl border border-slate-100 dark:border-slate-800/80 bg-white dark:bg-gradient-to-b dark:from-[#131522] dark:to-[#0d0f17] p-6 shadow-premium flex flex-col justify-between">
+          <section id="recent-activity-tour" className="rounded-3xl border border-slate-100 dark:border-slate-800/80 bg-white dark:bg-gradient-to-b dark:from-[#131522] dark:to-[#0d0f17] p-4 sm:p-6 shadow-premium flex flex-col justify-between overflow-hidden">
             <div>
               <h3 className="font-bold text-slate-800 dark:text-white text-lg mb-4">{t('recentTransactions')}</h3>
               <div className="space-y-4">
                 {summary?.recentTransactions?.length ? (
                   summary.recentTransactions.map((item) => (
-                    <div key={item._id} className="flex items-center justify-between p-3 rounded-2xl border border-slate-50 dark:border-slate-800/50 hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors">
-                      <div className="flex items-center gap-3">
-                        <div className={`p-2 rounded-xl text-xs font-semibold ${
+                    <div key={item._id} className="flex items-center justify-between p-3 rounded-2xl border border-slate-50 dark:border-slate-800/50 hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors w-full min-w-0 gap-2">
+                      <div className="flex items-center gap-3 min-w-0">
+                        <div className={`p-2 rounded-xl text-xs font-semibold flex-shrink-0 ${
                           item.type === 'income' ? 'bg-emerald-50 dark:bg-emerald-950/20 text-emerald-600 dark:text-emerald-400' : 'bg-rose-50 dark:bg-rose-950/20 text-rose-600 dark:text-rose-450'
                         }`}>
                           {item.type === 'income' ? 'IN' : 'EX'}
                         </div>
-                        <div>
-                          <p className="font-bold text-slate-800 dark:text-slate-200 text-sm">{item.title}</p>
-                          <p className="text-xs text-slate-400 dark:text-dark-text-muted font-medium">
+                        <div className="min-w-0">
+                          <p className="font-bold text-slate-800 dark:text-slate-200 text-sm truncate">{item.title}</p>
+                          <p className="text-xs text-slate-400 dark:text-dark-text-muted font-medium truncate">
                             {item.category} • {formatDate(item.transactionDate)}
                           </p>
                         </div>
                       </div>
-                      <p className={`font-bold text-sm ${
+                      <p className={`font-bold text-sm flex-shrink-0 ml-1 ${
                         item.type === 'income' ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-450'
                       }`}>
                         {item.type === 'income' ? '+' : '-'}{formatCurrency(item.amount)}
@@ -738,7 +738,7 @@ function Dashboard() {
                     </div>
                   ))
                 ) : (
-                  <div className="py-12 text-center text-slate-400 dark:text-slate-500 text-sm">
+                  <div className="py-12 text-center text-slate-400 dark:text-slate-550 text-sm">
                     No transactions recorded yet.
                   </div>
                 )}

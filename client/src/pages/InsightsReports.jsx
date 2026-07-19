@@ -279,9 +279,9 @@ ${alts.map(a => `• ${a.category}: ${a.suggestion}`).join('\n')}
         <div className="space-y-6 animate-fadeIn">
           {aiError && <div className="rounded-xl border border-rose-100 dark:border-rose-950/30 bg-rose-50/50 dark:bg-rose-950/10 p-4 text-sm text-rose-700 dark:text-rose-400">{aiError}</div>}
 
-          <div className="grid gap-6 lg:grid-cols-3">
+          <div className="grid gap-6 lg:grid-cols-3 w-full overflow-hidden">
             {/* Suggestions Card */}
-            <section id="analytics-ai-advice-tour" className="rounded-2xl border border-slate-100 dark:border-dark-border bg-white dark:bg-dark-card p-6 shadow-premium lg:col-span-2 space-y-4">
+            <section id="analytics-ai-advice-tour" className="rounded-2xl border border-slate-100 dark:border-dark-border bg-white dark:bg-dark-card p-4 sm:p-6 shadow-premium lg:col-span-2 space-y-4 min-w-0 overflow-hidden">
               <div className="flex items-center justify-between border-b border-slate-100 dark:border-dark-border pb-4">
                 <div className="flex items-center gap-2">
                   <FiCpu className="w-5 h-5 text-secondary dark:text-purple-400" />
@@ -318,7 +318,7 @@ ${alts.map(a => `• ${a.category}: ${a.suggestion}`).join('\n')}
             </section>
 
             {/* Forecast Panel */}
-            <section id="analytics-ai-forecast-tour" className="rounded-2xl border border-slate-100 dark:border-dark-border bg-white dark:bg-dark-card p-6 shadow-premium h-fit space-y-6">
+            <section id="analytics-ai-forecast-tour" className="rounded-2xl border border-slate-100 dark:border-dark-border bg-white dark:bg-dark-card p-4 sm:p-6 shadow-premium h-fit space-y-6 min-w-0 overflow-hidden">
               <div className="flex items-center gap-2 pb-4 border-b border-slate-100 dark:border-dark-border">
                 <FiTrendingUp className="w-5 h-5 text-secondary dark:text-purple-400" />
                 <h3 className="font-bold text-slate-800 dark:text-white text-lg">{t('aiForecast')}</h3>
@@ -503,9 +503,9 @@ ${alts.map(a => `• ${a.category}: ${a.suggestion}`).join('\n')}
                 </div>
               </div>
 
-              <div className="grid gap-6 lg:grid-cols-3">
+              <div className="grid gap-6 lg:grid-cols-3 w-full overflow-hidden">
                 {/* Category Spend Chart */}
-                <section className="rounded-2xl border border-slate-100 dark:border-dark-border bg-white dark:bg-dark-card p-6 shadow-premium lg:col-span-2">
+                <section className="rounded-2xl border border-slate-100 dark:border-dark-border bg-white dark:bg-dark-card p-4 sm:p-6 shadow-premium lg:col-span-2 min-w-0 overflow-hidden">
                   <h3 className="font-bold text-slate-800 dark:text-white text-lg mb-4">Category Analysis</h3>
                   <div className="h-72">
                     <ResponsiveContainer width="100%" height="100%">
@@ -529,7 +529,7 @@ ${alts.map(a => `• ${a.category}: ${a.suggestion}`).join('\n')}
                 </section>
 
                 {/* Categorical Breakdown Table */}
-                <section className="rounded-2xl border border-slate-100 dark:border-dark-border bg-white dark:bg-dark-card p-6 shadow-premium flex flex-col justify-between">
+                <section className="rounded-2xl border border-slate-100 dark:border-dark-border bg-white dark:bg-dark-card p-4 sm:p-6 shadow-premium flex flex-col justify-between min-w-0 overflow-hidden">
                   <div className="space-y-4">
                     <h3 className="font-bold text-slate-800 dark:text-white text-lg">Categorical Statement</h3>
                     <div className="max-h-72 overflow-y-auto pr-1">
@@ -592,9 +592,9 @@ ${alts.map(a => `• ${a.category}: ${a.suggestion}`).join('\n')}
       {activeTab === 'welfare' && (
         <div className="space-y-6 animate-fadeIn">
           {/* Top Row: AI Cashflow Burn Rate & Run-out gauge */}
-          <div className="grid gap-6 md:grid-cols-3">
+          <div className="grid gap-6 md:grid-cols-3 w-full overflow-hidden">
             {/* Cashflow Run-out Predictor */}
-            <div className="rounded-2xl border border-slate-100 dark:border-dark-border bg-white dark:bg-dark-card p-6 shadow-premium space-y-4">
+            <div className="rounded-2xl border border-slate-100 dark:border-dark-border bg-white dark:bg-dark-card p-4 sm:p-6 shadow-premium space-y-4 min-w-0 overflow-hidden">
               <div className="flex items-center gap-2 pb-3 border-b border-slate-150 dark:border-dark-border">
                 <FiActivity className="w-5 h-5 text-secondary dark:text-purple-400" />
                 <h3 className="font-bold text-slate-800 dark:text-white text-base">Cashflow Burn Rate</h3>
@@ -640,7 +640,7 @@ ${alts.map(a => `• ${a.category}: ${a.suggestion}`).join('\n')}
             </div>
 
             {/* Spend Reducer & Cheaper Alternatives */}
-            <div className="rounded-2xl border border-slate-100 dark:border-dark-border bg-white dark:bg-dark-card p-6 shadow-premium space-y-4 md:col-span-2">
+            <div className="rounded-2xl border border-slate-100 dark:border-dark-border bg-white dark:bg-dark-card p-4 sm:p-6 shadow-premium space-y-4 md:col-span-2 min-w-0 overflow-hidden">
               <div className="flex items-center gap-2 pb-3 border-b border-slate-150 dark:border-dark-border">
                 <FiTrendingUp className="w-5 h-5 text-secondary dark:text-purple-400" />
                 <h3 className="font-bold text-slate-800 dark:text-white text-base">Cheaper Alternatives & Spend Reductions</h3>
@@ -666,9 +666,9 @@ ${alts.map(a => `• ${a.category}: ${a.suggestion}`).join('\n')}
           </div>
 
           {/* Interactive Calculators & Coaching Row */}
-          <div className="grid gap-6 md:grid-cols-2">
+          <div className="grid gap-6 md:grid-cols-2 w-full overflow-hidden">
             {/* Pension Eligibility & APY Calculator */}
-            <section className="rounded-2xl border border-slate-100 dark:border-dark-border bg-white dark:bg-dark-card p-6 shadow-premium space-y-5">
+            <section className="rounded-2xl border border-slate-100 dark:border-dark-border bg-white dark:bg-dark-card p-4 sm:p-6 shadow-premium space-y-5 min-w-0 overflow-hidden">
               <div className="flex items-center gap-2 pb-3 border-b border-slate-150 dark:border-dark-border">
                 <FiShield className="w-5 h-5 text-secondary dark:text-purple-400" />
                 <h3 className="font-bold text-slate-800 dark:text-white text-base">Atal Pension Yojana (APY) & Pension Eligibility</h3>
@@ -721,7 +721,7 @@ ${alts.map(a => `• ${a.category}: ${a.suggestion}`).join('\n')}
             </section>
 
             {/* Loan Affordability Calculator */}
-            <section className="rounded-2xl border border-slate-100 dark:border-dark-border bg-white dark:bg-dark-card p-6 shadow-premium space-y-5">
+            <section className="rounded-2xl border border-slate-100 dark:border-dark-border bg-white dark:bg-dark-card p-4 sm:p-6 shadow-premium space-y-5 min-w-0 overflow-hidden">
               <div className="flex items-center gap-2 pb-3 border-b border-slate-150 dark:border-dark-border">
                 <FiPercent className="w-5 h-5 text-secondary dark:text-purple-400" />
                 <h3 className="font-bold text-slate-800 dark:text-white text-base">Loan Affordability Calculator</h3>
@@ -800,9 +800,9 @@ ${alts.map(a => `• ${a.category}: ${a.suggestion}`).join('\n')}
           </div>
 
           {/* Welfare Schemes Matcher & Subsidy Logger */}
-          <div className="grid gap-6 md:grid-cols-2">
+          <div className="grid gap-6 md:grid-cols-2 w-full overflow-hidden">
             {/* Government Schemes & Scholarships Finder */}
-            <section className="rounded-2xl border border-slate-100 dark:border-dark-border bg-white dark:bg-dark-card p-6 shadow-premium space-y-5">
+            <section className="rounded-2xl border border-slate-100 dark:border-dark-border bg-white dark:bg-dark-card p-4 sm:p-6 shadow-premium space-y-5 min-w-0 overflow-hidden">
               <div className="flex items-center gap-2 pb-3 border-b border-slate-150 dark:border-dark-border">
                 <FiUsers className="w-5 h-5 text-secondary dark:text-purple-400" />
                 <h3 className="font-bold text-slate-800 dark:text-white text-base">Eligible Welfare Schemes & Scholarships</h3>
@@ -911,7 +911,7 @@ ${alts.map(a => `• ${a.category}: ${a.suggestion}`).join('\n')}
             </section>
 
             {/* Subsidy Tracker Form */}
-            <section className="rounded-2xl border border-slate-100 dark:border-dark-border bg-white dark:bg-dark-card p-6 shadow-premium space-y-5 flex flex-col justify-between">
+            <section className="rounded-2xl border border-slate-100 dark:border-dark-border bg-white dark:bg-dark-card p-4 sm:p-6 shadow-premium space-y-5 flex flex-col justify-between min-w-0 overflow-hidden">
               <div>
                 <div className="flex items-center gap-2 pb-3 border-b border-slate-150 dark:border-dark-border">
                   <FiDollarSign className="w-5 h-5 text-secondary dark:text-purple-400" />
@@ -963,13 +963,13 @@ ${alts.map(a => `• ${a.category}: ${a.suggestion}`).join('\n')}
           </div>
 
           {/* AI Financial Coach Chat Panel */}
-          <section className="rounded-2xl border border-slate-100 dark:border-dark-border bg-white dark:bg-dark-card p-6 shadow-premium space-y-4">
+          <section className="rounded-2xl border border-slate-100 dark:border-dark-border bg-white dark:bg-dark-card p-4 sm:p-6 shadow-premium space-y-4 overflow-hidden w-full">
             <div className="flex items-center gap-2 pb-3 border-b border-slate-150 dark:border-dark-border">
               <FiCpu className="w-5 h-5 text-secondary dark:text-purple-400 animate-pulse" />
               <h3 className="font-bold text-slate-800 dark:text-white text-base">AI Financial Coach & Wealth Guide</h3>
             </div>
             
-            <div className="grid gap-6 md:grid-cols-3">
+            <div className="grid gap-6 md:grid-cols-3 w-full overflow-hidden">
               {/* Pre-set Advisory Questions */}
               <div className="space-y-2">
                 <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1">Pick a Coaching Topic</span>
