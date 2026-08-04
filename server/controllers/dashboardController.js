@@ -152,6 +152,7 @@ export const getDashboardSummary = async (req, res) => {
         cashBalance,
         bankBalance,
         accounts,
+        monthlyBudget: summary.monthlyBudget || budget?.monthlyBudget || 0,
         budgetRemaining: summary.budgetRemaining,
         monthlyTrend: trendSummary.monthlyTrend,
         categoryBreakdown: summary.categoryBreakdown,

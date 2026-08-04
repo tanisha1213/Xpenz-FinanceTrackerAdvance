@@ -323,7 +323,7 @@ function Dashboard() {
   const tooltipItemStyle = { color: isDark ? '#f8fafc' : '#0f172a' }
   const tooltipLabelStyle = { color: isDark ? '#94a3b8' : '#64748b' }
 
-  const isBudgetDone = summary?.monthlyBudget > 0
+  const isBudgetDone = Number(summary?.monthlyBudget || 0) > 0
   const isAccountsDone = summary?.totalBalance > 0
   const isTxDone = summary?.recentTransactions?.length > 0
   
