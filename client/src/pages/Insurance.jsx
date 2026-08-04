@@ -9,7 +9,6 @@ import { formatCurrency, formatDate } from '../utils/format'
 import {
   FiPlus, FiEdit2, FiTrash2, FiSearch, FiRefreshCw, FiShield, FiCalendar, FiUser, FiFileText, FiChevronLeft, FiChevronRight
 } from 'react-icons/fi'
-import { useLanguage } from '../context/LanguageContext'
 
 const INSURANCE_TYPES = [
   { value: 'health', label: 'Health Insurance' },
@@ -84,7 +83,6 @@ const POLICY_NAME_SUGGESTIONS_BY_TYPE = {
 }
 
 export default function Insurance() {
-  const { language } = useLanguage()
   const [insurances, setInsurances] = useState([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
@@ -353,7 +351,7 @@ export default function Insurance() {
             <div className="text-center py-16 bg-white dark:bg-dark-card border border-slate-100 dark:border-dark-border rounded-2xl">
               <FiShield className="w-12 h-12 text-slate-350 dark:text-slate-600 mx-auto" />
               <h3 className="text-base font-extrabold text-slate-700 dark:text-slate-200 mt-4">No Policies Logged</h3>
-              <p className="text-slate-400 dark:text-dark-text-muted text-xs mt-1 max-w-xs mx-auto">Click "Add Insurance" to record your coverage limits and premium dates.</p>
+              <p className="text-slate-400 dark:text-dark-text-muted text-xs mt-1 max-w-xs mx-auto">Click &quot;Add Insurance&quot; to record your coverage limits and premium dates.</p>
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5 w-full min-w-0 overflow-hidden">

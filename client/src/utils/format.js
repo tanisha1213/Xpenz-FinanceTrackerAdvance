@@ -1,8 +1,12 @@
 export const formatCurrency = (value = 0) =>
   `₹${Number(value || 0).toLocaleString('en-IN', { maximumFractionDigits: 0 })}`
 
-export const formatDate = (value) =>
-  value ? new Date(value).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric', timeZone: 'UTC' }) : '-'
+export const formatDate = (value) => {
+  if (!value) return '-'
+  const d = new Date(value)
+  if (isNaN(d.getTime())) return '-'
+  return d.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })
+}
 
 export const categories = [
   'Salary',

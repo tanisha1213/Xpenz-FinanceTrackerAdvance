@@ -27,21 +27,6 @@ import { getLoans, addLoan } from '../services/loanService'
 
 const COLORS = ['#4f46e5', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#06b6d4']
 
-const POPULAR_BANKS = [
-  'State Bank of India (SBI)',
-  'HDFC Bank',
-  'ICICI Bank',
-  'Axis Bank',
-  'Kotak Mahindra Bank',
-  'Bank of Baroda',
-  'Punjab National Bank (PNB)',
-  'Union Bank of India',
-  'Canara Bank',
-  'Bank of India',
-  'Bank of Maharashtra',
-  'Other (Type Below)'
-]
-
 const emptyForm = {
   type: 'expense',
   title: '',
@@ -153,27 +138,9 @@ function Dashboard() {
   // Quick Add Form States
   const [showForm, setShowForm] = useState(false)
   const [form, setForm] = useState(emptyForm)
-  const [isCustomBank, setIsCustomBank] = useState(false)
   const [formLoading, setFormLoading] = useState(false)
   const [message, setMessage] = useState('')
   const [loans, setLoans] = useState([])
-
-  const subCategoryOptions = {
-    bank: [
-      { value: 'home', label: 'Home Loan' },
-      { value: 'car', label: 'Car Loan' },
-      { value: 'education', label: 'Education Loan' },
-      { value: 'personal', label: 'Personal Loan' },
-      { value: 'business', label: 'Business Loan' },
-      { value: 'other', label: 'Other Bank Loan' }
-    ],
-    personal: [
-      { value: 'friend', label: 'Friend' },
-      { value: 'family', label: 'Family' },
-      { value: 'colleague', label: 'Colleague' },
-      { value: 'other', label: 'Other Debt' }
-    ]
-  }
 
   const fetchLoans = async () => {
     try {
@@ -295,7 +262,6 @@ function Dashboard() {
         })
         
         setShowForm(false)
-        setIsCustomBank(false)
         setForm(emptyForm)
         const response = await getDashboardSummary()
         setSummary(response.data.data)
@@ -931,7 +897,6 @@ function Dashboard() {
                   type="button"
                   onClick={() => {
                     setShowForm(false)
-                    setIsCustomBank(false)
                   }}
                   className="rounded-xl border border-slate-200 dark:border-dark-border px-4 py-2.5 text-sm font-bold text-slate-650 dark:text-slate-350 hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer"
                 >

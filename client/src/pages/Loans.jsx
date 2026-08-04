@@ -1,5 +1,4 @@
 import { useEffect, useMemo, useState } from 'react'
-import { useSelector } from 'react-redux'
 import {
   getLoans,
   addLoan,
@@ -9,13 +8,12 @@ import {
   payInstallment
 } from '../services/loanService'
 import { getAccounts } from '../services/accountService'
-import { formatCurrency, formatDate } from '../utils/format'
+import { formatCurrency } from '../utils/format'
 import {
-  FiPlus, FiEdit2, FiTrash2, FiSearch, FiRefreshCw, FiChevronLeft,
-  FiChevronRight, FiPercent, FiInfo, FiCalendar, FiClock, FiCheckCircle,
-  FiAlertTriangle, FiBookOpen, FiDollarSign
+  FiPlus, FiEdit2, FiTrash2, FiSearch, FiChevronLeft,
+  FiChevronRight, FiPercent,
+  FiAlertTriangle, FiBookOpen
 } from 'react-icons/fi'
-import { useLanguage } from '../context/LanguageContext'
 
 const POPULAR_BANKS = [
   'State Bank of India (SBI)',
@@ -57,14 +55,11 @@ const emptyForm = {
 }
 
 function Loans() {
-  const { t } = useLanguage()
-  
   // States
   const [loans, setLoans] = useState([])
   const [isCustomBank, setIsCustomBank] = useState(false)
   const [accounts, setAccounts] = useState([])
   const [installments, setInstallments] = useState([]) // all active installments for calendar
-  const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
   
@@ -91,7 +86,6 @@ function Loans() {
   // Fetch all loans & accounts
   const loadData = async () => {
     try {
-      setLoading(true)
       const [loansRes, accountsRes] = await Promise.all([getLoans(), getAccounts()])
       const fetchedLoans = loansRes.data.data
       setLoans(fetchedLoans)
@@ -106,8 +100,6 @@ function Loans() {
     } catch (err) {
       console.error('Failed to load data:', err)
       setError('Failed to fetch loans data.')
-    } finally {
-      setLoading(false)
     }
   }
 
@@ -399,7 +391,7 @@ function Loans() {
             <span className="text-6xl block mb-4 animate-bounce">🎉</span>
             <h2 className="text-2xl font-extrabold text-slate-800 dark:text-white mb-2">Congratulations!</h2>
             <p className="text-slate-500 dark:text-dark-text-muted text-sm mb-4">
-              Your loan <span className="font-bold text-secondary dark:text-purple-400">"{celebrationLoan.title}"</span> has been successfully completed and archived.
+              Your loan <span className="font-bold text-secondary dark:text-purple-400">&quot;{celebrationLoan.title}&quot;</span> has been successfully completed and archived.
             </p>
             <div className="inline-block px-4 py-2 bg-emerald-500/10 text-emerald-500 rounded-full font-bold text-xs uppercase tracking-wider">
               Debt Free!

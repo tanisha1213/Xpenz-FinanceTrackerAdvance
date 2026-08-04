@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { useLocation } from 'react-router-dom'
 import { useLanguage } from '../../context/LanguageContext'
 import { FiChevronRight, FiChevronLeft, FiX, FiHelpCircle } from 'react-icons/fi'
@@ -441,7 +441,7 @@ export default function OnboardingTour() {
   const [coords, setCoords] = useState(null)
   
   const isLoansTab = location.pathname === '/transactions' && location.search.includes('tab=loans')
-  const steps = isLoansTab ? loansTourSteps : (pageTours[currentPath] || [])
+  const steps = useMemo(() => isLoansTab ? loansTourSteps : (pageTours[currentPath] || []), [isLoansTab, currentPath])
   const labels = commonTranslations[language] || commonTranslations['en']
   const tourKey = currentPath + (isLoansTab ? '_loans' : '')
 
@@ -518,7 +518,7 @@ export default function OnboardingTour() {
         mainEl.removeEventListener('scroll', calculatePosition)
       }
     }
-  }, [stepIndex, active, currentPath, steps.length])
+  }, [stepIndex, active, currentPath, steps])
 
   const handleNext = () => {
     if (stepIndex < steps.length - 1) {

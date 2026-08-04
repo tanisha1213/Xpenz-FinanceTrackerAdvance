@@ -180,7 +180,7 @@ function Forgot() {
               {/* Reset Password Button */}
               <button
                 onClick={() => {
-                  const path = resetUrl.replace(/https?:\/\/[^\/]+/, '') // extract pathname `/reset-password/:token`
+                  const path = resetUrl.replace(/https?:\/\/[^/]+/, '') // extract pathname `/reset-password/:token`
                   navigate(path)
                 }}
                 className="w-full bg-gradient-to-r from-secondary to-indigo-650 dark:from-purple-650 dark:to-indigo-650 text-white font-bold py-3 rounded-xl hover:shadow-lg hover:brightness-105 transition-all cursor-pointer flex items-center justify-center gap-2"

@@ -3,7 +3,7 @@ import { useDispatch, useSelector } from 'react-redux'
 import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 import { fetchInsights, fetchPrediction } from '../redux/slices/insightSlice'
 import { downloadMonthlyReport, getMonthlyReport } from '../services/reportService'
-import { formatCurrency, formatDate } from '../utils/format'
+import { formatCurrency } from '../utils/format'
 import { governmentSchemes, scholarships } from '../utils/welfareData'
 import { 
   FiTrendingUp, 
@@ -17,7 +17,6 @@ import {
   FiUsers,
   FiDollarSign,
   FiActivity,
-  FiBookOpen,
   FiPercent,
   FiShield
 } from 'react-icons/fi'
@@ -114,10 +113,6 @@ function InsightsReports() {
   const [subsidyMessage, setSubsidyMessage] = useState('')
   const [subsidyAmt, setSubsidyAmt] = useState(2000)
   const [subsidyName, setSubsidyName] = useState('PM Kisan')
-
-  const [scholLevel, setScholLevel] = useState('any')
-  const [scholCategory, setScholCategory] = useState('any')
-  const [scholIncome, setScholIncome] = useState(300000)
 
   const [pensionAge, setPensionAge] = useState(25)
   const [pensionTarget, setPensionTarget] = useState(3000) // target payout

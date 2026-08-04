@@ -7,9 +7,8 @@ import {
 } from '../services/investmentService'
 import { formatCurrency, formatDate } from '../utils/format'
 import {
-  FiPlus, FiEdit2, FiTrash2, FiSearch, FiRefreshCw, FiTrendingUp, FiBriefcase, FiDollarSign, FiInfo, FiCalendar, FiChevronLeft, FiChevronRight
+  FiPlus, FiEdit2, FiTrash2, FiSearch, FiRefreshCw, FiBriefcase, FiCalendar, FiChevronLeft, FiChevronRight
 } from 'react-icons/fi'
-import { useLanguage } from '../context/LanguageContext'
 
 const INVESTMENT_TYPES = [
   { value: 'mutual_fund', label: 'Mutual Fund' },
@@ -83,7 +82,6 @@ const SUGGESTIONS_BY_TYPE = {
 }
 
 export default function Investments() {
-  const { language } = useLanguage()
   const [investments, setInvestments] = useState([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
@@ -363,7 +361,7 @@ export default function Investments() {
             <div className="text-center py-16 bg-white dark:bg-dark-card border border-slate-100 dark:border-dark-border rounded-2xl">
               <FiBriefcase className="w-12 h-12 text-slate-350 dark:text-slate-600 mx-auto" />
               <h3 className="text-base font-extrabold text-slate-700 dark:text-slate-200 mt-4">No Investments Logged</h3>
-              <p className="text-slate-400 dark:text-dark-text-muted text-xs mt-1 max-w-xs mx-auto">Click "Add Investment" to start building your visual wealth portfolio.</p>
+              <p className="text-slate-400 dark:text-dark-text-muted text-xs mt-1 max-w-xs mx-auto">Click &quot;Add Investment&quot; to start building your visual wealth portfolio.</p>
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5 w-full min-w-0 overflow-hidden">

@@ -18,21 +18,6 @@ import Loans from './Loans'
 import Investments from './Investments'
 import Insurance from './Insurance'
 
-const POPULAR_BANKS = [
-  'State Bank of India (SBI)',
-  'HDFC Bank',
-  'ICICI Bank',
-  'Axis Bank',
-  'Kotak Mahindra Bank',
-  'Bank of Baroda',
-  'Punjab National Bank (PNB)',
-  'Union Bank of India',
-  'Canara Bank',
-  'Bank of India',
-  'Bank of Maharashtra',
-  'Other (Type Below)'
-]
-
 const emptyForm = {
   type: 'expense',
   title: '',
@@ -121,7 +106,6 @@ function Transactions() {
     }
     return [...combined, 'Other', 'Add Custom Category...']
   }, [customCategories, form.category])
-  const [isCustomBank, setIsCustomBank] = useState(false)
   const [editingId, setEditingId] = useState(null)
   const [showForm, setShowForm] = useState(false)
   const [message, setMessage] = useState('')
@@ -399,7 +383,6 @@ function Transactions() {
         })
         
         setShowForm(false)
-        setIsCustomBank(false)
         dispatch(fetchTransactions(query))
         fetchLoansAndAccounts()
         setMessage('Loan ledger created and transaction recorded successfully.')
@@ -438,24 +421,6 @@ function Transactions() {
       ...filters,
       page: newPage
     })
-  }
-
-  // Amortization Category context
-  const subCategoryOptions = {
-    bank: [
-      { value: 'home', label: 'Home Loan' },
-      { value: 'car', label: 'Car Loan' },
-      { value: 'education', label: 'Education Loan' },
-      { value: 'personal', label: 'Personal Loan' },
-      { value: 'business', label: 'Business Loan' },
-      { value: 'other', label: 'Other Bank Loan' }
-    ],
-    personal: [
-      { value: 'friend', label: 'Friend' },
-      { value: 'family', label: 'Family' },
-      { value: 'colleague', label: 'Colleague' },
-      { value: 'other', label: 'Other Debt' }
-    ]
   }
 
   // Active loans computations
@@ -1306,7 +1271,6 @@ function Transactions() {
                   type="button"
                   onClick={() => {
                     setShowForm(false)
-                    setIsCustomBank(false)
                   }}
                   className="rounded-xl border border-slate-200 dark:border-dark-border px-4 py-2.5 text-sm font-bold text-slate-600 dark:text-slate-350 hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer"
                 >
