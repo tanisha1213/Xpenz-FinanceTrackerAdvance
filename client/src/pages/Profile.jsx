@@ -4,13 +4,15 @@ import { useNavigate } from 'react-router-dom'
 import { logout, updateProfileThunk } from '../redux/slices/authSlice'
 import { changePassword, getAccountStats } from '../services/authService'
 import { formatCurrency } from '../utils/format'
-import { FiUser, FiKey, FiCheck, FiPieChart, FiLogOut } from 'react-icons/fi'
+import { FiUser, FiKey, FiCheck, FiPieChart, FiLogOut, FiBell } from 'react-icons/fi'
 import { useLanguage } from '../context/LanguageContext'
+import { useNotification } from '../context/NotificationContext'
 
 function Profile() {
   const dispatch = useDispatch()
   const navigate = useNavigate()
   const { t } = useLanguage()
+  const { popupEnabled, setPopupEnabled } = useNotification()
   const { user } = useSelector(state => state.auth)
   const [profile, setProfile] = useState({ name: '', email: '' })
   const [passwords, setPasswords] = useState({ currentPassword: '', newPassword: '' })
@@ -131,6 +133,42 @@ function Profile() {
                 Change Password
               </button>
             </form>
+          </div>
+
+          {/* Notification Preferences */}
+          <div>
+            <div className="flex items-center gap-2 border-b border-slate-100 dark:border-dark-border pb-4 mb-4">
+              <FiBell className="w-5 h-5 text-secondary dark:text-purple-400" />
+              <h3 className="font-bold text-slate-800 dark:text-white text-base">Notification Preferences</h3>
+            </div>
+            
+            <div className="p-4 rounded-xl border border-slate-100 dark:border-dark-border bg-slate-50/50 dark:bg-dark-card/50 flex items-center justify-between gap-4">
+              <div className="space-y-1">
+                <h4 className="font-bold text-sm text-slate-800 dark:text-slate-200">
+                  Pop-up Banner Notifications
+                </h4>
+                <p className="text-xs text-slate-400 dark:text-dark-text-muted leading-relaxed max-w-md">
+                  Display instant floating pop-up banners (Snapchat style) on screen for EMI due reminders and financial events. By default ON. When OFF, reminders only appear silently inside the in-app notification bell.
+                </p>
+              </div>
+
+              {/* Custom Toggle Switch */}
+              <button
+                type="button"
+                onClick={() => setPopupEnabled(!popupEnabled)}
+                className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
+                  popupEnabled ? 'bg-secondary dark:bg-purple-600' : 'bg-slate-300 dark:bg-slate-700'
+                }`}
+                role="switch"
+                aria-checked={popupEnabled}
+              >
+                <span
+                  className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
+                    popupEnabled ? 'translate-x-5' : 'translate-x-0'
+                  }`}
+                />
+              </button>
+            </div>
           </div>
         </section>
 

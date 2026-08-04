@@ -6,11 +6,13 @@ import logoLight from '../../assets/logo-light.png'
 import logoDark from '../../assets/logo-dark.png'
 import { getLoans } from '../../services/loanService'
 import { useLanguage } from '../../context/LanguageContext'
+import { useNotification } from '../../context/NotificationContext'
 
 function Navbar() {
   const { user } = useSelector(state => state.auth)
   const { theme, toggleTheme } = useTheme()
   const { language, setLanguage } = useLanguage()
+  const { triggerPopup } = useNotification()
   const [showNotifications, setShowNotifications] = useState(false)
   const [hasUnread, setHasUnread] = useState(true)
   const [notifications, setNotifications] = useState([
@@ -84,6 +86,18 @@ function Navbar() {
             return [...reminders, ...filteredPrev]
           })
           setHasUnread(true)
+
+          reminders.forEach((r) => {
+            if (r.time === 'Overdue' || r.time === 'Today' || r.time === '1d left') {
+              triggerPopup({
+                id: r.id,
+                title: r.title,
+                message: r.message,
+                time: r.time,
+                type: r.time === 'Overdue' ? 'overdue' : 'due'
+              })
+            }
+          })
         }
       } catch (err) {
         console.error('Failed to load loan reminders:', err)
@@ -91,7 +105,7 @@ function Navbar() {
     }
 
     loadReminders()
-  }, [user])
+  }, [user, triggerPopup])
 
   return (
     <nav className="bg-white/80 dark:bg-dark-card/80 backdrop-blur-md border-b border-slate-100 dark:border-dark-border sticky top-0 z-30 transition-colors duration-200">
