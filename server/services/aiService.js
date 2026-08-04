@@ -52,8 +52,10 @@ export const generateAIInsights = async ({ transactions, budget }) => {
   }
 };
 
-export const predictExpense = async ({ transactions, budget, investments = [], insurances = [], loans = [] }) => {
-  const analysis = analyzeFinance({ transactions, budget });
+export const predictExpense = async ({ transactions = [], budget = null, investments = [], insurances = [], loans = [], accounts = [] }) => {
+  const safeTransactions = Array.isArray(transactions) ? transactions : [];
+  const safeAccounts = Array.isArray(accounts) ? accounts : [];
+  const analysis = analyzeFinance({ transactions: safeTransactions, budget });
 
   // Calculate Financial Inclusion Score
   let score = 0;
@@ -139,7 +141,7 @@ export const predictExpense = async ({ transactions, budget, investments = [], i
   }
 
   // Calculate Cashflow Run-out status
-  const totalCashBalance = accounts.reduce((sum, acc) => sum + (acc.balance || 0), 0);
+  const totalCashBalance = safeAccounts.reduce((sum, acc) => sum + (acc.balance || 0), 0);
   const now = new Date();
   const currentDay = now.getDate();
   const totalDaysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
@@ -155,7 +157,7 @@ export const predictExpense = async ({ transactions, budget, investments = [], i
   // Cheaper Alternatives & Spend Reduction suggestions
   const cheaperAlternatives = [];
   const spendMap = {};
-  transactions.forEach(t => {
+  safeTransactions.forEach(t => {
     if (t.type === 'expense' && t.category) {
       spendMap[t.category] = (spendMap[t.category] || 0) + (t.amount || 0);
     }

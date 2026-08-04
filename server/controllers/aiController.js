@@ -8,9 +8,16 @@ import { generateAIInsights, predictExpense } from '../services/aiService.js';
 
 export const generateInsights = async (req, res) => {
   try {
-    const transactions = await Transaction.find({ userId: req.userId });
-    const budget = await Budget.findOne({ userId: req.userId });
-    const result = await generateAIInsights({ transactions, budget });
+    const userId = req.userId;
+    const [transactions, budget] = await Promise.all([
+      Transaction.find({ userId }).catch(() => []),
+      Budget.findOne({ userId }).catch(() => null)
+    ]);
+
+    const result = await generateAIInsights({
+      transactions: transactions || [],
+      budget: budget || null
+    });
 
     res.status(200).json({
       success: true,
@@ -20,22 +27,31 @@ export const generateInsights = async (req, res) => {
   } catch (error) {
     res.status(500).json({
       success: false,
-      message: error.message
+      message: error.message || 'Failed to generate insights'
     });
   }
 };
 
 export const predictSpending = async (req, res) => {
   try {
+    const userId = req.userId;
     const [transactions, budget, investments, insurances, loans, accounts] = await Promise.all([
-      Transaction.find({ userId: req.userId }),
-      Budget.findOne({ userId: req.userId }),
-      Investment.find({ userId: req.userId }).catch(() => []),
-      Insurance.find({ userId: req.userId }).catch(() => []),
-      Loan.find({ userId: req.userId }).catch(() => []),
-      Account.find({ userId: req.userId }).catch(() => [])
+      Transaction.find({ userId }).catch(() => []),
+      Budget.findOne({ userId }).catch(() => null),
+      Investment.find({ userId }).catch(() => []),
+      Insurance.find({ userId }).catch(() => []),
+      Loan.find({ userId }).catch(() => []),
+      Account.find({ userId }).catch(() => [])
     ]);
-    const prediction = await predictExpense({ transactions, budget, investments, insurances, loans, accounts });
+
+    const prediction = await predictExpense({
+      transactions: transactions || [],
+      budget: budget || null,
+      investments: investments || [],
+      insurances: insurances || [],
+      loans: loans || [],
+      accounts: accounts || []
+    });
 
     res.status(200).json({
       success: true,
@@ -45,7 +61,7 @@ export const predictSpending = async (req, res) => {
   } catch (error) {
     res.status(500).json({
       success: false,
-      message: error.message
+      message: error.message || 'Failed to predict spending'
     });
   }
 };
