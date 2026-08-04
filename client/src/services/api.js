@@ -33,6 +33,10 @@ API.interceptors.response.use(
     if (error.response?.status === 401) {
       localStorage.removeItem('token')
       localStorage.removeItem('user')
+      const path = window.location.pathname
+      if (path !== '/login' && path !== '/signup' && path !== '/forgot-password' && !path.startsWith('/reset-password')) {
+        window.location.href = '/login'
+      }
     }
 
     return Promise.reject(error)
