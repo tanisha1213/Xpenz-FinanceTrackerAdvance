@@ -31,7 +31,17 @@ export const signup = async (req, res) => {
       });
     }
 
-    const existingUser = await User.findOne({ email: normalizedEmail });
+    let existingUser;
+    try {
+      existingUser = await User.findOne({ email: normalizedEmail });
+    } catch (dbErr) {
+      console.error('Database query error in signup:', dbErr.message);
+      return res.status(503).json({
+        success: false,
+        message: 'Database service is currently unreachable. Please check your Supabase credentials in environment variables.'
+      });
+    }
+
     if (existingUser) {
       return res.status(400).json({
         success: false,
@@ -68,7 +78,16 @@ export const login = async (req, res) => {
       });
     }
 
-    const user = await User.findOne({ email: normalizedEmail }).select('+password');
+    let user;
+    try {
+      user = await User.findOne({ email: normalizedEmail }).select('+password');
+    } catch (dbErr) {
+      console.error('Database query error in login:', dbErr.message);
+      return res.status(503).json({
+        success: false,
+        message: 'Database service is currently unreachable. Please check your Supabase credentials in environment variables.'
+      });
+    }
 
     if (!user || !(await user.matchPassword(password))) {
       return res.status(401).json({
