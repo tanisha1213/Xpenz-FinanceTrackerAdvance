@@ -2,17 +2,36 @@ import { useEffect, lazy, Suspense } from 'react'
 import { BrowserRouter as Router, Routes, Route, Navigate, Outlet } from 'react-router-dom'
 import './App.css'
 
+// Helper for dynamic imports to retry and reload page on chunk 404 deployment updates
+const lazyWithRetry = (componentImport) =>
+  lazy(async () => {
+    const pageHasAlreadyBeenReloaded = JSON.parse(
+      sessionStorage.getItem('page_reloaded_for_chunk_error') || 'false'
+    )
+    try {
+      const component = await componentImport()
+      sessionStorage.setItem('page_reloaded_for_chunk_error', 'false')
+      return component
+    } catch (error) {
+      if (!pageHasAlreadyBeenReloaded) {
+        sessionStorage.setItem('page_reloaded_for_chunk_error', 'true')
+        window.location.reload()
+      }
+      throw error
+    }
+  })
+
 // Lazy loaded Pages for performance
-const Login = lazy(() => import('./pages/Login'))
-const Signup = lazy(() => import('./pages/Signup'))
-const Forgot = lazy(() => import('./pages/Forgot'))
-const Reset = lazy(() => import('./pages/Reset'))
-const Dashboard = lazy(() => import('./pages/Dashboard'))
-const Transactions = lazy(() => import('./pages/Transactions'))
-const Budget = lazy(() => import('./pages/Budget'))
-const InsightsReports = lazy(() => import('./pages/InsightsReports'))
-const Profile = lazy(() => import('./pages/Profile'))
-const Balance = lazy(() => import('./pages/Balance'))
+const Login = lazyWithRetry(() => import('./pages/Login'))
+const Signup = lazyWithRetry(() => import('./pages/Signup'))
+const Forgot = lazyWithRetry(() => import('./pages/Forgot'))
+const Reset = lazyWithRetry(() => import('./pages/Reset'))
+const Dashboard = lazyWithRetry(() => import('./pages/Dashboard'))
+const Transactions = lazyWithRetry(() => import('./pages/Transactions'))
+const Budget = lazyWithRetry(() => import('./pages/Budget'))
+const InsightsReports = lazyWithRetry(() => import('./pages/InsightsReports'))
+const Profile = lazyWithRetry(() => import('./pages/Profile'))
+const Balance = lazyWithRetry(() => import('./pages/Balance'))
 
 // Layout
 import Layout from './components/layout/Layout'
