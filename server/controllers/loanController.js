@@ -484,39 +484,56 @@ export const payInstallment = async (req, res) => {
       });
     }
 
-    // Check payment source ID
-    const accountId = loan.paymentSourceId;
-    if (!accountId) {
-      return res.status(400).json({
-        success: false,
-        message: 'Please configure a Payment Source account in the loan settings before marking installments as paid.'
-      });
+    // Determine payment account (from body, loan setting, or default user account)
+    let accountId = req.body?.accountId || loan.paymentSourceId;
+    let account = null;
+
+    if (accountId) {
+      account = await Account.findOne({ _id: accountId, userId });
     }
 
-    const account = await Account.findOne({ _id: accountId, userId });
+    // Fallback: If no account specified or found, select user's default Cash or primary account
     if (!account) {
-      return res.status(404).json({
-        success: false,
-        message: 'Payment source account not found'
-      });
+      account = await Account.findOne({ userId }).sort({ isDefault: -1, createdAt: 1 });
+      if (!account) {
+        account = await Account.create({
+          userId,
+          name: 'Cash Wallet',
+          type: 'cash',
+          balance: 0,
+          isDefault: true
+        });
+      }
+      accountId = account._id;
     }
 
-    // 1. Create the auto-generated expense transaction
+    const isLent = loan.type === 'lent'; // Money given to someone (repayment received = income)
+    const transactionType = isLent ? 'income' : 'expense';
+
+    // 1. Create the auto-generated transaction
     const transaction = await Transaction.create({
       userId,
-      type: 'expense',
-      title: `${loan.title} - EMI Installment #${installment.installmentNumber}`,
+      type: transactionType,
+      title: isLent 
+        ? `${loan.title} - EMI Collected #${installment.installmentNumber}`
+        : `${loan.title} - EMI Installment #${installment.installmentNumber}`,
       amount: Number(installment.amount),
-      category: loan.emiCategory || 'EMI',
+      category: loan.emiCategory || (isLent ? 'Loan Repayment' : 'EMI'),
       paymentMethod: account.type === 'cash' ? 'cash' : 'bank_transfer',
       accountId: accountId,
       loanId: loan._id,
-      description: `Auto-generated EMI payment for ${loan.title} (Installment ${installment.installmentNumber}/${loan.totalInstallments})`,
+      description: isLent
+        ? `EMI collection received for ${loan.title} (Installment ${installment.installmentNumber}/${loan.totalInstallments})`
+        : `EMI payment paid for ${loan.title} (Installment ${installment.installmentNumber}/${loan.totalInstallments})`,
       transactionDate: new Date()
     });
 
-    // 2. Deduct the EMI amount from the account balance
-    account.balance = Number(account.balance) - Number(installment.amount);
+    // 2. Adjust account balance: INCREASE for lent collection (+), DEDUCT for borrowed payment (-)
+    if (isLent) {
+      account.balance = Number(account.balance) + Number(installment.amount);
+    } else {
+      account.balance = Number(account.balance) - Number(installment.amount);
+    }
     await account.save();
 
     // 3. Mark the installment as paid
