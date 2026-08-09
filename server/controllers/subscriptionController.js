@@ -188,7 +188,9 @@ export const createSubscription = async (req, res) => {
     });
   } catch (error) {
     let msg = error.message || 'Failed to create subscription';
-    if (msg.includes('schema cache') || msg.includes('does not exist') || msg.includes('42P01') || msg.includes('subscriptions')) {
+    if (msg.includes('row-level security') || msg.includes('42501') || msg.includes('policy')) {
+      msg = 'Supabase Row-Level Security (RLS) is blocking inserts on "subscriptions". Please run: ALTER TABLE subscriptions DISABLE ROW LEVEL SECURITY; in Supabase SQL Editor.';
+    } else if (msg.includes('schema cache') || msg.includes('does not exist') || msg.includes('42P01')) {
       msg = 'Database table "subscriptions" does not exist in your Supabase project yet. Please open Supabase SQL Editor and run server/schema_subscriptions.sql once to enable subscriptions.';
     }
     res.status(400).json({
