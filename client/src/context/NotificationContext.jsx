@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect } from 'react'
+import { createContext, useContext, useState, useEffect, useRef } from 'react'
 
 const NotificationContext = createContext()
 
@@ -9,6 +9,7 @@ export function NotificationProvider({ children }) {
   })
 
   const [popups, setPopups] = useState([])
+  const seenIdsRef = useRef(new Set())
 
   const setPopupEnabled = (enabled) => {
     setPopupEnabledState(enabled)
@@ -23,12 +24,17 @@ export function NotificationProvider({ children }) {
     // If pop-ups are turned off in settings, do not show floating banner
     if (!popupEnabled) return
 
-    const popupId = id || `popup-${Date.now()}-${Math.random()}`
+    const popupId = id || `popup-${title}-${message}`
     
-    // Check if already popped up
+    // Deduplicate: prevent firing the exact same notification multiple times
+    if (seenIdsRef.current.has(popupId)) return
+    seenIdsRef.current.add(popupId)
+
+    // Keep max 2 visible floating banners to prevent full-screen stacking
     setPopups((prev) => {
       if (prev.some((p) => p.id === popupId)) return prev
-      return [...prev, { id: popupId, title, message, time, type }]
+      const updated = [...prev, { id: popupId, title, message, time, type }]
+      return updated.slice(-2)
     })
 
     // Browser Notification API (if permission is granted)

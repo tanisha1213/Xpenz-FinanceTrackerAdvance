@@ -6,9 +6,12 @@ export default function PopUpBanner() {
 
   if (!popups || popups.length === 0) return null
 
+  // Show at most 2 visible toasts at a time to prevent full-screen stacking
+  const visiblePopups = popups.slice(-2)
+
   return (
-    <div className="fixed top-5 right-4 left-4 sm:left-auto sm:w-96 z-50 space-y-3 pointer-events-none">
-      {popups.map((popup) => {
+    <div className="fixed top-5 right-4 left-4 sm:left-auto sm:w-96 z-[9999] space-y-3 pointer-events-none">
+      {visiblePopups.map((popup) => {
         const isOverdue = popup.type === 'overdue' || popup.title.includes('Overdue')
         const isDue = popup.type === 'due' || popup.title.includes('Due')
         

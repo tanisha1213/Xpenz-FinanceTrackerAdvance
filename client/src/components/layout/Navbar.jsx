@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useSelector } from 'react-redux'
-import { FiBell, FiSun, FiMoon } from 'react-icons/fi'
+import { FiBell, FiSun, FiMoon, FiHelpCircle } from 'react-icons/fi'
 import { useTheme } from '../../context/ThemeContext'
 import logoLight from '../../assets/logo-light.png'
 import logoDark from '../../assets/logo-dark.png'
@@ -118,6 +118,15 @@ function Navbar() {
         </div>
         
         <div className="flex items-center gap-4">
+          {/* Tour Guide Button */}
+          <button
+            onClick={() => window.dispatchEvent(new Event('xpenz_trigger_tour'))}
+            className="p-2 rounded-full text-slate-400 hover:text-slate-600 dark:text-slate-500 dark:hover:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all cursor-pointer"
+            title="Restart Tour Guide"
+          >
+            <FiHelpCircle className="w-5 h-5" />
+          </button>
+
           {/* Theme Switcher Button */}
           <button
             onClick={toggleTheme}

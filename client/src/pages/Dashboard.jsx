@@ -153,9 +153,26 @@ function Dashboard() {
 
   const loadDashboard = () => {
     setLoading(true)
+    const cached = localStorage.getItem('xpenz_cached_summary')
+    if (cached) {
+      try {
+        setSummary(JSON.parse(cached))
+      } catch (e) {
+        console.warn('Failed to parse cached summary:', e)
+      }
+    }
+
     getDashboardSummary()
-      .then((response) => setSummary(response.data.data))
-      .catch((err) => setError(err.response?.data?.message || 'Unable to load dashboard'))
+      .then((response) => {
+        setSummary(response.data.data)
+        localStorage.setItem('xpenz_cached_summary', JSON.stringify(response.data.data))
+        setError('')
+      })
+      .catch((err) => {
+        if (!cached) {
+          setError(err.response?.data?.message || 'Unable to load dashboard. Please check your internet connection.')
+        }
+      })
       .finally(() => setLoading(false))
   }
 

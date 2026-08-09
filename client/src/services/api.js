@@ -4,15 +4,26 @@ const getBaseURL = () => {
   if (import.meta.env.VITE_API_URL) {
     return import.meta.env.VITE_API_URL;
   }
-  // If running in browser locally (Vite ports like 5173 or 4173) or on Vercel, use relative proxy paths
+  // Native Capacitor Android / iOS APK detection
+  const isNativeApp = 
+    window.Capacitor || 
+    window.location.protocol === 'capacitor:' || 
+    window.location.protocol === 'file:' ||
+    (window.location.hostname === 'localhost' && window.location.port !== '5173' && window.location.port !== '4173');
+
+  if (isNativeApp) {
+    return 'https://xpenz-finance-tracker-advance.vercel.app/api';
+  }
+
+  // If running in browser locally (Vite dev server)
   if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
     return '/api';
   }
   if (window.location.hostname.endsWith('.vercel.app') || window.location.hostname === 'vercel.app') {
     return '/api';
   }
-  // Default to live Vercel backend URL for native iOS/Android environments
-  return 'https://ai-finance-tracker-amber.vercel.app/api';
+  // Default to live Vercel production backend URL
+  return 'https://xpenz-finance-tracker-advance.vercel.app/api';
 };
 
 const API = axios.create({

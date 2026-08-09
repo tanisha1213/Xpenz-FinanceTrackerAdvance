@@ -27,6 +27,9 @@ const allowedOrigins = [
   'capacitor://localhost'
 ];
 
+// Trust Vercel reverse proxy headers for per-client IP rate limiting
+app.set('trust proxy', 1);
+
 // Middleware
 app.use(helmet());
 app.use(cors({
@@ -41,9 +44,13 @@ app.use(cors({
 }));
 app.use(rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 300,
+  max: 1000,
   standardHeaders: true,
-  legacyHeaders: false
+  legacyHeaders: false,
+  message: {
+    success: false,
+    message: 'Too many requests from this device. Please wait a moment and try again.'
+  }
 }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));

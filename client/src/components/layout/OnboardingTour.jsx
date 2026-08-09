@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from 'react'
 import { useLocation } from 'react-router-dom'
 import { useLanguage } from '../../context/LanguageContext'
-import { FiChevronRight, FiChevronLeft, FiX, FiHelpCircle } from 'react-icons/fi'
+import { FiChevronRight, FiChevronLeft, FiX } from 'react-icons/fi'
 
 const pageTours = {
   '/dashboard': [
@@ -540,26 +540,17 @@ export default function OnboardingTour() {
     setStepIndex(0)
   }
 
-  const triggerRestart = () => {
-    setStepIndex(0)
-    setActive(true)
-  }
+  // Listen for manual tour restart event from Navbar
+  useEffect(() => {
+    const handleTrigger = () => {
+      setStepIndex(0)
+      setActive(true)
+    }
+    window.addEventListener('xpenz_trigger_tour', handleTrigger)
+    return () => window.removeEventListener('xpenz_trigger_tour', handleTrigger)
+  }, [])
 
-  if (steps.length === 0) return null
-
-  if (!active) {
-    // Show a floating help button at bottom right to trigger tour manually
-    return (
-      <button
-        onClick={triggerRestart}
-        className="fixed bottom-20 right-6 z-[1000] bg-indigo-650 dark:bg-purple-650 hover:bg-indigo-750 dark:hover:bg-purple-750 text-white p-3 rounded-full shadow-lg flex items-center justify-center gap-1.5 font-bold text-xs cursor-pointer hover:scale-105 transition-all"
-        title={labels.restartTour}
-      >
-        <FiHelpCircle className="w-4 h-4" />
-        <span className="hidden sm:inline">{labels.restartTour}</span>
-      </button>
-    )
-  }
+  if (steps.length === 0 || !active) return null
 
   const currentStep = steps[stepIndex]
   if (!currentStep) return null

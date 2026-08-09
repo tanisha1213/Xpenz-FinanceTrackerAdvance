@@ -128,12 +128,16 @@ const authSlice = createSlice({
         state.isAuthenticated = true
         localStorage.setItem('user', JSON.stringify(action.payload))
       })
-      .addCase(refreshUser.rejected, (state) => {
-        state.user = null
-        state.token = null
-        state.isAuthenticated = false
-        localStorage.removeItem('token')
-        localStorage.removeItem('user')
+      .addCase(refreshUser.rejected, (state, action) => {
+        // Only wipe credentials if explicitly 401 Unauthorized by server
+        const isUnauthorized = action.payload === 'Unauthorized' || (typeof action.payload === 'string' && action.payload.includes('401'))
+        if (isUnauthorized) {
+          state.user = null
+          state.token = null
+          state.isAuthenticated = false
+          localStorage.removeItem('token')
+          localStorage.removeItem('user')
+        }
       })
       .addCase(updateProfileThunk.fulfilled, (state, action) => {
         state.user = action.payload
