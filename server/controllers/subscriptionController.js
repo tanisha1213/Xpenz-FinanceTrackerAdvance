@@ -1,0 +1,340 @@
+import Subscription from '../models/Subscription.js';
+import Account from '../models/Account.js';
+import Transaction from '../models/Transaction.js';
+
+// Auto-process pending subscriptions where billing date is due and autoDeduct is enabled
+export const processAutoDeductions = async (userId) => {
+  try {
+    const subscriptions = await Subscription.find({ userId, status: 'active' });
+    if (!subscriptions || subscriptions.length === 0) return [];
+
+    const now = new Date();
+    const processed = [];
+
+    for (const sub of subscriptions) {
+      if (!sub.autoDeduct) continue;
+      
+      const nextDueDate = new Date(sub.nextBillingDate);
+      if (isNaN(nextDueDate.getTime())) continue;
+
+      // Check if due date has arrived
+      if (nextDueDate <= now) {
+        // Prevent duplicate deductions on the same date
+        if (sub.lastDeductedDate) {
+          const lastDeducted = new Date(sub.lastDeductedDate);
+          if (
+            lastDeducted.getFullYear() === now.getFullYear() &&
+            lastDeducted.getMonth() === now.getMonth() &&
+            lastDeducted.getDate() === now.getDate()
+          ) {
+            continue;
+          }
+        }
+
+        // Find or fallback payment account
+        let accountId = sub.accountId;
+        if (typeof accountId === 'object') accountId = accountId._id || accountId.id;
+
+        let account = accountId ? await Account.findById(accountId) : null;
+        if (!account) {
+          account = await Account.findOne({ userId, type: 'bank' });
+        }
+        if (!account) {
+          account = await Account.findOne({ userId, type: 'cash' });
+        }
+
+        const amount = Number(sub.amount) || 0;
+        if (amount > 0 && account) {
+          // 1. Deduct balance from account
+          const currentBal = Number(account.balance) || 0;
+          account.balance = currentBal - amount;
+          await account.save();
+
+          // 2. Create expense transaction record
+          const transaction = await Transaction.create({
+            userId,
+            type: 'expense',
+            title: `${sub.title} (Auto-Renew)`,
+            amount,
+            category: sub.category || 'Subscriptions',
+            paymentMethod: account.type === 'cash' ? 'cash' : 'bank_transfer',
+            accountId: account._id,
+            description: `Automatic recurring subscription payment for ${sub.title}`,
+            transactionDate: now
+          });
+
+          // 3. Advance next billing date according to cycle
+          const newNextDate = new Date(nextDueDate);
+          if (sub.billingCycle === 'yearly') {
+            newNextDate.setFullYear(newNextDate.getFullYear() + 1);
+          } else if (sub.billingCycle === 'quarterly') {
+            newNextDate.setMonth(newNextDate.getMonth() + 3);
+          } else {
+            // default monthly
+            newNextDate.setMonth(newNextDate.getMonth() + 1);
+          }
+
+          sub.lastDeductedDate = now;
+          sub.nextBillingDate = newNextDate;
+          await sub.save();
+
+          processed.push({
+            id: sub._id,
+            title: sub.title,
+            amount,
+            accountName: account.name,
+            transactionId: transaction._id
+          });
+        }
+      }
+    }
+
+    return processed;
+  } catch (err) {
+    console.warn('processAutoDeductions background task notice:', err.message);
+    return [];
+  }
+};
+
+export const getSubscriptions = async (req, res) => {
+  try {
+    // Run auto deductions check on fetch
+    await processAutoDeductions(req.userId);
+
+    const subscriptions = await Subscription.find({ userId: req.userId })
+      .populate('accountId', 'name type balance')
+      .sort({ nextBillingDate: 1 });
+
+    const activeSubs = subscriptions.filter(s => s.status === 'active');
+    
+    // Calculate monthly commitment total
+    const totalMonthlyCommitment = activeSubs.reduce((sum, sub) => {
+      const amt = Number(sub.amount) || 0;
+      if (sub.billingCycle === 'yearly') return sum + (amt / 12);
+      if (sub.billingCycle === 'quarterly') return sum + (amt / 3);
+      return sum + amt;
+    }, 0);
+
+    const totalYearlyCommitment = activeSubs.reduce((sum, sub) => {
+      const amt = Number(sub.amount) || 0;
+      if (sub.billingCycle === 'yearly') return sum + amt;
+      if (sub.billingCycle === 'quarterly') return sum + (amt * 4);
+      return sum + (amt * 12);
+    }, 0);
+
+    res.status(200).json({
+      success: true,
+      data: {
+        subscriptions,
+        stats: {
+          totalCount: subscriptions.length,
+          activeCount: activeSubs.length,
+          totalMonthlyCommitment: Math.round(totalMonthlyCommitment),
+          totalYearlyCommitment: Math.round(totalYearlyCommitment)
+        }
+      }
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message || 'Failed to fetch subscriptions'
+    });
+  }
+};
+
+export const createSubscription = async (req, res) => {
+  try {
+    const { title, category, billingCycle, amount, startDate, nextBillingDate, accountId, autoDeduct, description } = req.body;
+
+    if (!title?.trim() || !amount || Number(amount) <= 0) {
+      return res.status(400).json({
+        success: false,
+        message: 'Please provide a valid subscription title and amount greater than zero'
+      });
+    }
+
+    const cycle = ['monthly', 'quarterly', 'yearly'].includes(billingCycle) ? billingCycle : 'monthly';
+    const start = startDate ? new Date(startDate) : new Date();
+
+    // Default next billing date to 1 cycle from start if not provided
+    let nextDate = nextBillingDate ? new Date(nextBillingDate) : new Date(start);
+    if (!nextBillingDate) {
+      if (cycle === 'yearly') nextDate.setFullYear(nextDate.getFullYear() + 1);
+      else if (cycle === 'quarterly') nextDate.setMonth(nextDate.getMonth() + 3);
+      else nextDate.setMonth(nextDate.getMonth() + 1);
+    }
+
+    let finalAccountId = accountId;
+    if (!finalAccountId) {
+      const defaultBank = await Account.findOne({ userId: req.userId, type: 'bank' });
+      const defaultCash = await Account.findOne({ userId: req.userId, type: 'cash' });
+      finalAccountId = defaultBank?._id || defaultCash?._id;
+    }
+
+    const subscription = await Subscription.create({
+      userId: req.userId,
+      title: title.trim(),
+      category: category?.trim() || 'Subscriptions',
+      billingCycle: cycle,
+      amount: Number(amount),
+      startDate: start,
+      nextBillingDate: nextDate,
+      accountId: finalAccountId,
+      autoDeduct: autoDeduct !== false,
+      status: 'active',
+      description: description?.trim()
+    });
+
+    const populated = await Subscription.findById(subscription._id).populate('accountId', 'name type balance');
+
+    res.status(201).json({
+      success: true,
+      message: 'Subscription created successfully',
+      data: populated
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
+  }
+};
+
+export const updateSubscription = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { title, category, billingCycle, amount, nextBillingDate, accountId, autoDeduct, status, description } = req.body;
+
+    const subscription = await Subscription.findOne({ _id: id, userId: req.userId });
+    if (!subscription) {
+      return res.status(404).json({
+        success: false,
+        message: 'Subscription not found'
+      });
+    }
+
+    if (title !== undefined) subscription.title = title.trim();
+    if (category !== undefined) subscription.category = category.trim();
+    if (billingCycle !== undefined) subscription.billingCycle = billingCycle;
+    if (amount !== undefined) subscription.amount = Number(amount);
+    if (nextBillingDate !== undefined) subscription.nextBillingDate = new Date(nextBillingDate);
+    if (accountId !== undefined) subscription.accountId = accountId;
+    if (autoDeduct !== undefined) subscription.autoDeduct = !!autoDeduct;
+    if (status !== undefined) subscription.status = status;
+    if (description !== undefined) subscription.description = description?.trim();
+
+    await subscription.save();
+
+    const populated = await Subscription.findById(subscription._id).populate('accountId', 'name type balance');
+
+    res.status(200).json({
+      success: true,
+      message: 'Subscription updated successfully',
+      data: populated
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
+  }
+};
+
+export const triggerDeductionNow = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const subscription = await Subscription.findOne({ _id: id, userId: req.userId });
+    if (!subscription) {
+      return res.status(404).json({
+        success: false,
+        message: 'Subscription not found'
+      });
+    }
+
+    let accountId = subscription.accountId;
+    if (typeof accountId === 'object') accountId = accountId._id || accountId.id;
+
+    let account = accountId ? await Account.findById(accountId) : null;
+    if (!account) account = await Account.findOne({ userId: req.userId, type: 'bank' });
+    if (!account) account = await Account.findOne({ userId: req.userId, type: 'cash' });
+
+    const amount = Number(subscription.amount) || 0;
+    if (!account || amount <= 0) {
+      return res.status(400).json({
+        success: false,
+        message: 'Unable to process payment. Please verify account balance or amount.'
+      });
+    }
+
+    // Deduct balance
+    const currentBal = Number(account.balance) || 0;
+    account.balance = currentBal - amount;
+    await account.save();
+
+    // Create transaction record
+    const now = new Date();
+    const transaction = await Transaction.create({
+      userId: req.userId,
+      type: 'expense',
+      title: `${subscription.title} (Payment)`,
+      amount,
+      category: subscription.category || 'Subscriptions',
+      paymentMethod: account.type === 'cash' ? 'cash' : 'bank_transfer',
+      accountId: account._id,
+      description: `Manual subscription payment for ${subscription.title}`,
+      transactionDate: now
+    });
+
+    // Advance next billing date
+    const nextDueDate = new Date(subscription.nextBillingDate || now);
+    if (subscription.billingCycle === 'yearly') nextDueDate.setFullYear(nextDueDate.getFullYear() + 1);
+    else if (subscription.billingCycle === 'quarterly') nextDueDate.setMonth(nextDueDate.getMonth() + 3);
+    else nextDueDate.setMonth(nextDueDate.getMonth() + 1);
+
+    subscription.lastDeductedDate = now;
+    subscription.nextBillingDate = nextDueDate;
+    await subscription.save();
+
+    const populated = await Subscription.findById(subscription._id).populate('accountId', 'name type balance');
+
+    res.status(200).json({
+      success: true,
+      message: `Successfully paid ₹${amount} for ${subscription.title}`,
+      data: {
+        subscription: populated,
+        transaction
+      }
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
+  }
+};
+
+export const deleteSubscription = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const subscription = await Subscription.findOne({ _id: id, userId: req.userId });
+
+    if (!subscription) {
+      return res.status(404).json({
+        success: false,
+        message: 'Subscription not found'
+      });
+    }
+
+    await Subscription.deleteOne({ _id: id });
+
+    res.status(200).json({
+      success: true,
+      message: 'Subscription deleted successfully'
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
+  }
+};

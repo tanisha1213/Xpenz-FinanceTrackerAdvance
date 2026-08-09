@@ -1,7 +1,7 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { useDispatch } from 'react-redux'
 import { logout } from '../../redux/slices/authSlice'
-import { FiLayout, FiDollarSign, FiPieChart, FiTrendingUp, FiUser, FiLogOut, FiCreditCard } from 'react-icons/fi'
+import { FiLayout, FiDollarSign, FiPieChart, FiTrendingUp, FiUser, FiLogOut, FiCreditCard, FiRepeat } from 'react-icons/fi'
 import { useTheme } from '../../context/ThemeContext'
 import { useLanguage } from '../../context/LanguageContext'
 import logoLight from '../../assets/logo-light.png'
@@ -19,6 +19,7 @@ function Sidebar() {
     { labelKey: 'accounts', path: '/balance', icon: FiCreditCard },
     { labelKey: 'transactions', path: '/transactions', icon: FiDollarSign },
     { labelKey: 'budget', path: '/budget', icon: FiPieChart },
+    { labelKey: 'subscriptions', path: '/subscriptions', icon: FiRepeat },
     { labelKey: 'analytics', path: '/insights', icon: FiTrendingUp },
     { labelKey: 'profile', path: '/profile', icon: FiUser }
   ]

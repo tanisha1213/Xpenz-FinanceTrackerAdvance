@@ -4,10 +4,17 @@ import Account from '../models/Account.js';
 import Loan from '../models/Loan.js';
 import Investment from '../models/Investment.js';
 import Insurance from '../models/Insurance.js';
+import Subscription from '../models/Subscription.js';
+import { processAutoDeductions } from './subscriptionController.js';
 import { summarizeTransactions } from '../services/financeAnalyzer.js';
 
 export const getDashboardSummary = async (req, res) => {
   try {
+    // 0. Process auto deductions for recurring subscriptions
+    await processAutoDeductions(req.userId).catch(err => {
+      console.warn('Dashboard: auto-deductions check skipped. Error:', err.message);
+    });
+
     // 1. Initialize default accounts if they don't exist
     let cashAccount = await Account.findOne({ userId: req.userId, type: 'cash' });
     if (!cashAccount) {
@@ -55,7 +62,8 @@ export const getDashboardSummary = async (req, res) => {
       budget,
       loans,
       investments,
-      insurances
+      insurances,
+      subscriptions
     ] = await Promise.all([
       Transaction.find({
         userId: req.userId,
@@ -84,6 +92,10 @@ export const getDashboardSummary = async (req, res) => {
       }),
       Insurance.find({ userId: req.userId, status: 'active' }).catch(err => {
         console.warn('Dashboard: insurances table query failed, using empty array. Error:', err.message);
+        return [];
+      }),
+      Subscription.find({ userId: req.userId, status: 'active' }).catch(err => {
+        console.warn('Dashboard: subscriptions table query failed, using empty array. Error:', err.message);
         return [];
       })
     ]);
@@ -135,6 +147,20 @@ export const getDashboardSummary = async (req, res) => {
           amount: Number(ins.premiumAmount),
           dueDate: ins.renewalDate,
           frequency: ins.paymentFrequency || 'yearly'
+        });
+      }
+    });
+
+    // Add Recurring Subscriptions
+    (subscriptions || []).forEach(sub => {
+      if (sub.nextBillingDate && Number(sub.amount) > 0) {
+        upcomingPayments.push({
+          id: sub._id,
+          type: 'subscription',
+          title: `${sub.title} Renewal`,
+          amount: Number(sub.amount),
+          dueDate: sub.nextBillingDate,
+          frequency: sub.billingCycle || 'monthly'
         });
       }
     });

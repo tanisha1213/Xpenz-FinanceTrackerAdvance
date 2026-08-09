@@ -7,6 +7,7 @@ const translations = {
     accounts: 'Accounts',
     transactions: 'Transactions',
     budget: 'Budget',
+    subscriptions: 'Subscriptions',
     analytics: 'Analytics',
     profile: 'Profile',
     loans: 'Loans & EMIs',

@@ -32,6 +32,7 @@ const Budget = lazyWithRetry(() => import('./pages/Budget'))
 const InsightsReports = lazyWithRetry(() => import('./pages/InsightsReports'))
 const Profile = lazyWithRetry(() => import('./pages/Profile'))
 const Balance = lazyWithRetry(() => import('./pages/Balance'))
+const Subscriptions = lazyWithRetry(() => import('./pages/Subscriptions'))
 
 // Layout
 import Layout from './components/layout/Layout'
@@ -80,6 +81,7 @@ function App() {
               <Route path="/balance" element={<Balance />} />
               <Route path="/transactions" element={<Transactions />} />
               <Route path="/budget" element={<Budget />} />
+              <Route path="/subscriptions" element={<Subscriptions />} />
               <Route path="/insights" element={<InsightsReports />} />
               <Route path="/reports" element={<Navigate to="/insights" replace />} />
               <Route path="/loans" element={<Navigate to="/transactions?tab=loans" replace />} />

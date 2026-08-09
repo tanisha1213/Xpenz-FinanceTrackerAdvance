@@ -15,6 +15,7 @@ import accountRoutes from './routes/accountRoutes.js';
 import loanRoutes from './routes/loanRoutes.js';
 import investmentRoutes from './routes/investmentRoutes.js';
 import insuranceRoutes from './routes/insuranceRoutes.js';
+import subscriptionRoutes from './routes/subscriptionRoutes.js';
 
 dotenv.config();
 
@@ -96,6 +97,7 @@ app.use('/api/accounts', accountRoutes);
 app.use('/api/loans', loanRoutes);
 app.use('/api/investments', investmentRoutes);
 app.use('/api/insurances', insuranceRoutes);
+app.use('/api/subscriptions', subscriptionRoutes);
 
 // Health check
 app.get('/health', (req, res) => {
