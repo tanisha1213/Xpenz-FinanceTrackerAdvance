@@ -187,9 +187,13 @@ export const createSubscription = async (req, res) => {
       data: populated
     });
   } catch (error) {
-    res.status(500).json({
+    let msg = error.message || 'Failed to create subscription';
+    if (msg.includes('schema cache') || msg.includes('does not exist') || msg.includes('42P01') || msg.includes('subscriptions')) {
+      msg = 'Database table "subscriptions" does not exist in your Supabase project yet. Please open Supabase SQL Editor and run server/schema_subscriptions.sql once to enable subscriptions.';
+    }
+    res.status(400).json({
       success: false,
-      message: error.message
+      message: msg
     });
   }
 };

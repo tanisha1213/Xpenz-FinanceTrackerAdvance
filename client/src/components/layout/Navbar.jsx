@@ -110,51 +110,53 @@ function Navbar() {
 
   return (
     <nav className="bg-white/80 dark:bg-dark-card/80 backdrop-blur-md border-b border-slate-100 dark:border-dark-border sticky top-0 z-30 transition-colors duration-200">
-      <div className="px-4 md:px-6 py-4 flex justify-between items-center">
-        <div className="flex items-center gap-2">
-          <img src={theme === 'light' ? logoLight : logoDark} alt="Xpenz Logo" className="w-6 h-6 rounded-md object-contain shadow-sm" />
+      <div className="px-3 sm:px-6 py-3 flex justify-between items-center gap-2 max-w-full overflow-hidden">
+        {/* Brand Logo & Title */}
+        <div className="flex items-center gap-2 shrink-0">
+          <img src={theme === 'light' ? logoLight : logoDark} alt="Xpenz Logo" className="w-7 h-7 rounded-md object-contain shadow-sm" />
           <h2 className="text-base sm:text-lg md:text-xl font-bold text-slate-800 dark:text-white tracking-tight">
             Xpenz
           </h2>
         </div>
         
-        <div className="flex items-center gap-4">
-          {/* Tour Guide Button */}
-          <button
-            onClick={() => window.dispatchEvent(new Event('xpenz_trigger_tour'))}
-            className="p-2 rounded-full text-slate-400 hover:text-slate-600 dark:text-slate-500 dark:hover:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all cursor-pointer"
-            title="Restart Tour Guide"
-          >
-            <FiHelpCircle className="w-5 h-5" />
-          </button>
-
-          {/* Theme Switcher Button */}
-          <button
-            onClick={toggleTheme}
-            className="p-2 rounded-full text-slate-400 hover:text-slate-600 dark:text-slate-500 dark:hover:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all cursor-pointer"
-            title={theme === 'light' ? 'Switch to Dark Mode' : 'Switch to Light Mode'}
-          >
-            {theme === 'light' ? <FiMoon className="w-5 h-5" /> : <FiSun className="w-5 h-5 text-amber-400" />}
-          </button>
-
+        {/* Right Header Actions */}
+        <div className="flex items-center gap-1 sm:gap-2 md:gap-3 shrink-0 flex-nowrap">
           {/* Language Switcher */}
           <div id="language-switcher-tour" className="relative flex items-center">
             <select
               value={language}
               onChange={(e) => setLanguage(e.target.value)}
-              className="appearance-none bg-slate-50 dark:bg-dark-border border border-slate-200 dark:border-dark-border text-slate-650 dark:text-slate-300 rounded-xl pl-3 pr-7 py-1.5 text-xs font-bold focus:outline-none cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-800 transition-all font-sans"
+              className="appearance-none bg-slate-50 dark:bg-dark-border border border-slate-200 dark:border-dark-border text-slate-650 dark:text-slate-300 rounded-xl pl-2.5 pr-6 py-1 sm:py-1.5 text-[11px] sm:text-xs font-bold focus:outline-none cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-800 transition-all font-sans"
             >
-              <option value="en">English</option>
+              <option value="en">EN</option>
               <option value="hi">हिन्दी</option>
               <option value="mr">मराठी</option>
               <option value="ta">தமிழ்</option>
             </select>
-            <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-1.5 text-slate-400">
-              <svg className="fill-current h-3.5 w-3.5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
+            <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-1 text-slate-400">
+              <svg className="fill-current h-3 w-3" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
                 <path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z" />
               </svg>
             </div>
           </div>
+
+          {/* Theme Switcher Button */}
+          <button
+            onClick={toggleTheme}
+            className="p-1.5 sm:p-2 rounded-full text-slate-400 hover:text-slate-600 dark:text-slate-500 dark:hover:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all cursor-pointer"
+            title={theme === 'light' ? 'Switch to Dark Mode' : 'Switch to Light Mode'}
+          >
+            {theme === 'light' ? <FiMoon className="w-4.5 h-4.5 sm:w-5 sm:h-5" /> : <FiSun className="w-4.5 h-4.5 sm:w-5 sm:h-5 text-amber-400" />}
+          </button>
+
+          {/* Tour Guide Button */}
+          <button
+            onClick={() => window.dispatchEvent(new Event('xpenz_trigger_tour'))}
+            className="p-1.5 sm:p-2 rounded-full text-secondary dark:text-purple-400 hover:bg-purple-50 dark:hover:bg-purple-950/40 transition-all cursor-pointer"
+            title="Restart Tour Guide"
+          >
+            <FiHelpCircle className="w-4.5 h-4.5 sm:w-5 sm:h-5" />
+          </button>
 
           <div className="relative">
             <button
