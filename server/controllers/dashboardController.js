@@ -38,9 +38,9 @@ export const getDashboardSummary = async (req, res) => {
 
     // 3. Fetch accounts and compute balance sums
     const accounts = await Account.find({ userId: req.userId }).sort({ type: 1, name: 1 });
-    const totalBalance = accounts.reduce((sum, acc) => sum + acc.balance, 0);
-    const cashBalance = accounts.filter(acc => acc.type === 'cash').reduce((sum, acc) => sum + acc.balance, 0);
-    const bankBalance = accounts.filter(acc => acc.type === 'bank').reduce((sum, acc) => sum + acc.balance, 0);
+    const totalBalance = accounts.reduce((sum, acc) => sum + (Number(acc.balance) || 0), 0);
+    const cashBalance = accounts.filter(acc => acc.type === 'cash').reduce((sum, acc) => sum + (Number(acc.balance) || 0), 0);
+    const bankBalance = accounts.filter(acc => acc.type === 'bank').reduce((sum, acc) => sum + (Number(acc.balance) || 0), 0);
 
     // 4. Optimize queries by filtering for current month and limiting recent fetches
     const now = new Date();

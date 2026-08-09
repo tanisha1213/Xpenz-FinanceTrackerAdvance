@@ -3,6 +3,12 @@ import Account from '../models/Account.js';
 import Loan from '../models/Loan.js';
 import { supabase } from '../config/supabase.js';
 
+const extractId = (val) => {
+  if (!val) return null;
+  if (typeof val === 'object') return val._id || val.id || null;
+  return val;
+};
+
 // Helper to adjust account balance based on transaction type and operation (apply/revert)
 const adjustBalances = async (transaction, operation) => {
   if (!transaction) return;
@@ -10,31 +16,46 @@ const adjustBalances = async (transaction, operation) => {
   const amount = Number(transaction.amount);
   if (isNaN(amount) || amount <= 0) return;
 
+  const mainAccId = extractId(transaction.accountId);
+  const toAccId = extractId(transaction.toAccountId);
+
   // 1. Adjust Account Balances
   if (transaction.type === 'income') {
-    const account = await Account.findById(transaction.accountId);
-    if (account) {
-      account.balance += (operation === 'apply' ? amount : -amount);
-      await account.save();
+    if (mainAccId) {
+      const account = await Account.findById(mainAccId);
+      if (account) {
+        const currentBal = Number(account.balance) || 0;
+        account.balance = currentBal + (operation === 'apply' ? amount : -amount);
+        await account.save();
+      }
     }
   } else if (transaction.type === 'expense') {
-    const account = await Account.findById(transaction.accountId);
-    if (account) {
-      account.balance += (operation === 'apply' ? -amount : amount);
-      await account.save();
+    if (mainAccId) {
+      const account = await Account.findById(mainAccId);
+      if (account) {
+        const currentBal = Number(account.balance) || 0;
+        account.balance = currentBal + (operation === 'apply' ? -amount : amount);
+        await account.save();
+      }
     }
   } else if (transaction.type === 'transfer') {
     // Deduct from source account (From)
-    const fromAccount = await Account.findById(transaction.accountId);
-    if (fromAccount) {
-      fromAccount.balance += (operation === 'apply' ? -amount : amount);
-      await fromAccount.save();
+    if (mainAccId) {
+      const fromAccount = await Account.findById(mainAccId);
+      if (fromAccount) {
+        const currentBal = Number(fromAccount.balance) || 0;
+        fromAccount.balance = currentBal + (operation === 'apply' ? -amount : amount);
+        await fromAccount.save();
+      }
     }
     // Add to destination account (To)
-    const toAccount = await Account.findById(transaction.toAccountId);
-    if (toAccount) {
-      toAccount.balance += (operation === 'apply' ? amount : -amount);
-      await toAccount.save();
+    if (toAccId) {
+      const toAccount = await Account.findById(toAccId);
+      if (toAccount) {
+        const currentBal = Number(toAccount.balance) || 0;
+        toAccount.balance = currentBal + (operation === 'apply' ? amount : -amount);
+        await toAccount.save();
+      }
     }
   }
 
