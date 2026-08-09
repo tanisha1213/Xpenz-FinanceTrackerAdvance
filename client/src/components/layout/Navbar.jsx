@@ -204,6 +204,7 @@ function Navbar() {
 
           {user && (
             <Link
+              id="user-profile-tour"
               to="/profile"
               className="flex items-center gap-3 pl-2 border-l border-slate-100 dark:border-dark-border cursor-pointer group hover:opacity-90 transition-all"
               title="View & Edit Profile"

@@ -66,7 +66,7 @@ function Profile() {
       {error && <div className="rounded-xl border border-rose-100 dark:border-rose-950/20 bg-rose-50/50 dark:bg-rose-950/5 p-3 text-sm text-rose-700 dark:text-rose-400">{error}</div>}
 
       <div className="grid gap-6 lg:grid-cols-3">
-        <section className="rounded-2xl border border-slate-100 dark:border-dark-border bg-white dark:bg-dark-card p-6 shadow-premium lg:col-span-2 space-y-8">
+        <section id="profile-card-tour" className="rounded-2xl border border-slate-100 dark:border-dark-border bg-white dark:bg-dark-card p-6 shadow-premium lg:col-span-2 space-y-8">
           {/* User Profile Form */}
           <div>
             <div className="flex items-center gap-2 border-b border-slate-100 dark:border-dark-border pb-4 mb-4">

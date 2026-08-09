@@ -222,8 +222,9 @@ export default function Subscriptions() {
         </div>
 
         <button
+          id="add-subscription-btn-tour"
           onClick={handleOpenAdd}
-          className="flex items-center justify-center gap-2 px-5 py-3 bg-secondary hover:bg-indigo-700 dark:bg-purple-650 dark:hover:bg-purple-750 text-white rounded-2xl font-bold text-sm shadow-lg shadow-indigo-500/20 dark:shadow-purple-500/20 transition-all cursor-pointer hover:scale-[1.02] active:scale-[0.98]"
+          className="flex items-center justify-center gap-2 px-5 py-3 bg-secondary hover:bg-indigo-700 dark:bg-purple-650 dark:hover:bg-purple-755 text-white rounded-2xl font-bold text-sm shadow-lg shadow-indigo-500/20 dark:shadow-purple-500/20 transition-all cursor-pointer hover:scale-[1.02] active:scale-[0.98]"
         >
           <FiPlus className="w-5 h-5" />
           <span>Add Subscription</span>
@@ -231,7 +232,7 @@ export default function Subscriptions() {
       </div>
 
       {/* Hero Stats Section */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      <div id="subscriptions-stats-grid-tour" className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <div className="bg-white/80 dark:bg-dark-card/80 backdrop-blur-xl border border-slate-200/80 dark:border-dark-border p-5 rounded-3xl shadow-sm space-y-2">
           <div className="flex items-center justify-between">
             <span className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
@@ -342,7 +343,7 @@ export default function Subscriptions() {
           </button>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div id="subscriptions-list-tour" className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {filteredSubs.map((sub) => {
             const isPaused = sub.status === 'paused'
             const nextDate = new Date(sub.nextBillingDate)
