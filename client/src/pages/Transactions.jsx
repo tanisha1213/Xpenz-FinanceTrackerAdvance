@@ -1114,7 +1114,9 @@ function Transactions() {
                     required
                   >
                     {accounts.map((acc) => (
-                      <option key={acc._id} value={acc._id}>{acc.name} ({formatCurrency(acc.balance)})</option>
+                      <option key={acc._id || acc.id} value={acc._id || acc.id}>
+                        {acc.name} ({acc.type === 'cash' ? 'Cash' : 'Bank'}) - {formatCurrency(acc.balance)}
+                      </option>
                     ))}
                   </select>
                 </div>

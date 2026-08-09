@@ -1,5 +1,5 @@
 import { Link, useLocation } from 'react-router-dom'
-import { FiLayout, FiDollarSign, FiPieChart, FiTrendingUp, FiUser, FiCreditCard } from 'react-icons/fi'
+import { FiLayout, FiDollarSign, FiPieChart, FiTrendingUp, FiRepeat, FiCreditCard } from 'react-icons/fi'
 import { useLanguage } from '../../context/LanguageContext'
 
 function BottomNavigation() {
@@ -11,8 +11,8 @@ function BottomNavigation() {
     { labelKey: 'accounts', path: '/balance', icon: FiCreditCard },
     { labelKey: 'transactions', path: '/transactions', icon: FiDollarSign },
     { labelKey: 'budget', path: '/budget', icon: FiPieChart },
-    { labelKey: 'analytics', path: '/insights', icon: FiTrendingUp },
-    { labelKey: 'profile', path: '/profile', icon: FiUser }
+    { labelKey: 'subscriptions', path: '/subscriptions', icon: FiRepeat },
+    { labelKey: 'analytics', path: '/insights', icon: FiTrendingUp }
   ]
 
   const isActive = (path) => location.pathname === path

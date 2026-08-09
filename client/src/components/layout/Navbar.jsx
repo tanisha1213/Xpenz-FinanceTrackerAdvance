@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { Link } from 'react-router-dom'
 import { useSelector } from 'react-redux'
 import { FiBell, FiSun, FiMoon, FiHelpCircle } from 'react-icons/fi'
 import { useTheme } from '../../context/ThemeContext'
@@ -200,15 +201,19 @@ function Navbar() {
           </div>
 
           {user && (
-            <div className="flex items-center gap-3 pl-2 border-l border-slate-100 dark:border-dark-border">
+            <Link
+              to="/profile"
+              className="flex items-center gap-3 pl-2 border-l border-slate-100 dark:border-dark-border cursor-pointer group hover:opacity-90 transition-all"
+              title="View & Edit Profile"
+            >
               <div className="text-right hidden sm:block">
-                <p className="text-sm font-semibold text-slate-800 dark:text-slate-200">{user.name}</p>
+                <p className="text-sm font-semibold text-slate-800 dark:text-slate-200 group-hover:text-secondary dark:group-hover:text-purple-400 transition-colors">{user.name}</p>
                 <p className="text-xs text-slate-400 dark:text-dark-text-muted">{user.email}</p>
               </div>
-              <div className="w-10 h-10 rounded-full bg-indigo-50 border border-indigo-100 dark:bg-purple-950/20 dark:border-purple-900/30 flex items-center justify-center text-secondary dark:text-purple-400 font-bold text-base shadow-sm">
+              <div className="w-10 h-10 rounded-full bg-indigo-50 border border-indigo-100 dark:bg-purple-950/20 dark:border-purple-900/30 flex items-center justify-center text-secondary dark:text-purple-400 font-bold text-base shadow-sm group-hover:scale-105 group-hover:shadow-md transition-all">
                 {user.name.charAt(0).toUpperCase()}
               </div>
-            </div>
+            </Link>
           )}
         </div>
       </div>
