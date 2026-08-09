@@ -62,6 +62,7 @@ function Loans() {
   const [installments, setInstallments] = useState([]) // all active installments for calendar
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
+  const [submitting, setSubmitting] = useState(false)
   
   // Modals & History expansion
   const [showAddModal, setShowAddModal] = useState(false)
@@ -211,6 +212,8 @@ function Loans() {
   // Handle Submit New Loan
   const handleSaveLoan = async (e) => {
     e.preventDefault()
+    if (submitting) return
+    setSubmitting(true)
     try {
       setError('')
       setSuccess('')
@@ -241,6 +244,8 @@ function Loans() {
       loadData()
     } catch (err) {
       setError(err.response?.data?.message || 'Failed to save loan.')
+    } finally {
+      setSubmitting(false)
     }
   }
 
@@ -872,6 +877,11 @@ function Loans() {
             </header>
 
             <form onSubmit={handleSaveLoan} className="p-6 space-y-4">
+              {error && (
+                <div className="p-3 bg-rose-500/10 border border-rose-500/20 text-rose-500 rounded-xl text-xs font-semibold leading-relaxed">
+                  {error}
+                </div>
+              )}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="flex flex-col gap-1">
                   <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Loan Name</label>
@@ -1146,9 +1156,17 @@ function Loans() {
                 </button>
                 <button
                   type="submit"
-                  className="rounded-xl bg-secondary dark:bg-purple-650 px-5 py-2.5 font-bold text-white text-sm hover:bg-indigo-700 dark:hover:bg-purple-750 transition-colors shadow-md shadow-secondary/15 cursor-pointer"
+                  disabled={submitting}
+                  className="rounded-xl bg-secondary dark:bg-purple-650 px-5 py-2.5 font-bold text-white text-sm hover:bg-indigo-700 dark:hover:bg-purple-750 transition-colors shadow-md shadow-secondary/15 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                 >
-                  {showEditModal ? 'Save Changes' : 'Create Loan & EMI'}
+                  {submitting ? (
+                    <>
+                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                      <span>Saving...</span>
+                    </>
+                  ) : (
+                    showEditModal ? 'Save Changes' : 'Create Loan & EMI'
+                  )}
                 </button>
               </footer>
             </form>

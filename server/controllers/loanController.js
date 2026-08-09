@@ -145,10 +145,16 @@ export const addLoan = async (req, res) => {
     }
 
     if (installments.length > 0) {
-      const { error: insErr } = await supabase
-        .from('loan_installments')
-        .insert(installments);
-      if (insErr) throw new Error(insErr.message);
+      try {
+        const { error: insErr } = await supabase
+          .from('loan_installments')
+          .insert(installments);
+        if (insErr) {
+          console.error('Supabase loan_installments insert warning:', insErr.message);
+        }
+      } catch (insE) {
+        console.error('Failed to insert loan_installments:', insE.message);
+      }
     }
 
     // Payout account linkage
@@ -181,9 +187,13 @@ export const addLoan = async (req, res) => {
       data: loan
     });
   } catch (error) {
-    res.status(500).json({
+    let msg = error.message || 'Failed to add loan';
+    if (msg.includes('row-level security') || msg.includes('42501') || msg.includes('policy') || msg.includes('loan_installments')) {
+      msg = 'Supabase Row-Level Security (RLS) is blocking "loan_installments". Please run: ALTER TABLE loan_installments DISABLE ROW LEVEL SECURITY; in Supabase SQL Editor.';
+    }
+    res.status(400).json({
       success: false,
-      message: error.message
+      message: msg
     });
   }
 };
@@ -559,9 +569,13 @@ export const payInstallment = async (req, res) => {
       }
     });
   } catch (error) {
-    res.status(500).json({
+    let msg = error.message || 'Failed to process installment payment';
+    if (msg.includes('row-level security') || msg.includes('42501') || msg.includes('policy') || msg.includes('loan_installments')) {
+      msg = 'Supabase Row-Level Security (RLS) is blocking "loan_installments". Please run: ALTER TABLE loan_installments DISABLE ROW LEVEL SECURITY; in Supabase SQL Editor.';
+    }
+    res.status(400).json({
       success: false,
-      message: error.message
+      message: msg
     });
   }
 };
