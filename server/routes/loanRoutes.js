@@ -6,7 +6,8 @@ import {
   updateLoan,
   deleteLoan,
   getLoanInstallments,
-  payInstallment
+  payInstallment,
+  payLoanDirect
 } from '../controllers/loanController.js';
 
 const router = express.Router();
@@ -20,6 +21,7 @@ router.put('/:id', updateLoan);
 router.delete('/:id', deleteLoan);
 
 // Loan Installments Endpoints
+router.post('/:id/pay-emi', payLoanDirect);
 router.get('/:id/installments', getLoanInstallments);
 router.post('/installments/:installmentId/pay', payInstallment);
 

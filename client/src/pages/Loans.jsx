@@ -5,7 +5,8 @@ import {
   updateLoan,
   deleteLoan,
   getLoanInstallments,
-  payInstallment
+  payInstallment,
+  payLoanDirect
 } from '../services/loanService'
 import { getAccounts } from '../services/accountService'
 import { formatCurrency } from '../utils/format'
@@ -133,45 +134,40 @@ function Loans() {
     try {
       setError('')
       setSuccess('')
-      // Find the next upcoming/overdue installment for this loan
-      const res = await getLoanInstallments(loanId)
-      const insts = res.data.data
-      const nextToPay = insts.find(i => i.status !== 'paid')
       
-      if (!nextToPay) {
-        alert('All installments are already paid for this loan!')
-        try {
-          const loanObj = loans.find(l => l._id === loanId)
-          if (loanObj) {
-            await updateLoan(loanId, {
-              status: 'completed',
-              installmentsPaid: loanObj.totalInstallments,
-              remainingAmount: 0,
-              nextDueDate: null
-            })
-            await loadData()
-          }
-        } catch (syncErr) {
-          console.error('Failed to sync loan completion state:', syncErr)
+      let payRes = null
+      try {
+        const res = await getLoanInstallments(loanId)
+        const insts = res.data?.data || []
+        const nextToPay = insts.find(i => i.status !== 'paid')
+        if (nextToPay) {
+          payRes = await payInstallment(nextToPay._id)
         }
-        return
+      } catch (e) {
+        console.warn('Installments lookup notice, using direct pay fallback:', e)
       }
-      
-      const payRes = await payInstallment(nextToPay._id)
-      
-      // Verify if the loan was marked as completed
-      const updatedLoan = payRes.data.data.loan
-      if (updatedLoan.status === 'completed') {
+
+      // Fallback to direct EMI payment engine if payInstallment was not executed
+      if (!payRes) {
+        payRes = await payLoanDirect(loanId)
+      }
+
+      const updatedLoan = payRes.data?.data?.loan
+      if (updatedLoan && updatedLoan.status === 'completed') {
         setCelebrationLoan(updatedLoan)
         setTimeout(() => setCelebrationLoan(null), 5000)
       } else {
-        setSuccess(`Installment #${nextToPay.installmentNumber} marked as paid successfully!`)
+        setSuccess(payRes.data?.message || 'EMI payment logged & account balance updated successfully!')
       }
-      
+
       await loadData()
       if (expandedLoanId === loanId) {
-        const histRes = await getLoanInstallments(loanId)
-        setInstallmentsHistory(histRes.data.data)
+        try {
+          const histRes = await getLoanInstallments(loanId)
+          setInstallmentsHistory(histRes.data?.data || [])
+        } catch (hErr) {
+          console.warn('History refresh notice:', hErr)
+        }
       }
     } catch (err) {
       setError(err.response?.data?.message || 'Failed to pay installment.')

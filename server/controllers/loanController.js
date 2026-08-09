@@ -536,17 +536,20 @@ export const payInstallment = async (req, res) => {
     }
     await account.save();
 
-    // 3. Mark the installment as paid
-    const { error: updateErr } = await supabase
-      .from('loan_installments')
-      .update({
-        status: 'paid',
-        paidDate: new Date().toISOString(),
-        transactionId: transaction._id
-      })
-      .eq('id', installmentId);
-
-    if (updateErr) throw new Error(updateErr.message);
+    // 3. Mark the installment as paid in Supabase if table accessible
+    try {
+      const { error: updateErr } = await supabase
+        .from('loan_installments')
+        .update({
+          status: 'paid',
+          paidDate: new Date().toISOString(),
+          transactionId: transaction._id
+        })
+        .eq('id', installmentId);
+      if (updateErr) console.error('Supabase installment update notice:', updateErr.message);
+    } catch (supErr) {
+      console.error('Supabase installment update notice:', supErr.message);
+    }
 
     // 4. Update the parent loan stats
     loan.installmentsPaid = Number(loan.installmentsPaid) + 1;
@@ -557,19 +560,24 @@ export const payInstallment = async (req, res) => {
       loan.nextDueDate = null;
     } else {
       // Find the next upcoming/overdue installment to set the nextDueDate
-      const { data: nextIns, error: nextErr } = await supabase
-        .from('loan_installments')
-        .select('dueDate')
-        .eq('loanId', loan._id)
-        .eq('status', 'upcoming')
-        .order('installmentNumber', { ascending: true })
-        .limit(1);
+      try {
+        const { data: nextIns, error: nextErr } = await supabase
+          .from('loan_installments')
+          .select('dueDate')
+          .eq('loanId', loan._id)
+          .eq('status', 'upcoming')
+          .order('installmentNumber', { ascending: true })
+          .limit(1);
 
-      if (!nextErr && nextIns && nextIns.length > 0) {
-        loan.nextDueDate = nextIns[0].dueDate;
-      } else {
-        // Fallback: add 1 month to the paid installment's due date
-        const currentDueDate = new Date(installment.dueDate);
+        if (!nextErr && nextIns && nextIns.length > 0) {
+          loan.nextDueDate = nextIns[0].dueDate;
+        } else {
+          const currentDueDate = new Date(installment.dueDate || loan.firstEmiDate || new Date());
+          currentDueDate.setMonth(currentDueDate.getMonth() + 1);
+          loan.nextDueDate = currentDueDate;
+        }
+      } catch (err) {
+        const currentDueDate = new Date(installment.dueDate || loan.firstEmiDate || new Date());
         currentDueDate.setMonth(currentDueDate.getMonth() + 1);
         loan.nextDueDate = currentDueDate;
       }
@@ -579,7 +587,7 @@ export const payInstallment = async (req, res) => {
 
     res.status(200).json({
       success: true,
-      message: 'Installment paid and logged successfully',
+      message: isLent ? 'EMI collection logged & account balance updated!' : 'EMI payment logged & account balance updated!',
       data: {
         loan,
         transaction
@@ -593,6 +601,135 @@ export const payInstallment = async (req, res) => {
     res.status(400).json({
       success: false,
       message: msg
+    });
+  }
+};
+
+// Direct EMI Payment on Loan (works even if loan_installments table is empty)
+export const payLoanDirect = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const userId = req.userId;
+
+    const loan = await Loan.findOne({ _id: id, userId });
+    if (!loan) {
+      return res.status(404).json({
+        success: false,
+        message: 'Loan not found'
+      });
+    }
+
+    if (loan.status === 'completed' || Number(loan.remainingAmount) <= 0) {
+      return res.status(400).json({
+        success: false,
+        message: 'This loan is already completely paid!'
+      });
+    }
+
+    const nextInstallmentNum = Number(loan.installmentsPaid || 0) + 1;
+    const emiAmount = Number(loan.emiAmount) || Number(loan.remainingAmount);
+
+    // Determine account
+    let accountId = req.body?.accountId || loan.paymentSourceId;
+    let account = null;
+
+    if (accountId) {
+      account = await Account.findOne({ _id: accountId, userId });
+    }
+
+    if (!account) {
+      account = await Account.findOne({ userId }).sort({ isDefault: -1, createdAt: 1 });
+      if (!account) {
+        account = await Account.create({
+          userId,
+          name: 'Cash Wallet',
+          type: 'cash',
+          balance: 0,
+          isDefault: true
+        });
+      }
+      accountId = account._id;
+    }
+
+    const isLent = loan.type === 'lent';
+    const transactionType = isLent ? 'income' : 'expense';
+
+    // 1. Create Transaction
+    const transaction = await Transaction.create({
+      userId,
+      type: transactionType,
+      title: isLent
+        ? `${loan.title} - EMI Collected #${nextInstallmentNum}`
+        : `${loan.title} - EMI Installment #${nextInstallmentNum}`,
+      amount: emiAmount,
+      category: loan.emiCategory || (isLent ? 'Loan Repayment' : 'EMI'),
+      paymentMethod: account.type === 'cash' ? 'cash' : 'bank_transfer',
+      accountId: accountId,
+      loanId: loan._id,
+      description: isLent
+        ? `EMI collection received for ${loan.title} (Installment ${nextInstallmentNum}/${loan.totalInstallments})`
+        : `EMI payment paid for ${loan.title} (Installment ${nextInstallmentNum}/${loan.totalInstallments})`,
+      transactionDate: new Date()
+    });
+
+    // 2. Adjust account balance: INCREASE for lent collection (+), DEDUCT for borrowed payment (-)
+    if (isLent) {
+      account.balance = Number(account.balance) + emiAmount;
+    } else {
+      account.balance = Number(account.balance) - emiAmount;
+    }
+    await account.save();
+
+    // 3. Update loan stats
+    loan.installmentsPaid = nextInstallmentNum;
+    loan.remainingAmount = Math.max(0, Number(loan.remainingAmount) - emiAmount);
+
+    if (loan.installmentsPaid >= loan.totalInstallments || loan.remainingAmount <= 0) {
+      loan.status = 'completed';
+      loan.nextDueDate = null;
+    } else {
+      const baseDate = loan.firstEmiDate ? new Date(loan.firstEmiDate) : new Date();
+      loan.nextDueDate = calculateDueDate(baseDate, nextInstallmentNum, loan.paymentFrequency);
+    }
+
+    await loan.save();
+
+    // 4. Update matching row in Supabase if exists
+    try {
+      const { data: insts } = await supabase
+        .from('loan_installments')
+        .select('*')
+        .eq('loanId', id)
+        .eq('status', 'upcoming')
+        .order('installmentNumber', { ascending: true })
+        .limit(1);
+
+      if (insts && insts.length > 0) {
+        await supabase
+          .from('loan_installments')
+          .update({
+            status: 'paid',
+            paidDate: new Date().toISOString(),
+            transactionId: transaction._id
+          })
+          .eq('id', insts[0].id);
+      }
+    } catch (supErr) {
+      console.error('Supabase installment update notice:', supErr.message);
+    }
+
+    res.status(200).json({
+      success: true,
+      message: isLent ? 'EMI collection logged & account balance updated!' : 'EMI payment logged & account balance updated!',
+      data: {
+        loan,
+        transaction
+      }
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message || 'Failed to process direct loan EMI payment'
     });
   }
 };

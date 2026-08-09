@@ -8,3 +8,4 @@ export const deleteLoan = (id, deleteTransactions = false) => API.delete(`/loans
 // New installments endpoints
 export const getLoanInstallments = (id) => API.get(`/loans/${id}/installments`)
 export const payInstallment = (installmentId) => API.post(`/loans/installments/${installmentId}/pay`)
+export const payLoanDirect = (loanId, payload = {}) => API.post(`/loans/${loanId}/pay-emi`, payload)
