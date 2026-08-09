@@ -54,25 +54,18 @@ export const processAutoDeductions = async (userId) => {
           const transaction = await Transaction.create({
             userId,
             type: 'expense',
-            title: `${sub.title} (Auto-Renew)`,
+            title: `${sub.title} (Auto-Deduct)`,
             amount,
             category: sub.category || 'Subscriptions',
             paymentMethod: account.type === 'cash' ? 'cash' : 'bank_transfer',
             accountId: account._id,
-            description: `Automatic recurring subscription payment for ${sub.title}`,
+            description: `Monthly auto-debit subscription payment for ${sub.title}`,
             transactionDate: now
           });
 
-          // 3. Advance next billing date according to cycle
+          // 3. Automatically advance next billing date to same day of next month
           const newNextDate = new Date(nextDueDate);
-          if (sub.billingCycle === 'yearly') {
-            newNextDate.setFullYear(newNextDate.getFullYear() + 1);
-          } else if (sub.billingCycle === 'quarterly') {
-            newNextDate.setMonth(newNextDate.getMonth() + 3);
-          } else {
-            // default monthly
-            newNextDate.setMonth(newNextDate.getMonth() + 1);
-          }
+          newNextDate.setMonth(newNextDate.getMonth() + 1);
 
           sub.lastDeductedDate = now;
           sub.nextBillingDate = newNextDate;
@@ -108,19 +101,8 @@ export const getSubscriptions = async (req, res) => {
     const activeSubs = subscriptions.filter(s => s.status === 'active');
     
     // Calculate monthly commitment total
-    const totalMonthlyCommitment = activeSubs.reduce((sum, sub) => {
-      const amt = Number(sub.amount) || 0;
-      if (sub.billingCycle === 'yearly') return sum + (amt / 12);
-      if (sub.billingCycle === 'quarterly') return sum + (amt / 3);
-      return sum + amt;
-    }, 0);
-
-    const totalYearlyCommitment = activeSubs.reduce((sum, sub) => {
-      const amt = Number(sub.amount) || 0;
-      if (sub.billingCycle === 'yearly') return sum + amt;
-      if (sub.billingCycle === 'quarterly') return sum + (amt * 4);
-      return sum + (amt * 12);
-    }, 0);
+    const totalMonthlyCommitment = activeSubs.reduce((sum, sub) => sum + (Number(sub.amount) || 0), 0);
+    const totalYearlyCommitment = totalMonthlyCommitment * 12;
 
     res.status(200).json({
       success: true,
@@ -144,38 +126,33 @@ export const getSubscriptions = async (req, res) => {
 
 export const createSubscription = async (req, res) => {
   try {
-    const { title, category, billingCycle, amount, startDate, nextBillingDate, accountId, autoDeduct, description } = req.body;
+    const { title, category, planType, amount, startDate, accountId, autoDeduct, description } = req.body;
 
     if (!title?.trim() || !amount || Number(amount) <= 0) {
       return res.status(400).json({
         success: false,
-        message: 'Please provide a valid subscription title and amount greater than zero'
+        message: 'Please provide a valid subscription title and monthly amount greater than zero'
       });
     }
 
-    const cycle = ['monthly', 'quarterly', 'yearly'].includes(billingCycle) ? billingCycle : 'monthly';
     const start = startDate ? new Date(startDate) : new Date();
-
-    // Default next billing date to 1 cycle from start if not provided
-    let nextDate = nextBillingDate ? new Date(nextBillingDate) : new Date(start);
-    if (!nextBillingDate) {
-      if (cycle === 'yearly') nextDate.setFullYear(nextDate.getFullYear() + 1);
-      else if (cycle === 'quarterly') nextDate.setMonth(nextDate.getMonth() + 3);
-      else nextDate.setMonth(nextDate.getMonth() + 1);
-    }
+    let nextDate = new Date(start);
+    if (isNaN(nextDate.getTime())) nextDate = new Date();
 
     let finalAccountId = accountId;
+    if (typeof finalAccountId === 'object') finalAccountId = finalAccountId._id || finalAccountId.id;
+
     if (!finalAccountId) {
       const defaultBank = await Account.findOne({ userId: req.userId, type: 'bank' });
       const defaultCash = await Account.findOne({ userId: req.userId, type: 'cash' });
-      finalAccountId = defaultBank?._id || defaultCash?._id;
+      finalAccountId = defaultBank?._id || defaultCash?._id || defaultBank?.id || defaultCash?.id;
     }
 
     const subscription = await Subscription.create({
       userId: req.userId,
       title: title.trim(),
       category: category?.trim() || 'Subscriptions',
-      billingCycle: cycle,
+      billingCycle: planType || 'monthly',
       amount: Number(amount),
       startDate: start,
       nextBillingDate: nextDate,

@@ -78,9 +78,10 @@ export default function Subscriptions() {
         setSubscriptions(subRes.data.data.subscriptions || [])
         setStats(subRes.data.data.stats || {})
       }
-      if (accRes.data?.data) {
-        setAccounts(accRes.data.data)
-      }
+      const fetchedAccounts = Array.isArray(accRes.data?.data) 
+        ? accRes.data.data 
+        : (Array.isArray(accRes.data) ? accRes.data : [])
+      setAccounts(fetchedAccounts)
     } catch (err) {
       console.error('Failed to load subscriptions:', err)
       setError(err.response?.data?.message || 'Failed to load subscription plans.')
@@ -95,9 +96,11 @@ export default function Subscriptions() {
 
   const handleOpenAdd = () => {
     setEditingId(null)
+    const firstAccId = accounts.length > 0 ? (accounts[0]._id || accounts[0].id) : ''
     setForm({
       ...emptyForm,
-      accountId: accounts[0]?._id || accounts[0]?.id || ''
+      nextBillingDate: new Date().toISOString().split('T')[0],
+      accountId: firstAccId
     })
     setModalMessage('')
     setShowModal(true)
@@ -105,13 +108,14 @@ export default function Subscriptions() {
 
   const handleOpenEdit = (sub) => {
     setEditingId(sub._id || sub.id)
+    const accId = typeof sub.accountId === 'object' ? (sub.accountId?._id || sub.accountId?.id) : (sub.accountId || '')
     setForm({
       title: sub.title || '',
       category: sub.category || 'Subscriptions',
       billingCycle: sub.billingCycle || 'monthly',
       amount: sub.amount || '',
-      nextBillingDate: sub.nextBillingDate ? new Date(sub.nextBillingDate).toISOString().split('T')[0] : '',
-      accountId: typeof sub.accountId === 'object' ? (sub.accountId?._id || sub.accountId?.id) : (sub.accountId || ''),
+      nextBillingDate: sub.nextBillingDate ? new Date(sub.nextBillingDate).toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
+      accountId: accId || (accounts[0]?._id || accounts[0]?.id || ''),
       autoDeduct: sub.autoDeduct !== false,
       description: sub.description || ''
     })
@@ -569,19 +573,26 @@ export default function Subscriptions() {
                     onChange={(e) => setForm({ ...form, accountId: e.target.value })}
                     className="w-full px-3.5 py-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl font-semibold focus:outline-none focus:ring-2 focus:ring-secondary/50 text-slate-900 dark:text-white"
                   >
-                    {accounts.map(acc => (
-                      <option key={acc._id || acc.id} value={acc._id || acc.id}>
-                        {acc.name} ({acc.type})
-                      </option>
-                    ))}
+                    {accounts.length === 0 ? (
+                      <option value="">Default Bank / Cash Account</option>
+                    ) : (
+                      accounts.map(acc => (
+                        <option key={acc._id || acc.id} value={acc._id || acc.id}>
+                          {acc.name} ({acc.type === 'cash' ? 'Cash' : 'Bank'}) - ₹{acc.balance}
+                        </option>
+                      ))
+                    )}
                   </select>
                 </div>
               </div>
 
               <div>
-                <label className="block text-slate-500 dark:text-slate-400 font-bold mb-1">
-                  First / Next Billing Date *
+                <label className="block text-slate-500 dark:text-slate-400 font-bold mb-0.5">
+                  Monthly Auto-Debit Day / Start Date *
                 </label>
+                <span className="text-[10px] text-slate-400 block mb-1">
+                  Auto-debits on the same day every month automatically
+                </span>
                 <input
                   type="date"
                   required
